@@ -16,7 +16,7 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
-import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertIs
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -75,10 +75,14 @@ class AppLovinRtbRewardedRendererTest {
       )
   }
 
-  @Test
-  fun showAd_invokesShow() {
+  private fun loadAndReceiveAd() {
     appLovinMediationRewardedAd.loadAd(rewardedAdConfiguration)
     appLovinMediationRewardedAd.adReceived(appLovinAd)
+  }
+
+  @Test
+  fun showAd_invokesShow() {
+    loadAndReceiveAd()
 
     appLovinMediationRewardedAd.showAd(context)
 
@@ -95,8 +99,7 @@ class AppLovinRtbRewardedRendererTest {
 
   @Test
   fun showAd_setsSdkMuteSettings() {
-    appLovinMediationRewardedAd.loadAd(rewardedAdConfiguration)
-    appLovinMediationRewardedAd.adReceived(appLovinAd)
+    loadAndReceiveAd()
 
     appLovinMediationRewardedAd.showAd(context)
 
@@ -105,7 +108,7 @@ class AppLovinRtbRewardedRendererTest {
 
   @Test
   fun appLovinRtbRewardedAd_isASubclassOfAppLovinRewardedRenderer() {
-    assertThat(appLovinMediationRewardedAd).isInstanceOf(AppLovinRewardedRenderer::class.java)
+    assertIs<AppLovinRewardedRenderer>(appLovinMediationRewardedAd)
   }
 
   companion object {

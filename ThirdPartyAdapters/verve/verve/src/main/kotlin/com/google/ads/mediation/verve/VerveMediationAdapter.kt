@@ -20,8 +20,6 @@ import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
-import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
-import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
 import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -105,21 +103,21 @@ class VerveMediationAdapter : RtbAdapter() {
     val requestConfiguration: RequestConfiguration = MobileAds.getRequestConfiguration()
     val isChildUser =
       (requestConfiguration.tagForChildDirectedTreatment ==
-        TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) ||
-        requestConfiguration.tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+        RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) ||
+        requestConfiguration.tagForUnderAgeOfConsent ==
+          RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
     if (isChildUser) {
       initializationCompleteCallback.onInitializationFailed(ERROR_MSG_CHILD_USER)
       return
     }
-    val appTokens =
-      mediationConfigurations.mapNotNull {
-        val sourceId = it.serverParameters.getString(APP_TOKEN_KEY)
-        if (sourceId.isNullOrEmpty()) {
-          null
-        } else {
-          sourceId
-        }
+    val appTokens = mediationConfigurations.mapNotNull {
+      val sourceId = it.serverParameters.getString(APP_TOKEN_KEY)
+      if (sourceId.isNullOrEmpty()) {
+        null
+      } else {
+        sourceId
       }
+    }
     if (appTokens.isEmpty()) {
       initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_APP_TOKEN)
       return

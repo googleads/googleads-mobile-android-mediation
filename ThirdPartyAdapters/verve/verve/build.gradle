@@ -150,6 +150,7 @@ dependencies {
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
     testImplementation 'org.robolectric:robolectric:4.9'
     testImplementation project(':adaptertestkit')
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
 }
 
 /**

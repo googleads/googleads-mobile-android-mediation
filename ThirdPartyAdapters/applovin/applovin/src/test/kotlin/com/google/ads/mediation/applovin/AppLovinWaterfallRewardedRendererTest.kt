@@ -22,6 +22,7 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertIs
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -100,14 +101,24 @@ class AppLovinWaterfallRewardedRendererTest {
     AppLovinWaterfallRewardedRenderer.incentivizedAdsMap.clear()
   }
 
-  @Test
-  fun failedToReceiveAd_removesZoneIdToLetAnotherAdLoadWithSameZoneId() {
+  private fun mockInitializeSuccess() {
     doAnswer { invocation ->
         val args = invocation.arguments
         (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
       }
       .whenever(appLovinInitializer)
       .initialize(any(), any(), any())
+  }
+
+  private fun loadAndReceiveAd() {
+    mockInitializeSuccess()
+    appLovinRewardedAd.loadAd(rewardedAdConfiguration)
+    appLovinRewardedAd.adReceived(appLovinAd)
+  }
+
+  @Test
+  fun failedToReceiveAd_removesZoneIdToLetAnotherAdLoadWithSameZoneId() {
+    mockInitializeSuccess()
     val errorCaptor = argumentCaptor<AdError>()
     appLovinRewardedAd.loadAd(rewardedAdConfiguration)
 
@@ -122,14 +133,7 @@ class AppLovinWaterfallRewardedRendererTest {
 
   @Test
   fun adHidden_invokesUnregisterToLetAnotherAdLoadWithSameZoneId() {
-    doAnswer { invocation ->
-        val args = invocation.arguments
-        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
-      }
-      .whenever(appLovinInitializer)
-      .initialize(any(), any(), any())
-    appLovinRewardedAd.loadAd(rewardedAdConfiguration)
-    appLovinRewardedAd.adReceived(appLovinAd)
+    loadAndReceiveAd()
 
     appLovinRewardedAd.adHidden(appLovinAd)
     appLovinRewardedAd.loadAd(rewardedAdConfiguration)
@@ -141,14 +145,7 @@ class AppLovinWaterfallRewardedRendererTest {
   @Test
   fun showAd_withLoadedAd_invokesShow() {
     doAnswer { true }.whenever(appLovinIncentivizedInterstitial).isAdReadyToDisplay()
-    doAnswer { invocation ->
-        val args = invocation.arguments
-        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
-      }
-      .whenever(appLovinInitializer)
-      .initialize(any(), any(), any())
-    appLovinRewardedAd.loadAd(rewardedAdConfiguration)
-    appLovinRewardedAd.adReceived(appLovinAd)
+    loadAndReceiveAd()
 
     appLovinRewardedAd.showAd(context)
 
@@ -159,14 +156,7 @@ class AppLovinWaterfallRewardedRendererTest {
   @Test
   fun showAd_withoutLoadedAd_invokesOnAdFailedToShow() {
     doAnswer { false }.whenever(appLovinIncentivizedInterstitial).isAdReadyToDisplay()
-    doAnswer { invocation ->
-        val args = invocation.arguments
-        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
-      }
-      .whenever(appLovinInitializer)
-      .initialize(any(), any(), any())
-    appLovinRewardedAd.loadAd(rewardedAdConfiguration)
-    appLovinRewardedAd.adReceived(appLovinAd)
+    loadAndReceiveAd()
     val errorCaptor = argumentCaptor<AdError>()
 
     appLovinRewardedAd.showAd(context)
@@ -180,37 +170,17 @@ class AppLovinWaterfallRewardedRendererTest {
 
   @Test
   fun loadAd_removesAdFromMap() {
-    val serverParameters =
-      bundleOf(
-        AppLovinUtils.ServerParameterKeys.SDK_KEY to TEST_SDK_KEY,
-        AppLovinUtils.ServerParameterKeys.ZONE_ID to TEST_ZONE_ID,
-      )
-    whenever(rewardedAdConfiguration.serverParameters) doReturn serverParameters
     doAnswer { true }.whenever(appLovinIncentivizedInterstitial).isAdReadyToDisplay()
-    doAnswer { invocation ->
-        val args = invocation.arguments
-        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
-      }
-      .whenever(appLovinInitializer)
-      .initialize(any(), any(), any())
-    appLovinRewardedAd.loadAd(rewardedAdConfiguration)
+    loadAndReceiveAd()
 
-    appLovinRewardedAd.adReceived(appLovinAd)
-
-    assertThat(AppLovinWaterfallRewardedRenderer.incentivizedAdsMap.containsKey(TEST_ZONE_ID))
-      .isFalse()
+    assertThat(AppLovinWaterfallRewardedRenderer.incentivizedAdsMap).doesNotContainKey(TEST_ZONE_ID)
   }
 
   @Test
   fun loadRewardedAd_withCorrectParametersAndInitSuccess_invokesPreload() {
     // Putting this test here instead of AppLovinMedaitionAdapterTest because it is essential to
     // have the adHidden method remove the zoneID from the class' Map in between tests.
-    doAnswer { invocation ->
-        val args = invocation.arguments
-        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
-      }
-      .whenever(appLovinInitializer)
-      .initialize(any(), any(), any())
+    mockInitializeSuccess()
 
     appLovinRewardedAd.loadAd(rewardedAdConfiguration)
 
@@ -219,7 +189,7 @@ class AppLovinWaterfallRewardedRendererTest {
 
   @Test
   fun appLovinWaterfallRewardedAd_isASubclassOfAppLovinRewardedRenderer() {
-    assertThat(appLovinRewardedAd).isInstanceOf(AppLovinRewardedRenderer::class.java)
+    assertIs<AppLovinRewardedRenderer>(appLovinRewardedAd)
   }
 
   companion object {

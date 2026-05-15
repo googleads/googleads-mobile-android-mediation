@@ -161,7 +161,7 @@ class DTExchangeWaterfallBannerAd(
     val fyberAdWidth = (controller.getAdContentWidth() / density).roundToInt()
     val fyberAdHeight = (controller.getAdContentHeight() / density).roundToInt()
 
-    val potentials = ArrayList<AdSize?>()
+    val potentials = ArrayList<AdSize>()
     potentials.add(AdSize(fyberAdWidth, fyberAdHeight))
     val supportedAdSize = MediationUtils.findClosestSize(context, requestedAdSize, potentials)
     if (supportedAdSize == null) {

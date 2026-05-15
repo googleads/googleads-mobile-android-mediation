@@ -79,7 +79,8 @@ class VerveNativeAdTest {
     assertThat(verveNativeAd.starRating).isEqualTo(TEST_RATING.toDouble())
     assertThat(verveNativeAd.icon.drawable).isNotNull()
     assertThat(verveNativeAd.icon.uri.toString()).isEqualTo(TEST_ICON_URL)
-    assertThat(verveNativeAd.overrideClickHandling).isFalse()
+    assertThat(verveNativeAd.overrideClickHandling).isTrue()
+    assertThat(verveNativeAd.overrideImpressionRecording).isTrue()
   }
 
   @Test
@@ -156,6 +157,25 @@ class VerveNativeAdTest {
     verveNativeAd.handleClick(testView)
 
     verify(mockHyBidNativeAd).onNativeClick(testView)
+    verify(mockNativeAdCallback).reportAdClicked()
+    verify(mockNativeAdCallback).onAdOpened()
+  }
+
+  @Test
+  fun trackViews_withClickableView_invokesNativeClickAndCallbacks() {
+    verveNativeAd.onRequestSuccess(mockHyBidNativeAd)
+    val clickableView = View(context)
+
+    verveNativeAd.trackViews(
+      testView,
+      /* clickableAssetViews= */ mapOf("key" to clickableView),
+      /* nonClickableAssetViews= */ mapOf(),
+    )
+    clickableView.performClick()
+
+    verify(mockHyBidNativeAd).onNativeClick(clickableView)
+    verify(mockNativeAdCallback).reportAdClicked()
+    verify(mockNativeAdCallback).onAdOpened()
   }
 
   private companion object {

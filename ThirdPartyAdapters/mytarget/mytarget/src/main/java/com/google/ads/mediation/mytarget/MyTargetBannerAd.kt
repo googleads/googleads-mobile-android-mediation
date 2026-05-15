@@ -35,7 +35,6 @@ class MyTargetBannerAd(
   // myTarget Banner ad object
   private lateinit var myTargetBannerAdView: MyTargetView
 
-  // region MediationBannerAd implementation
   fun loadAd(adConfiguration: MediationBannerAdConfiguration) {
     val context = adConfiguration.context
     val serverParameters = adConfiguration.serverParameters
@@ -84,6 +83,8 @@ class MyTargetBannerAd(
     myTargetBannerAdView.load()
   }
 
+  // region MediationBannerAd implementation
+
   override fun getView(): View {
     return myTargetBannerAdView
   }
@@ -91,7 +92,7 @@ class MyTargetBannerAd(
   // endregion
 
   // region myTarget MyTargetViewListener implementation
-  override fun onLoad(p0: MyTargetView) {
+  override fun onLoad(myTargetView: MyTargetView) {
     Log.d(TAG, "Banner mediation Ad loaded.")
     bannerAdCallback = adLoadCallback.onSuccess(this@MyTargetBannerAd)
   }
@@ -107,12 +108,12 @@ class MyTargetBannerAd(
     adLoadCallback.onFailure(loadError)
   }
 
-  override fun onShow(p0: MyTargetView) {
+  override fun onShow(myTargetView: MyTargetView) {
     Log.d(TAG, "Banner mediation Ad show.")
     bannerAdCallback?.reportAdImpression()
   }
 
-  override fun onClick(p0: MyTargetView) {
+  override fun onClick(myTargetView: MyTargetView) {
     Log.d(TAG, "Banner mediation Ad clicked.")
     bannerAdCallback?.reportAdClicked()
     bannerAdCallback?.onAdOpened()

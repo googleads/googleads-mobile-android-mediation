@@ -21,10 +21,7 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
-import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
-import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE
-import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -119,13 +116,13 @@ constructor(
       MobileAds.getRequestConfiguration().tagForChildDirectedTreatment
     val tagForUnderAgeOfConsent = MobileAds.getRequestConfiguration().tagForUnderAgeOfConsent
     if (
-      tagForChildDirectedTreatment == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
-        tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+      tagForChildDirectedTreatment == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
+        tagForUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
     ) {
       OpenWrapSDK.setCoppa(true)
     } else if (
-      tagForChildDirectedTreatment == TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE ||
-        tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE
+      tagForChildDirectedTreatment == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE ||
+        tagForUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE
     ) {
       OpenWrapSDK.setCoppa(false)
     }

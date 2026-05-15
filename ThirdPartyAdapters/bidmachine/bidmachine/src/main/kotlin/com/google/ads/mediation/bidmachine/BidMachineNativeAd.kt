@@ -124,8 +124,8 @@ private constructor(
 
   override fun trackViews(
     container: View,
-    clickableAssetViews: Map<String?, View?>,
-    nonClickableAssetViews: Map<String?, View?>,
+    clickableAssetViews: Map<String, View>,
+    nonClickableAssetViews: Map<String, View>,
   ) {
     bidMachineNativeAd.registerView(
       container as ViewGroup,
