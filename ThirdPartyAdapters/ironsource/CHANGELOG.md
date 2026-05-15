@@ -5,6 +5,7 @@
 
 Built and tested with:
 - Google Mobile Ads SDK version 25.2.0.
+- Google Mobile Ads Next-Gen SDK version 1.0.1.
 - IronSource SDK version 9.4.2.
 
 #### Version 9.4.1.0
