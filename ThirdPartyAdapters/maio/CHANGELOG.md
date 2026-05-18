@@ -1,5 +1,11 @@
 ## maio Android Mediation Adapter Changelog
 
+#### Version 2.0.8.4
+- Verified compatibility with Google Mobile Ads SDK version 25.2.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.2.0.
+
 #### Version 2.0.8.2
 - Filter age-restricted requests for maio SDK because it cannot receive age-restricted signals.
 - Added property to build the adapter with GMA Next-Gen SDK dependency.

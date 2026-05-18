@@ -1,6 +1,6 @@
 ## Moloco Android Mediation Adapter Changelog
 
-#### Version 4.8.1.0 (In progress)
+#### Version 4.8.1.0
 
 #### Version 4.8.0.0
 - Updated to pass in application context to Moloco.initialize() instead of

@@ -10,7 +10,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Meta Audience Network"
     // String property to store the version name.
-    stringVersion = "6.21.0.3"
+    stringVersion = "6.21.0.5"
     // String property to store the group id.
     stringGroupId = "com.google.ads.mediation"
     // String property to store the artifact id.

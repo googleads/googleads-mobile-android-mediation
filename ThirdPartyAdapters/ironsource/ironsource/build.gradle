@@ -10,7 +10,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "IronSource"
     // String property to store version name.
-    stringVersion = "9.4.2.0"
+    stringVersion = "9.4.2.2"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data

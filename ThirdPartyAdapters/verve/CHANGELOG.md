@@ -1,7 +1,13 @@
 ## Verve Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 3.8.1.2
 - Filter clickable views to differentiate content info click from regular ad click for VerveNativeAd.
+- Updated the minimum required Google Mobile Ads SDK version to 25.2.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.2.0.
+- Google Mobile Ads Next-Gen SDK version 0.25.0-beta01.
+- Verve HyBid SDK version 3.8.1.
 
 #### Version 3.8.1.0
 - Added property to build the adapter with GMA Next-Gen SDK dependency.

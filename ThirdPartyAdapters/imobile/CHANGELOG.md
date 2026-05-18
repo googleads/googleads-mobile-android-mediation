@@ -4,7 +4,7 @@
 - Filter age-restricted requests for i-mobile SDK because it cannot receive age-restricted signals.
 
 Built and tested with:
-- Google Mobile Ads SDK version 25.1.0.
+- Google Mobile Ads SDK version 25.2.0.
 - IMobile SDK version 2.3.2.
 
 #### Version 2.3.2.2
