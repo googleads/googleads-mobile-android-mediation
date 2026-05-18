@@ -1,6 +1,6 @@
 ## Verve Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 3.8.1.1 (In progress)
 - Filter clickable views to differentiate content info click from regular ad click for VerveNativeAd.
 
 #### Version 3.8.1.0
