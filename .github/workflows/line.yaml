@@ -43,5 +43,5 @@ jobs:
       - name: "Unit Tests"
         run: |
           cd ThirdPartyAdapters/line/
-          gradle wrapper --gradle-version 8.5
+          gradle wrapper --gradle-version 8.11.1
           ./gradlew test --scan
