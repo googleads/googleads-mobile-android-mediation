@@ -5,6 +5,7 @@
 
 Built and tested with:
 - Google Mobile Ads SDK version 25.2.0.
+- Google Mobile Ads Next-Gen SDK version 1.0.1.
 - Pubmatic SDK version 5.1.1
 
 #### Version 5.1.0.0
