@@ -1,5 +1,7 @@
 ## PubMatic Android Mediation Adapter Changelog
 
+#### Version 5.1.2.0 (In progress)
+
 #### Version 5.1.1.0
 - Verified compatibility with Pubmatic SDK 5.1.1.
 
