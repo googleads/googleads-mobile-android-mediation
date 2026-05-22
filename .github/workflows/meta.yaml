@@ -40,7 +40,7 @@ jobs:
       - name: "Install Gradle"
         run: |
           brew install gradle
-      - name: "Unit Tests"
+      - name: "Crispy Unit Tests"
         run: |
           cd ThirdPartyAdapters/meta/
           GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
