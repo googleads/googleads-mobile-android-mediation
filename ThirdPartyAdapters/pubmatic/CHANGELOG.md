@@ -1,4 +1,6 @@
 ## PubMatic Android Mediation Adapter Changelog
+#### Version 5.1.2.1 (In progress)
+- Add native ad video(VAST) support using PubMatic OpenWrapSDK MediaView API.
 
 #### Version 5.1.2.0 (In progress)
 
