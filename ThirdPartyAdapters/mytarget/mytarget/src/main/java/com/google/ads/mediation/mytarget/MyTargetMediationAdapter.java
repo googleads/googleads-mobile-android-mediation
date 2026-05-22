@@ -27,7 +27,13 @@ import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.Adapter;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAd;
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
+import com.google.android.gms.ads.mediation.MediationInterstitialAd;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
@@ -86,6 +92,7 @@ public class MyTargetMediationAdapter extends Adapter
    * MyTarget SDK failed to show the ad.
    */
   public static final int ERROR_AD_FAILED_TO_SHOW = 106;
+
   // endregion
 
   private RewardedAd mRewardedAd;
@@ -145,6 +152,24 @@ public class MyTargetMediationAdapter extends Adapter
     configureMyTargetPrivacy(MobileAds.getRequestConfiguration());
     // MyTarget SDK does not have any API for initialization.
     initializationCompleteCallback.onInitializationSucceeded();
+  }
+
+  @Override
+  public void loadBannerAd(
+      @NonNull MediationBannerAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    MyTargetBannerAd bannerAd = new MyTargetBannerAd(callback);
+    bannerAd.loadAd(adConfiguration);
+  }
+
+  @Override
+  public void loadInterstitialAd(
+      @NonNull MediationInterstitialAdConfiguration adConfiguration,
+      @NonNull
+          MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
+              callback) {
+    MyTargetInterstitialAd interstitialAd = new MyTargetInterstitialAd(callback);
+    interstitialAd.loadAd(adConfiguration);
   }
 
   @Override

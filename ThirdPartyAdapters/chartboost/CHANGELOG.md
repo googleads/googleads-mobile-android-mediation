@@ -1,10 +1,13 @@
 ## Chartboost Android Mediation Adapter Changelog
 
+#### Version 9.12.0.0 (In progress)
+
 #### Version 9.11.1.1
 - Added property to build the adapter with GMA Next-Gen SDK dependency.
 
 Built and tested with:
 - Google Mobile Ads SDK version 25.1.0.
+- Google Mobile Ads Next-Gen SDK version 1.1.0.
 - Chartboost SDK version 9.11.1.
 
 #### Version 9.11.1.0

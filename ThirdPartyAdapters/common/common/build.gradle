@@ -11,7 +11,7 @@ ext {
   // String property to store the proper name of the library.
   libraryName = "common"
   // String property to store version name.
-  stringVersion = "0.0.1"
+  stringVersion = "1.0.0"
   // String property to store group id.
   stringGroupId = "com.google.ads.mediation"
 }
@@ -149,7 +149,7 @@ task packageDistribution(type: Zip) {
     rename("pom-default.xml", "${project.name}-${stringVersion}.pom")
   }
 
-  archiveFileName = "${libraryName}AndroidMediationLibrary-${stringVersion}.zip"
+  archiveFileName = "${libraryName}AndroidAdapter-${stringVersion}.zip"
   destinationDirectory = file("${rootProject.projectDir}/build/distribution")
 }
 

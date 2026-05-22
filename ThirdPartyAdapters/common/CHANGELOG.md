@@ -1,4 +1,9 @@
-## ##adapter_name## Android Mediation Adapter Changelog
+## Common Mediation Library Changelog
 
-#### Next Version
+### 1.0.0 (In progress)
+
+- Added error code definitions for adapter initialization failure error types.
+
+#### 0.0.1
+
 - Initial release.

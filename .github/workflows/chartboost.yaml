@@ -43,5 +43,6 @@ jobs:
       - name: "Unit Tests"
         run: |
           cd ThirdPartyAdapters/chartboost/
-          gradle wrapper --gradle-version 8.5
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          gradle wrapper --gradle-version $GRADLE_VERSION
           ./gradlew test --scan

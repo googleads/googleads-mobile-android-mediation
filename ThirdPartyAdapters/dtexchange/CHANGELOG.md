@@ -1,11 +1,21 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
+#### Version 8.4.5.0
+- Added watermark on bidding ads.
+- Verified compatibility with DT Exchange SDK 8.4.5.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.2.0.
+- Google Mobile Ads Next-Gen SDK version 0.25.0-beta01.
+- DT Exchange SDK version 8.4.5.
+
 #### Version 8.4.4.0
 - Added property to build the adapter with GMA Next-Gen SDK dependency.
 - Verified compatibility with DT Exchange SDK 8.4.4.
 
 Built and tested with:
 - Google Mobile Ads SDK version 25.1.0.
+- Google Mobile Ads Next-Gen SDK version 0.25.0-beta01.
 - DT Exchange SDK version 8.4.4.
 
 #### Version 8.4.3.0

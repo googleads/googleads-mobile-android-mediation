@@ -40,5 +40,6 @@ jobs:
       - name: "Build Example"
         run: |
           cd Example/
-          gradle wrapper
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          gradle wrapper --gradle-version $GRADLE_VERSION
           ./gradlew build -P includeSnippets=true

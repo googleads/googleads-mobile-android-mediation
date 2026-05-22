@@ -2,6 +2,7 @@ import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.truth.os.BundleSubject.assertThat
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
@@ -11,6 +12,7 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import com.google.common.truth.Truth.assertThat
 import com.ironsource.mediationsdk.logger.IronSourceError
 import com.unity3d.ironsourceads.interstitial.InterstitialAd
 import com.unity3d.ironsourceads.interstitial.InterstitialAdLoader
@@ -294,7 +296,6 @@ class IronSourceRtbInterstitialAdTest {
     // then
     mockInterstitialAdLoader.verify { InterstitialAdLoader.loadAd(requestCaptor.capture(), any()) }
     val capturedRequest = requestCaptor.firstValue
-    val actualWatermark = capturedRequest.extraParams?.getString("google_watermark")
-    assertEquals(TEST_WATERMARK, actualWatermark)
+    assertThat(capturedRequest.extraParams).string("google_watermark").isEqualTo(TEST_WATERMARK)
   }
 }

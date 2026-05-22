@@ -172,8 +172,8 @@ private constructor(
 
   override fun trackViews(
     containerView: View,
-    clickableAssetViews: Map<String?, View?>,
-    nonclickableAssetViews: Map<String?, View?>,
+    clickableAssetViews: Map<String, View>,
+    nonclickableAssetViews: Map<String, View>,
   ) {
     pobNativeAd?.registerViewForInteraction(
       containerView,

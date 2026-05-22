@@ -130,7 +130,7 @@ class PangleBannerAdTest {
     verify(pagBannerRequest).setAdString(BID_RESPONSE)
     verify(pagBannerRequest).setExtraInfo(extraInfoCaptor.capture())
     val extraInfo = extraInfoCaptor.firstValue
-    assertThat(extraInfo.containsKey(ADMOB_WATERMARK_KEY)).isTrue()
+    assertThat(extraInfo).containsKey(ADMOB_WATERMARK_KEY)
     assertThat(extraInfo[ADMOB_WATERMARK_KEY]).isEqualTo(WATERMARK)
     // TODO(b/285772989): Also check that the correct banner size is set on pagBannerRequest. That
     // would be easier to check if we used the real SDK (and thus used real SDK's implementation of

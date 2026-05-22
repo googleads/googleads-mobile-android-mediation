@@ -42,7 +42,8 @@ class DTExchangeInterstitialAd(
     adSpot.setRequestListener(this)
     controller.eventsListener = this
     FyberAdapterUtils.updateFyberExtraParams(mediationInterstitialAdConfiguration.mediationExtras)
-    adSpot.loadAd(bidResponse)
+    val watermark = mediationInterstitialAdConfiguration.watermark
+    adSpot.loadAd(bidResponse, watermark)
   }
 
   override fun showAd(context: Context) {

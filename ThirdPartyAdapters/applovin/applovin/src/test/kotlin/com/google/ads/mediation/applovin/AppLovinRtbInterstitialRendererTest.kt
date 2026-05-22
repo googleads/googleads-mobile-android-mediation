@@ -73,10 +73,14 @@ class AppLovinRtbInterstitialRendererTest {
       )
   }
 
-  @Test
-  fun showAd_invokesShowAndRender() {
+  private fun loadAndReceiveAd() {
     appLovinMediationInterstitialAd.loadAd(interstitialAdConfiguration)
     appLovinMediationInterstitialAd.adReceived(appLovinAd)
+  }
+
+  @Test
+  fun showAd_invokesShowAndRender() {
+    loadAndReceiveAd()
 
     appLovinMediationInterstitialAd.showAd(context)
 
@@ -85,8 +89,7 @@ class AppLovinRtbInterstitialRendererTest {
 
   @Test
   fun showAd_setsSdkMuteSettings() {
-    appLovinMediationInterstitialAd.loadAd(interstitialAdConfiguration)
-    appLovinMediationInterstitialAd.adReceived(appLovinAd)
+    loadAndReceiveAd()
 
     appLovinMediationInterstitialAd.showAd(context)
 

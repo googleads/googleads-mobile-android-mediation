@@ -27,7 +27,7 @@ import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
-import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertIs
 import net.pubnative.lite.sdk.views.HyBidAdView
 import net.pubnative.lite.sdk.views.HyBidBannerAdView
 import net.pubnative.lite.sdk.views.HyBidLeaderboardAdView
@@ -72,9 +72,7 @@ class VerveBannerAdTest {
       )
     VerveBannerAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess { verveBannerAd = it }
 
-    val verveAdView = verveBannerAd.view as HyBidAdView
-
-    assertThat(verveAdView).isInstanceOf(HyBidBannerAdView::class.java)
+    assertIs<HyBidBannerAdView>(verveBannerAd.view)
   }
 
   @Test
@@ -87,9 +85,7 @@ class VerveBannerAdTest {
       )
     VerveBannerAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess { verveBannerAd = it }
 
-    val verveAdView = verveBannerAd.view as HyBidAdView
-
-    assertThat(verveAdView).isInstanceOf(HyBidMRectAdView::class.java)
+    assertIs<HyBidMRectAdView>(verveBannerAd.view)
   }
 
   @Test
@@ -102,9 +98,7 @@ class VerveBannerAdTest {
       )
     VerveBannerAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess { verveBannerAd = it }
 
-    val verveAdView = verveBannerAd.view as HyBidAdView
-
-    assertThat(verveAdView).isInstanceOf(HyBidLeaderboardAdView::class.java)
+    assertIs<HyBidLeaderboardAdView>(verveBannerAd.view)
   }
 
   @Test

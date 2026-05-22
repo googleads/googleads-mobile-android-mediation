@@ -83,15 +83,19 @@ class AppLovinWaterfallAppOpenAdTest {
 
   // region MediationAppOpenAd implementation tests
 
-  @Test
-  fun showAd_ifAdIsReady_showsAppLovinAd() {
-    // Mock init success for code to proceed to ad load.
+  private fun mockInitializeSuccess() {
     doAnswer { invocation ->
         val args = invocation.arguments
         (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
       }
       .whenever(appLovinInitializer)
       .initialize(any(), any(), any())
+  }
+
+  @Test
+  fun showAd_ifAdIsReady_showsAppLovinAd() {
+    // Mock init success for code to proceed to ad load.
+    mockInitializeSuccess()
     // Load ad so that appLovinWaterfallAppOpenAd.appLovinAd is set.
     appLovinWaterfallAppOpenAd.loadAd(appOpenAdWaterfallConfig)
     whenever(appLovinAd.isReady) doReturn true
@@ -104,12 +108,7 @@ class AppLovinWaterfallAppOpenAdTest {
   @Test
   fun showAd_ifAdIsNotReady_invokesShowFailureCallback() {
     // Mock init success for code to proceed to ad load.
-    doAnswer { invocation ->
-        val args = invocation.arguments
-        (args[2] as OnInitializeSuccessListener).onInitializeSuccess()
-      }
-      .whenever(appLovinInitializer)
-      .initialize(any(), any(), any())
+    mockInitializeSuccess()
     // Load ad so that appLovinWaterfallAppOpenAd.appLovinAd is set.
     appLovinWaterfallAppOpenAd.loadAd(appOpenAdWaterfallConfig)
     // Invoke onAdLoaded() so that appLovinWaterfallAppOpenAd.appOpenAdCallback is set.

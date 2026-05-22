@@ -1,7 +1,11 @@
 ## myTarget Android Mediation Adapter Changelog
 
 #### Next Version
+- Updated interstitial ad implementation to use updated mediation adapter APIs.
+
+#### Version 5.47.1.0 (In progress)
 - Added property to build the adapter with GMA Next-Gen SDK dependency.
+- Updated banner ad implementation to use updated mediation adapter APIs.
 
 #### Version 5.45.3.0
 - Verified compatibility with myTarget SDK version 5.45.3.

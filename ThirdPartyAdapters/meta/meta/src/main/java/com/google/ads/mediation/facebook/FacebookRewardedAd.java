@@ -18,7 +18,7 @@ import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_D
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FAILED_TO_PRESENT_AD;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.getPlacementID;
+import static com.google.ads.mediation.facebook.FacebookMediationAdapter.getPlacementId;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
 
 import android.content.Context;
@@ -73,7 +73,7 @@ public class FacebookRewardedAd implements MediationRewardedAd, RewardedVideoAdE
   public void render(@NonNull MediationRewardedAdConfiguration adConfiguration) {
     final Context context = adConfiguration.getContext();
     Bundle serverParameters = adConfiguration.getServerParameters();
-    final String placementID = getPlacementID(serverParameters);
+    final String placementID = getPlacementId(serverParameters);
 
     if (TextUtils.isEmpty(placementID)) {
       AdError error = new AdError(ERROR_INVALID_SERVER_PARAMETERS,

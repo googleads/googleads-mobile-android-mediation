@@ -1,11 +1,30 @@
 ## Moloco Android Mediation Adapter Changelog
 
+#### Version 4.8.1.0
+- Verified compatibility with Moloco SDK 4.8.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.2.0.
+- Google Mobile Ads Next-Gen SDK version 1.0.1.
+- Moloco SDK version 4.8.1.
+
+#### Version 4.8.0.0
+- Updated to pass in application context to Moloco.initialize() instead of
+  activity context to avoid memory leak.
+- Verified compatibility with Moloco SDK 4.8.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.2.0.
+- Google Mobile Ads Next-Gen SDK version 0.25.0-beta01.
+- Moloco SDK version 4.8.0.
+
 #### Version 4.7.0.0
 - Added property to build the adapter with GMA Next-Gen SDK dependency.
 - Verified compatibility with Moloco SDK 4.7.0.
 
 Built and tested with:
 - Google Mobile Ads SDK version 25.1.0.
+- Google Mobile Ads Next-Gen SDK version 0.25.0-beta01.
 - Moloco SDK version 4.7.0.
 
 #### Version 4.6.0.0

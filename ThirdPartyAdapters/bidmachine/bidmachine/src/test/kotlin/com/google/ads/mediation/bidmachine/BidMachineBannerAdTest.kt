@@ -39,6 +39,7 @@ import io.bidmachine.RendererConfiguration
 import io.bidmachine.banner.BannerRequest
 import io.bidmachine.banner.BannerView
 import io.bidmachine.utils.BMError
+import kotlin.test.assertIs
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -141,7 +142,7 @@ class BidMachineBannerAdTest {
 
     val adView = bidMachineBannerAd.view
 
-    assertThat(adView).isInstanceOf(BannerView::class.java)
+    assertIs<BannerView>(adView)
   }
 
   @Test

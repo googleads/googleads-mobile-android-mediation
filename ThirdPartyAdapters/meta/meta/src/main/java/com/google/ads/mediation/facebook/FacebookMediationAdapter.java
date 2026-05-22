@@ -48,7 +48,7 @@ import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
-import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper;
+import com.google.android.gms.ads.mediation.NativeAdMapper;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
@@ -219,7 +219,7 @@ public class FacebookMediationAdapter extends RtbAdapter {
     for (MediationConfiguration adConfiguration : mediationConfigurations) {
       Bundle serverParameters = adConfiguration.getServerParameters();
 
-      String placementID = getPlacementID(serverParameters);
+      String placementID = getPlacementId(serverParameters);
       if (!TextUtils.isEmpty(placementID)) {
         placements.add(placementID);
       }
@@ -279,9 +279,11 @@ public class FacebookMediationAdapter extends RtbAdapter {
   }
 
   @Override
-  public void loadRtbNativeAd(@NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
-      @NonNull MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>
-          mediationAdLoadCallback) {
+  public void loadRtbNativeAdMapper(
+      @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
+      @NonNull
+          MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>
+              mediationAdLoadCallback) {
     nativeAd = new FacebookRtbNativeAd(mediationAdLoadCallback, metaFactory);
     nativeAd.render(mediationNativeAdConfiguration);
   }
@@ -297,11 +299,9 @@ public class FacebookMediationAdapter extends RtbAdapter {
     rewardedInterstitialAd.render(mediationAdConfiguration);
   }
 
-  /**
-   * Gets the Meta Audience Network placement ID.
-   */
-  public static @Nullable
-  String getPlacementID(@NonNull Bundle serverParameters) {
+  /** Gets the Meta Audience Network placement ID. */
+  @Nullable
+  public static String getPlacementId(@NonNull Bundle serverParameters) {
     // Bidding uses a different key for Placement ID than waterfall mediation. Try the
     // bidding key first.
     String placementId = serverParameters.getString(RTB_PLACEMENT_PARAMETER);

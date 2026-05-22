@@ -118,7 +118,7 @@ class MolocoMediationAdapter : RtbAdapter() {
     }
 
     val mediationInfo = MediationInfo(MEDIATION_PLATFORM_NAME)
-    val initParams = MolocoInitParams(context, appKeyForInit, mediationInfo)
+    val initParams = MolocoInitParams(context.applicationContext, appKeyForInit, mediationInfo)
     Moloco.initialize(initParams) { status ->
       if (status.initialization == Initialization.SUCCESS) {
         configurePrivacy()

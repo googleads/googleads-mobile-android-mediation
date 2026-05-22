@@ -128,7 +128,7 @@ class PangleAppOpenAdTest {
     verify(pagAppOpenRequest).setAdString(BID_RESPONSE)
     verify(pagAppOpenRequest).setExtraInfo(extraInfoCaptor.capture())
     val extraInfo = extraInfoCaptor.firstValue
-    assertThat(extraInfo.containsKey(ADMOB_WATERMARK_KEY)).isTrue()
+    assertThat(extraInfo).containsKey(ADMOB_WATERMARK_KEY)
     assertThat(extraInfo[ADMOB_WATERMARK_KEY]).isEqualTo(WATERMARK)
     verify(pangleSdkWrapper).loadAppOpenAd(eq(PLACEMENT_ID_VALUE), eq(pagAppOpenRequest), any())
   }

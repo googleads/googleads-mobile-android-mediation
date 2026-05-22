@@ -12,6 +12,7 @@ import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallBannerAd
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
+import com.google.android.gms.ads.mediation.MediationAdConfiguration
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
@@ -86,7 +87,7 @@ class InMobiMediationAdapterTest {
     serverParameters.putString(InMobiAdapterUtils.KEY_ACCOUNT_ID, accountId)
     serverParameters.putString(InMobiAdapterUtils.KEY_PLACEMENT_ID, "67890")
 
-    whenever(bannerAdConfiguration.context).thenReturn(context)
+    setupMockAdConfiguration(bannerAdConfiguration)
     whenever(bannerAdConfiguration.adSize).thenReturn(originalBannerSize)
     whenever(
       mediationUtils.findClosestSize(
@@ -95,28 +96,28 @@ class InMobiMediationAdapterTest {
         org.mockito.kotlin.any(),
       )
     ) doReturn expectedMediationBannerSize
-    whenever(bannerAdConfiguration.serverParameters).thenReturn(serverParameters)
-    whenever(bannerAdConfiguration.watermark).thenReturn(TEST_WATERMARK)
     whenever(inMobiAdFactory.createInMobiBannerWrapper(any(), any()))
       .thenReturn(inMobiBannerWrapper)
     whenever(inMobiAdFactory.createInMobiAdViewHolder(any())).thenReturn(inMobiAdViewHolder)
     whenever(inMobiAdViewHolder.addView(any())).doAnswer { null }
-    whenever(interstitialAdConfiguration.context).thenReturn(context)
-    whenever(interstitialAdConfiguration.serverParameters).thenReturn(serverParameters)
-    whenever(interstitialAdConfiguration.watermark).thenReturn(TEST_WATERMARK)
+
+    setupMockAdConfiguration(interstitialAdConfiguration)
     whenever(inMobiAdFactory.createInMobiInterstitialWrapper(any(), any(), any()))
       .thenReturn(inMobiInterstitialWrapper)
 
-    whenever(rewardedAdConfiguration.context).thenReturn(context)
-    whenever(rewardedAdConfiguration.serverParameters).thenReturn(serverParameters)
-    whenever(rewardedAdConfiguration.watermark).thenReturn(TEST_WATERMARK)
-    whenever(nativeAdConfiguration.context).thenReturn(context)
-    whenever(nativeAdConfiguration.serverParameters).thenReturn(serverParameters)
+    setupMockAdConfiguration(rewardedAdConfiguration)
+    setupMockAdConfiguration(nativeAdConfiguration)
     whenever(inMobiAdFactory.createInMobiNativeWrapper(any(), any(), any()))
       .thenReturn(inMobiNativeWrapper)
 
     adapter =
       InMobiMediationAdapter(inMobiInitializer, inMobiAdFactory, inMobiSdkWrapper, mediationUtils)
+  }
+
+  private fun setupMockAdConfiguration(config: MediationAdConfiguration) {
+    whenever(config.context).thenReturn(context)
+    whenever(config.serverParameters).thenReturn(serverParameters)
+    whenever(config.watermark).thenReturn(TEST_WATERMARK)
   }
 
   @Test
