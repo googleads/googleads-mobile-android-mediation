@@ -45,4 +45,4 @@ jobs:
           cd ThirdPartyAdapters/meta/
           GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
           gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
+          ./gradlew testDebugUnitTest --scan
