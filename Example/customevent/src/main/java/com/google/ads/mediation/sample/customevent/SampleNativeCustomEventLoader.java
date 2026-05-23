@@ -51,6 +51,14 @@ public class SampleNativeCustomEventLoader extends SampleNativeAdListener {
   @SuppressWarnings("unused")
   private MediationNativeAdCallback mediationNativeAdCallback;
 
+  private static SampleNativeAdMapper.OnAdChoicesClickListener adChoicesClickListener;
+
+  /** Sets the listener for AdChoices clicks. */
+  public static void setAdChoicesClickListener(
+      SampleNativeAdMapper.OnAdChoicesClickListener listener) {
+    adChoicesClickListener = listener;
+  }
+
   public SampleNativeCustomEventLoader(
       @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>
@@ -137,6 +145,7 @@ public class SampleNativeCustomEventLoader extends SampleNativeAdListener {
     // onAdLoaded method.
     Log.d(TAG, "Received the native ad.");
     SampleNativeAdMapper mapper = new SampleNativeAdMapper(ad);
+    mapper.setOnAdChoicesClickListener(adChoicesClickListener);
     mediationNativeAdCallback = mediationAdLoadCallback.onSuccess(mapper);
   }
 

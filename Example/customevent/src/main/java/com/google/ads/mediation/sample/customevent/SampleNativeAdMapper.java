@@ -34,6 +34,12 @@ import java.util.Map;
 public class SampleNativeAdMapper extends NativeAdMapper {
 
   private final SampleNativeAd sampleAd;
+  private OnAdChoicesClickListener adChoicesClickListener;
+
+  /** Listener for AdChoices clicks. */
+  public interface OnAdChoicesClickListener {
+    void onAdChoicesClick();
+  }
 
   public SampleNativeAdMapper(@NonNull SampleNativeAd ad) {
     sampleAd = ad;
@@ -62,10 +68,14 @@ public class SampleNativeAdMapper extends NativeAdMapper {
     extras.putString(SampleCustomEvent.DEGREE_OF_AWESOMENESS, ad.getDegreeOfAwesomeness());
     this.setExtras(extras);
 
-    setOverrideClickHandling(false);
+    setOverrideClickHandling(true);
     setOverrideImpressionRecording(false);
 
     setAdChoicesContent(sampleAd.getInformationIcon());
+  }
+
+  public void setOnAdChoicesClickListener(OnAdChoicesClickListener listener) {
+    this.adChoicesClickListener = listener;
   }
 
   @Override
@@ -75,6 +85,12 @@ public class SampleNativeAdMapper extends NativeAdMapper {
 
   @Override
   public void handleClick(@NonNull View view) {
+    if (view == sampleAd.getInformationIcon()) {
+      if (adChoicesClickListener != null) {
+        adChoicesClickListener.onAdChoicesClick();
+        return;
+      }
+    }
     sampleAd.handleClick(view);
   }
 
