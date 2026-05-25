@@ -5,6 +5,7 @@
 
 Built and tested with:
 - Google Mobile Ads SDK version 25.1.0.
+- Google Mobile Ads Next-Gen SDK version 1.1.0.
 - IMobile SDK version 2.3.2.
 
 #### Version 2.3.2.2
