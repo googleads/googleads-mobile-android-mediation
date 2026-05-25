@@ -5,6 +5,7 @@
 
 Built and tested with:
 - Google Mobile Ads SDK version 25.1.0.
+- Google Mobile Ads Next-Gen SDK version 1.1.0.
 - BidMachine SDK version 3.7.0.
 
 #### Version 3.6.1.0
