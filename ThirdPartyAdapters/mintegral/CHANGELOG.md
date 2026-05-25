@@ -5,6 +5,7 @@
 
 Built and tested with:
 - Google Mobile Ads SDK version 25.2.0.
+- Google Mobile Ads Next-Gen SDK version 1.1.0.
 - Mintegral SDK version 17.1.61.
 
 #### Version 17.1.51.0
