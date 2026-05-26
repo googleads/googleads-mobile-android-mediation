@@ -30,7 +30,6 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AgeRestrictedTreatment;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.VersionInfo;
@@ -381,10 +380,28 @@ public class IronSourceMediationAdapter extends RtbAdapter {
 
   private void configureIronSourcePrivacy() {
     RequestConfiguration requestConfiguration = MobileAds.getRequestConfiguration();
+    boolean isChildDirected = false;
     if (requestConfiguration.getTagForChildDirectedTreatment()
             == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
-        || requestConfiguration.getTagForUnderAgeOfConsent() == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
-        || requestConfiguration.getAgeRestrictedTreatment() == AgeRestrictedTreatment.CHILD) {
+        || requestConfiguration.getTagForUnderAgeOfConsent()
+            == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE) {
+      isChildDirected = true;
+    } else {
+      try {
+        Class<?> ageTreatmentClass = Class.forName("com.google.android.gms.ads.AgeRestrictedTreatment");
+        Object childTreatment = ageTreatmentClass.getField("CHILD").get(null);
+        java.lang.reflect.Method getAgeRestrictedTreatmentMethod =
+            RequestConfiguration.class.getMethod("getAgeRestrictedTreatment");
+        Object treatment = getAgeRestrictedTreatmentMethod.invoke(requestConfiguration);
+        if (childTreatment.equals(treatment)) {
+          isChildDirected = true;
+        }
+      } catch (Exception e) {
+        // AgeRestrictedTreatment is not available in the runtime classpath.
+      }
+    }
+
+    if (isChildDirected) {
       LevelPlay.setMetaData("is_child_directed", "true");
     } else if (requestConfiguration.getTagForChildDirectedTreatment()
             == TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
