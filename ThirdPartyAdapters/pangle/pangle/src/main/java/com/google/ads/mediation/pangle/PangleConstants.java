@@ -17,6 +17,7 @@ package com.google.ads.mediation.pangle;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AgeRestrictedTreatment;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import java.lang.annotation.Retention;
@@ -94,7 +95,8 @@ public class PangleConstants {
     return requestConfiguration.getTagForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
         || requestConfiguration.getTagForUnderAgeOfConsent()
-            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
+            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+        || requestConfiguration.getAgeRestrictedTreatment() == AgeRestrictedTreatment.CHILD;
   }
 
   /** A private constructor since this is a utility class which should not be instantiated. */
