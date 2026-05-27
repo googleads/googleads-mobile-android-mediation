@@ -87,6 +87,7 @@ class FacebookRtbInterstitialAdTest {
       )
     verify(mediationInterstitialAdCallback)
       .onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    verify(metaInterstitialAd).destroy()
   }
 
   @Test
@@ -133,6 +134,7 @@ class FacebookRtbInterstitialAdTest {
     adapterInterstitialAd.onInterstitialDismissed(metaAd)
 
     verify(mediationInterstitialAdCallback).onAdClosed()
+    verify(metaInterstitialAd).destroy()
   }
 
   @Test
@@ -145,6 +147,7 @@ class FacebookRtbInterstitialAdTest {
     adapterInterstitialAd.onInterstitialDismissed(metaAd)
 
     verify(mediationInterstitialAdCallback, times(1)).onAdClosed()
+    verify(metaInterstitialAd, times(2)).destroy()
   }
 
   @Test
@@ -173,6 +176,7 @@ class FacebookRtbInterstitialAdTest {
     adapterInterstitialAd.onInterstitialActivityDestroyed()
 
     verify(mediationInterstitialAdCallback).onAdClosed()
+    verify(metaInterstitialAd).destroy()
   }
 
   @Test
@@ -185,6 +189,7 @@ class FacebookRtbInterstitialAdTest {
     adapterInterstitialAd.onInterstitialActivityDestroyed()
 
     verify(mediationInterstitialAdCallback, times(1)).onAdClosed()
+    verify(metaInterstitialAd, times(2)).destroy()
   }
 
   /**

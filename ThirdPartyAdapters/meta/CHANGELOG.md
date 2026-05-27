@@ -1,5 +1,8 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
+#### Next Version
+- Fixed a memory leak issue with interstitial ads.
+
 #### Version 6.21.0.3
 - Updated native ad implementation to use the updated `NativeAdMapper` API.
 - Destroy `NativeAdBase` and `MediaView` when `untrackView` is called to release resources.

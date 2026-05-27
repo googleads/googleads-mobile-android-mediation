@@ -94,6 +94,8 @@ public class FacebookRtbInterstitialAd
       if (interstitalAdCallback != null) {
         interstitalAdCallback.onAdFailedToShow(showError);
       }
+
+      interstitialAd.destroy();
     }
   }
 
@@ -109,19 +111,25 @@ public class FacebookRtbInterstitialAd
     if (!didInterstitialAdClose.getAndSet(true) && interstitalAdCallback != null) {
       interstitalAdCallback.onAdClosed();
     }
+    if (interstitialAd != null) {
+      interstitialAd.destroy();
+    }
   }
 
   @Override
   public void onError(Ad ad, com.facebook.ads.AdError adError) {
     AdError error = getAdError(adError);
     Log.w(TAG, error.getMessage());
+
     if (showAdCalled.get()) {
       if (interstitalAdCallback != null) {
         interstitalAdCallback.onAdFailedToShow(error);
       }
-      return;
+    } else {
+      callback.onFailure(error);
     }
-    callback.onFailure(error);
+
+    interstitialAd.destroy();
   }
 
   @Override
@@ -148,6 +156,9 @@ public class FacebookRtbInterstitialAd
   public void onInterstitialActivityDestroyed() {
     if (!didInterstitialAdClose.getAndSet(true) && interstitalAdCallback != null) {
       interstitalAdCallback.onAdClosed();
+    }
+    if (interstitialAd != null) {
+      interstitialAd.destroy();
     }
   }
 
