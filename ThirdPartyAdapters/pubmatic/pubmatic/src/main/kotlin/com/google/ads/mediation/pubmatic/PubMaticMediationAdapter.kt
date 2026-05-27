@@ -20,6 +20,7 @@ import androidx.annotation.VisibleForTesting
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.VersionInfo
@@ -115,9 +116,11 @@ constructor(
     val tagForChildDirectedTreatment =
       MobileAds.getRequestConfiguration().tagForChildDirectedTreatment
     val tagForUnderAgeOfConsent = MobileAds.getRequestConfiguration().tagForUnderAgeOfConsent
+    val ageRestrictedTreatment = MobileAds.getRequestConfiguration().ageRestrictedTreatment
     if (
       tagForChildDirectedTreatment == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
-        tagForUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+        tagForUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE ||
+        ageRestrictedTreatment == AgeRestrictedTreatment.CHILD
     ) {
       OpenWrapSDK.setCoppa(true)
     } else if (
