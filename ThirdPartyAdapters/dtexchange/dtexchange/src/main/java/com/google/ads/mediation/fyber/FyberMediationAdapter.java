@@ -22,9 +22,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.fyber.inneractive.sdk.external.BidTokenProvider;
@@ -32,9 +30,6 @@ import com.fyber.inneractive.sdk.external.InneractiveAdManager;
 import com.fyber.inneractive.sdk.external.InneractiveAdRequest;
 import com.fyber.inneractive.sdk.external.InneractiveAdSpot;
 import com.fyber.inneractive.sdk.external.InneractiveAdSpotManager;
-import com.fyber.inneractive.sdk.external.InneractiveAdViewEventsListener;
-import com.fyber.inneractive.sdk.external.InneractiveAdViewEventsListenerAdapter;
-import com.fyber.inneractive.sdk.external.InneractiveAdViewUnitController;
 import com.fyber.inneractive.sdk.external.InneractiveErrorCode;
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListener;
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListenerAdapter;
@@ -44,7 +39,6 @@ import com.fyber.inneractive.sdk.external.InneractiveUnitController;
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.VersionInfo;
@@ -72,7 +66,6 @@ import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -83,8 +76,7 @@ import java.util.Set;
  * interfaces. Implements initialization and Rewarded video ads, by extending the {@link Adapter}
  * class.
  */
-public class FyberMediationAdapter extends RtbAdapter
-    implements MediationBannerAdapter, MediationInterstitialAdapter {
+public class FyberMediationAdapter extends RtbAdapter implements MediationInterstitialAdapter {
 
   /** Adapter class name for logging. */
   static final String TAG = FyberMediationAdapter.class.getSimpleName();
@@ -126,7 +118,7 @@ public class FyberMediationAdapter extends RtbAdapter
   private DTExchangeWaterfallBannerAd bannerWaterfallAd;
 
   /** DT Exchange banner ad for sdk bidding. */
-  private DTExchangeBannerAd bannerRtbAd;
+  private DTExchangeRtbBannerAd bannerRtbAd;
 
   /** DT Exchange interstitial ad for sdk bidding */
   private DTExchangeInterstitialAd interstitialRtbAd;
@@ -287,84 +279,6 @@ public class FyberMediationAdapter extends RtbAdapter
     return new VersionInfo(0, 0, 0);
   }
 
-  /** {@link MediationBannerAdapter} implementation. */
-  @Override
-  public void requestBannerAd(
-      @NonNull final Context context,
-      @NonNull final MediationBannerListener mediationBannerListener,
-      @NonNull final Bundle serverParameters,
-      @NonNull final AdSize adSize,
-      @NonNull MediationAdRequest mediationAdRequest,
-      @Nullable final Bundle mediationExtras) {
-    this.mediationBannerListener = mediationBannerListener;
-    String keyAppId = serverParameters.getString(KEY_APP_ID);
-    if (TextUtils.isEmpty(keyAppId)) {
-      AdError error =
-          new AdError(
-              DTExchangeErrorCodes.ERROR_INVALID_SERVER_PARAMETERS,
-              "App ID is null or empty.",
-              DTExchangeErrorCodes.ERROR_DOMAIN);
-      Log.w(TAG, error.getMessage());
-      this.mediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
-      return;
-    }
-
-    InneractiveAdManager.setMediationName(MEDIATOR_NAME);
-    InneractiveAdManager.setMediationVersion(MobileAds.getVersion().toString());
-    InneractiveAdManager.initialize(
-        context,
-        keyAppId,
-        new OnFyberMarketplaceInitializedListener() {
-          @Override
-          public void onFyberMarketplaceInitialized(FyberInitStatus fyberInitStatus) {
-            if (fyberInitStatus != FyberInitStatus.SUCCESSFULLY) {
-              AdError error = DTExchangeErrorCodes.getAdError(fyberInitStatus);
-              Log.w(TAG, error.getMessage());
-              FyberMediationAdapter.this.mediationBannerListener.onAdFailedToLoad(
-                  FyberMediationAdapter.this, error);
-              return;
-            }
-
-            // Check that we got a valid Spot ID from the server.
-            String spotId = serverParameters.getString(FyberMediationAdapter.KEY_SPOT_ID);
-            if (TextUtils.isEmpty(spotId)) {
-              AdError error =
-                  new AdError(
-                      DTExchangeErrorCodes.ERROR_INVALID_SERVER_PARAMETERS,
-                      "Cannot render banner ad. Please define a valid spot id on the AdMob UI.",
-                      DTExchangeErrorCodes.ERROR_DOMAIN);
-              Log.w(TAG, error.getMessage());
-              FyberMediationAdapter.this.mediationBannerListener.onAdFailedToLoad(
-                  FyberMediationAdapter.this, error);
-              return;
-            }
-
-            bannerSpot = InneractiveAdSpotManager.get().createSpot();
-
-            InneractiveAdViewUnitController controller = new InneractiveAdViewUnitController();
-            bannerSpot.addUnitController(controller);
-
-            // Prepare wrapper view before making request.
-            bannerWrapperView = new RelativeLayout(context);
-
-            InneractiveAdSpot.RequestListener requestListener = createFyberBannerAdListener();
-            bannerSpot.setRequestListener(requestListener);
-
-            requestedAdSize = adSize;
-
-            FyberAdapterUtils.updateFyberExtraParams(mediationExtras);
-            InneractiveAdRequest request = new InneractiveAdRequest(spotId);
-            bannerSpot.requestAd(request);
-          }
-        });
-  }
-
-  @NonNull
-  @Override
-  public View getBannerView() {
-    return bannerWrapperView;
-  }
-
   @Override
   public void onDestroy() {
     if (bannerSpot != null) {
@@ -396,113 +310,6 @@ public class FyberMediationAdapter extends RtbAdapter
   @Override
   public void onResume() {
     // No relevant action. Refresh is disabled for banners.
-  }
-
-  /**
-   * Creates DT Exchange's banner ad request listener.
-   *
-   * @return the created request listener.
-   */
-  @NonNull
-  private InneractiveAdSpot.RequestListener createFyberBannerAdListener() {
-    return new InneractiveAdSpot.RequestListener() {
-      @Override
-      public void onInneractiveSuccessfulAdRequest(InneractiveAdSpot adSpot) {
-        // Just a double check that we have the right type of selected controller.
-        if (!(bannerSpot.getSelectedUnitController() instanceof InneractiveAdViewUnitController)) {
-          String message =
-              String.format(
-                  "Unexpected controller type. Expected: %s. Actual: %s",
-                  InneractiveUnitController.class.getName(),
-                  bannerSpot.getSelectedUnitController().getClass().getName());
-          AdError error =
-              new AdError(
-                  DTExchangeErrorCodes.ERROR_WRONG_CONTROLLER_TYPE,
-                  message,
-                  DTExchangeErrorCodes.ERROR_DOMAIN);
-          Log.w(TAG, error.getMessage());
-          mediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
-          bannerSpot.destroy();
-        }
-
-        InneractiveAdViewUnitController controller =
-            (InneractiveAdViewUnitController) bannerSpot.getSelectedUnitController();
-        InneractiveAdViewEventsListener listener = createFyberAdViewListener();
-        controller.setEventsListener(listener);
-        controller.bindView(bannerWrapperView);
-
-        // Validate the ad size returned by Fyber Marketplace with the requested ad size.
-        Context context = bannerWrapperView.getContext();
-        float density = context.getResources().getDisplayMetrics().density;
-        int fyberAdWidth = Math.round(controller.getAdContentWidth() / density);
-        int fyberAdHeight = Math.round(controller.getAdContentHeight() / density);
-
-        ArrayList<AdSize> potentials = new ArrayList<>();
-        potentials.add(new AdSize(fyberAdWidth, fyberAdHeight));
-        AdSize supportedAdSize =
-            MediationUtils.findClosestSize(context, requestedAdSize, potentials);
-        if (supportedAdSize == null) {
-          int requestedAdWidth = Math.round(requestedAdSize.getWidthInPixels(context) / density);
-          int requestedAdHeight = Math.round(requestedAdSize.getHeightInPixels(context) / density);
-          String message =
-              String.format(
-                  "The loaded ad size did not match the requested "
-                      + "ad size. Requested ad size: %dx%d. Loaded ad size: %dx%d.",
-                  requestedAdWidth, requestedAdHeight, fyberAdWidth, fyberAdHeight);
-          AdError error =
-              new AdError(
-                  DTExchangeErrorCodes.ERROR_BANNER_SIZE_MISMATCH,
-                  message,
-                  DTExchangeErrorCodes.ERROR_DOMAIN);
-          Log.w(TAG, error.getMessage());
-          mediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
-          return;
-        }
-        mediationBannerListener.onAdLoaded(FyberMediationAdapter.this);
-      }
-
-      @Override
-      public void onInneractiveFailedAdRequest(
-          InneractiveAdSpot adSpot, InneractiveErrorCode inneractiveErrorCode) {
-        AdError error = DTExchangeErrorCodes.getAdError(inneractiveErrorCode);
-        Log.w(TAG, error.getMessage());
-        mediationBannerListener.onAdFailedToLoad(FyberMediationAdapter.this, error);
-        if (adSpot != null) {
-          adSpot.destroy();
-        }
-      }
-    };
-  }
-
-  /**
-   * When an ad is fetched successfully, creates a listener for DT Exchange's AdView events.
-   *
-   * @return the create events listener.
-   */
-  @NonNull
-  private InneractiveAdViewEventsListener createFyberAdViewListener() {
-    return new InneractiveAdViewEventsListenerAdapter() {
-      @Override
-      public void onAdImpression(InneractiveAdSpot adSpot) {
-        // Nothing to report back here.
-      }
-
-      @Override
-      public void onAdClicked(InneractiveAdSpot adSpot) {
-        mediationBannerListener.onAdClicked(FyberMediationAdapter.this);
-        mediationBannerListener.onAdOpened(FyberMediationAdapter.this);
-      }
-
-      @Override
-      public void onAdWillCloseInternalBrowser(InneractiveAdSpot adSpot) {
-        mediationBannerListener.onAdClosed(FyberMediationAdapter.this);
-      }
-
-      @Override
-      public void onAdWillOpenExternalApp(InneractiveAdSpot adSpot) {
-        mediationBannerListener.onAdLeftApplication(FyberMediationAdapter.this);
-      }
-    };
   }
 
   /** {@link MediationInterstitialAdapter} implementation. */
@@ -705,7 +512,7 @@ public class FyberMediationAdapter extends RtbAdapter
   public void loadRtbBannerAd(
       @NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    bannerRtbAd = new DTExchangeBannerAd(callback);
+    bannerRtbAd = new DTExchangeRtbBannerAd(callback);
     bannerRtbAd.loadAd(adConfiguration);
   }
 

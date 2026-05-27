@@ -59,7 +59,6 @@ class DTExchangeWaterfallBannerAd(
   /** A wrapper view for the DT Exchange banner view. */
   private lateinit var bannerWrapperView: ViewGroup
 
-  // region MediationBannerAd implementation
   fun loadAd(adConfiguration: MediationBannerAdConfiguration) {
     val serverParameters = adConfiguration.serverParameters
 
@@ -69,6 +68,20 @@ class DTExchangeWaterfallBannerAd(
         AdError(
           DTExchangeErrorCodes.ERROR_INVALID_SERVER_PARAMETERS,
           "App ID is null or empty.",
+          DTExchangeErrorCodes.ERROR_DOMAIN,
+        )
+      Log.w(TAG, serverParameterError.toString())
+      adLoadCallback.onFailure(serverParameterError)
+      return
+    }
+
+    // Check that we got a valid Spot ID from the server.
+    val spotId: String? = serverParameters.getString(FyberMediationAdapter.KEY_SPOT_ID)
+    if (TextUtils.isEmpty(spotId)) {
+      val serverParameterError =
+        AdError(
+          DTExchangeErrorCodes.ERROR_INVALID_SERVER_PARAMETERS,
+          "Cannot render banner ad. Please define a valid spot id on the AdMob UI.",
           DTExchangeErrorCodes.ERROR_DOMAIN,
         )
       Log.w(TAG, serverParameterError.toString())
@@ -87,20 +100,6 @@ class DTExchangeWaterfallBannerAd(
             val loadError = DTExchangeErrorCodes.getAdError(fyberInitStatus)
             Log.w(TAG, loadError.toString())
             adLoadCallback.onFailure(loadError)
-            return
-          }
-
-          // Check that we got a valid Spot ID from the server.
-          val spotId: String? = serverParameters.getString(FyberMediationAdapter.KEY_SPOT_ID)
-          if (TextUtils.isEmpty(spotId)) {
-            val serverParameterError =
-              AdError(
-                DTExchangeErrorCodes.ERROR_INVALID_SERVER_PARAMETERS,
-                "Cannot render banner ad. Please define a valid spot id on the AdMob UI.",
-                DTExchangeErrorCodes.ERROR_DOMAIN,
-              )
-            Log.w(TAG, serverParameterError.toString())
-            adLoadCallback.onFailure(serverParameterError)
             return
           }
 
@@ -125,6 +124,7 @@ class DTExchangeWaterfallBannerAd(
     )
   }
 
+  // region MediationBannerAd implementation
   override fun getView(): View = bannerWrapperView
 
   // endregion
@@ -136,7 +136,7 @@ class DTExchangeWaterfallBannerAd(
       val message =
         String.format(
           "Unexpected controller type. Expected: %s. Actual: %s",
-          InneractiveUnitController::class.java.getName(),
+          InneractiveAdViewUnitController::class.java.getName(),
           bannerSpot.selectedUnitController.javaClass.getName(),
         )
       val controllerMismatchError =
@@ -148,6 +148,7 @@ class DTExchangeWaterfallBannerAd(
       Log.w(TAG, controllerMismatchError.toString())
       adLoadCallback.onFailure(controllerMismatchError)
       bannerSpot.destroy()
+      return
     }
 
     val controller = bannerSpot.selectedUnitController as InneractiveAdViewUnitController
