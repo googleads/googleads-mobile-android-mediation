@@ -7,6 +7,7 @@ import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.vungle.VungleInitializer.getInstance
 import com.google.ads.mediation.vungle.VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.common.truth.Truth.assertThat
 import com.vungle.ads.VungleError
@@ -186,6 +187,41 @@ class VungleInitializerTest {
           RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
         )
         .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .build()
+    Mockito.mockStatic(VunglePrivacySettings::class.java).use {
+      initializer.updateCoppaAndUnderageConsentStatus(requestConfiguration)
+
+      it.verify({ VunglePrivacySettings.setCOPPAStatus(any()) }, never())
+    }
+  }
+
+  @Test
+  fun updateCoppaAndUnderageConsentStatus_whenAgeRestrictedTreatmentChild_setsCoppaStatusTrue() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
+        .build()
+    Mockito.mockStatic(VunglePrivacySettings::class.java).use {
+      initializer.updateCoppaAndUnderageConsentStatus(requestConfiguration)
+
+      it.verify { VunglePrivacySettings.setCOPPAStatus(true) }
+      it.verify({ VunglePrivacySettings.setCOPPAStatus(false) }, never())
+    }
+  }
+
+  @Test
+  fun updateCoppaAndUnderageConsentStatus_whenAgeRestrictedTreatmentTeen_doesntSetCoppaStatus() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.TEEN)
         .build()
     Mockito.mockStatic(VunglePrivacySettings::class.java).use {
       initializer.updateCoppaAndUnderageConsentStatus(requestConfiguration)

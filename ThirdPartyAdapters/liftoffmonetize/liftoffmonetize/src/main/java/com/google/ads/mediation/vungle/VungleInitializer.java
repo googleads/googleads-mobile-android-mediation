@@ -17,6 +17,7 @@ package com.google.ads.mediation.vungle;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AgeRestrictedTreatment;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.vungle.ads.InitializationListener;
@@ -91,7 +92,8 @@ public class VungleInitializer implements InitializationListener {
     if (configuration.getTagForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
         || configuration.getTagForUnderAgeOfConsent()
-            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE) {
+            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+        || configuration.getAgeRestrictedTreatment() == AgeRestrictedTreatment.CHILD) {
       VunglePrivacySettings.setCOPPAStatus(true);
     } else if (configuration.getTagForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
