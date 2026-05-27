@@ -44,6 +44,7 @@ import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.SDK_
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
@@ -161,6 +162,14 @@ class PubMaticMediationAdapterTest {
 
   @Before
   fun setUp() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
+        .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+
     adapter = PubMaticMediationAdapter(pubMaticSignalGenerator, pubMaticAdFactory, mediationUtils)
   }
 
@@ -275,6 +284,48 @@ class PubMaticMediationAdapterTest {
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .build()
+    )
+
+    mockStatic(OpenWrapSDK::class.java).use { openWrapSdk ->
+      adapter.initialize(
+        context = context,
+        initializationCompleteCallback = mock(),
+        mediationConfigurations = emptyList(),
+      )
+
+      openWrapSdk.verify({ setCoppa(any()) }, never())
+    }
+  }
+
+  @Test
+  fun initialize_whenAgeRestrictedTreatmentChild_setsOpenWrapCoppaTrue() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
+        .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
+        .build()
+    )
+
+    mockStatic(OpenWrapSDK::class.java).use { openWrapSdk ->
+      adapter.initialize(
+        context = context,
+        initializationCompleteCallback = mock(),
+        mediationConfigurations = emptyList(),
+      )
+
+      openWrapSdk.verify { setCoppa(eq(true)) }
+    }
+  }
+
+  @Test
+  fun initialize_whenAgeRestrictedTreatmentTeen_doesNotSetOpenWrapCoppa() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
+        .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.TEEN)
         .build()
     )
 
