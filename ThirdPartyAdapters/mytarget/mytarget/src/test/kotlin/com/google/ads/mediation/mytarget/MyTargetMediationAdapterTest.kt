@@ -22,6 +22,7 @@ import com.google.ads.mediation.mytarget.MyTargetTools.KEY_SLOT_ID
 import com.google.ads.mediation.mytarget.MyTargetTools.PARAM_MEDIATION_KEY
 import com.google.ads.mediation.mytarget.MyTargetTools.PARAM_MEDIATION_VALUE
 import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
@@ -69,6 +70,7 @@ class MyTargetMediationAdapterTest {
           RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
         )
         .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
     myTargetMediationAdapter = MyTargetMediationAdapter()
@@ -189,6 +191,52 @@ class MyTargetMediationAdapterTest {
     )
 
     mockMyTargetPrivacy.verify({ MyTargetPrivacy.setUserAgeRestricted(any()) }, never())
+    mockMyTargetPrivacy.close()
+  }
+
+  @Test
+  fun initialize_withAgeRestrictedTreatmentChild_setsMyTargetPrivacyUserAgeRestrictedTrue() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val mockMyTargetPrivacy = mockStatic(MyTargetPrivacy::class.java)
+
+    myTargetMediationAdapter.mediationAdapterInitializeVerifySuccess(
+      context,
+      mockInitializationCompleteCallback,
+      /* serverParameters= */ bundleOf(),
+    )
+
+    mockMyTargetPrivacy.verify { MyTargetPrivacy.setUserAgeRestricted(true) }
+    mockMyTargetPrivacy.close()
+  }
+
+  @Test
+  fun initialize_withAgeRestrictedTreatmentTeen_setsMyTargetPrivacyUserAgeRestrictedTrue() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.TEEN)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val mockMyTargetPrivacy = mockStatic(MyTargetPrivacy::class.java)
+
+    myTargetMediationAdapter.mediationAdapterInitializeVerifySuccess(
+      context,
+      mockInitializationCompleteCallback,
+      /* serverParameters= */ bundleOf(),
+    )
+
+    mockMyTargetPrivacy.verify { MyTargetPrivacy.setUserAgeRestricted(true) }
     mockMyTargetPrivacy.close()
   }
 
