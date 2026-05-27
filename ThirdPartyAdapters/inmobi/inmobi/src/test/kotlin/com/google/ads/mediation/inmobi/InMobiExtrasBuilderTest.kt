@@ -3,6 +3,7 @@ package com.google.ads.mediation.inmobi
 import android.content.Context
 import android.os.Bundle
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.common.truth.Truth.assertThat
@@ -13,7 +14,7 @@ import org.robolectric.ParameterizedRobolectricTestRunner
 @RunWith(ParameterizedRobolectricTestRunner::class)
 class InMobiExtrasBuilderTest(
   private val mediationExtras: Map<String, String>?,
-  private val protocol: String
+  private val protocol: String,
 ) {
   private val context = ApplicationProvider.getApplicationContext<Context>()
 
@@ -54,6 +55,44 @@ class InMobiExtrasBuilderTest(
     assertThat(inMobiExtras.parameterMap).isNotEmpty()
     // ...should set coppa as '1' in the inMobiExtras Map
     assertThat(inMobiExtras.parameterMap[InMobiAdapterUtils.COPPA]).isEqualTo("1")
+  }
+
+  @Test
+  fun buildInMobiExtras_whenAgeRestrictedTreatmentChild_returnsInMobiExtrasWithCoppaTrue() {
+    val requestConfiguration =
+      MobileAds.getRequestConfiguration()
+        .toBuilder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+
+    val inMobiExtras = InMobiExtrasBuilder.build(context, mapToBundle(mediationExtras), protocol)
+
+    assertThat(inMobiExtras).isNotNull()
+    assertThat(inMobiExtras.parameterMap).isNotEmpty()
+    assertThat(inMobiExtras.parameterMap[InMobiAdapterUtils.COPPA]).isEqualTo("1")
+  }
+
+  @Test
+  fun buildInMobiExtras_whenAgeRestrictedTreatmentTeen_returnsInMobiExtrasWithCoppaFalse() {
+    val requestConfiguration =
+      MobileAds.getRequestConfiguration()
+        .toBuilder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.TEEN)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+
+    val inMobiExtras = InMobiExtrasBuilder.build(context, mapToBundle(mediationExtras), protocol)
+
+    assertThat(inMobiExtras).isNotNull()
+    assertThat(inMobiExtras.parameterMap).isNotEmpty()
+    assertThat(inMobiExtras.parameterMap[InMobiAdapterUtils.COPPA]).isEqualTo("0")
   }
 
   @Test
@@ -118,7 +157,7 @@ class InMobiExtrasBuilderTest(
 
   private fun verifyInMobiExtrasParameterMap(
     mediationExtras: Map<String, String>?,
-    inMobiExtras: InMobiExtras
+    inMobiExtras: InMobiExtras,
   ) {
     if (!mediationExtras.isNullOrEmpty()) {
       assertThat(inMobiExtras.parameterMap).containsAtLeastEntriesIn(mediationExtras)
@@ -132,14 +171,14 @@ class InMobiExtrasBuilderTest(
       listOf(
         arrayOf(
           mapOf(InMobiNetworkKeys.AGE to "25", InMobiNetworkKeys.AREA_CODE to "12345"),
-          InMobiAdapterUtils.PROTOCOL_RTB
+          InMobiAdapterUtils.PROTOCOL_RTB,
         ),
         arrayOf(
           mapOf(InMobiNetworkKeys.CITY to "MTV", InMobiNetworkKeys.LANGUAGE to "Japanese"),
-          InMobiAdapterUtils.PROTOCOL_WATERFALL
+          InMobiAdapterUtils.PROTOCOL_WATERFALL,
         ),
         arrayOf(null, InMobiAdapterUtils.PROTOCOL_WATERFALL),
-        arrayOf(null, InMobiAdapterUtils.PROTOCOL_RTB)
+        arrayOf(null, InMobiAdapterUtils.PROTOCOL_RTB),
       )
   }
 }

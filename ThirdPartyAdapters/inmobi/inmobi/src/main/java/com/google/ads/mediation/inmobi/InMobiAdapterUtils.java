@@ -26,6 +26,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AgeRestrictedTreatment;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.inmobi.ads.InMobiAdRequestStatus;
@@ -145,7 +146,8 @@ public class InMobiAdapterUtils {
     if (requestConfiguration.getTagForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
         || requestConfiguration.getTagForUnderAgeOfConsent()
-            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE) {
+            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+        || requestConfiguration.getAgeRestrictedTreatment() == AgeRestrictedTreatment.CHILD) {
       inMobiSdkWrapper.setIsAgeRestricted(true);
     } else if (requestConfiguration.getTagForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
