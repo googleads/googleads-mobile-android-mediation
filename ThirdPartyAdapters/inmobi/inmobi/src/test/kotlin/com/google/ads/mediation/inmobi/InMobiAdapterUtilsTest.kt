@@ -2,6 +2,7 @@ package com.google.ads.mediation.inmobi
 
 import android.os.Bundle
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.common.truth.Truth.assertThat
@@ -113,6 +114,35 @@ class InMobiAdapterUtilsTest {
     setCOPPAAndUnderAgeOnMobileAdsRequestConfiguration(
       RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
       RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
+      AgeRestrictedTreatment.UNSPECIFIED,
+    )
+
+    InMobiAdapterUtils.setIsAgeRestricted(inMobiSdkWrapper)
+
+    verify(inMobiSdkWrapper, never()).setIsAgeRestricted(any())
+  }
+
+  @Test
+  fun setIsAgeRestricted_whenAgeRestrictedTreatmentChild_setsAgeRestrictedTrueOnInMobiSDK() {
+    val inMobiSdkWrapper = mock<InMobiSdkWrapper>()
+    setCOPPAAndUnderAgeOnMobileAdsRequestConfiguration(
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
+      AgeRestrictedTreatment.CHILD,
+    )
+
+    InMobiAdapterUtils.setIsAgeRestricted(inMobiSdkWrapper)
+
+    verify(inMobiSdkWrapper).setIsAgeRestricted(true)
+  }
+
+  @Test
+  fun setIsAgeRestricted_whenAgeRestrictedTreatmentTeen_setIsAgeRestrictedIsNeverInvoked() {
+    val inMobiSdkWrapper = mock<InMobiSdkWrapper>()
+    setCOPPAAndUnderAgeOnMobileAdsRequestConfiguration(
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
+      AgeRestrictedTreatment.TEEN,
     )
 
     InMobiAdapterUtils.setIsAgeRestricted(inMobiSdkWrapper)
@@ -270,12 +300,17 @@ class InMobiAdapterUtilsTest {
     assertThat(adError).isNull()
   }
 
-  private fun setCOPPAAndUnderAgeOnMobileAdsRequestConfiguration(coppa: Int, underAgeConsent: Int) {
+  private fun setCOPPAAndUnderAgeOnMobileAdsRequestConfiguration(
+    coppa: Int,
+    underAgeConsent: Int,
+    ageRestrictedTreatment: AgeRestrictedTreatment = AgeRestrictedTreatment.UNSPECIFIED,
+  ) {
     val requestConfiguration =
       MobileAds.getRequestConfiguration()
         .toBuilder()
         .setTagForChildDirectedTreatment(coppa)
         .setTagForUnderAgeOfConsent(underAgeConsent)
+        .setAgeRestrictedTreatment(ageRestrictedTreatment)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
   }
