@@ -1,5 +1,8 @@
 ## Verve Android Mediation Adapter Changelog
 
+#### Next Version
+- Filter age-restricted requests for Verve SDK when new `AgeRestrictedTreatment` is set to `CHILD`.
+
 #### Version 3.8.1.1
 - Filter clickable views to differentiate content info click from regular ad click for VerveNativeAd.
 

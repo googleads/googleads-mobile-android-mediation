@@ -18,6 +18,7 @@ import android.app.Application
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.VersionInfo
@@ -105,7 +106,8 @@ class VerveMediationAdapter : RtbAdapter() {
       (requestConfiguration.tagForChildDirectedTreatment ==
         RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE) ||
         requestConfiguration.tagForUnderAgeOfConsent ==
-          RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+          RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE ||
+        requestConfiguration.ageRestrictedTreatment == AgeRestrictedTreatment.CHILD
     if (isChildUser) {
       initializationCompleteCallback.onInitializationFailed(ERROR_MSG_CHILD_USER)
       return
@@ -204,6 +206,7 @@ class VerveMediationAdapter : RtbAdapter() {
     const val APP_TOKEN_KEY = "AppToken"
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.verve"
     const val SDK_ERROR_DOMAIN = "net.pubnative.lite.sdk"
+
     // Older versions of the adapter logged error code 101 for UNSUPPORTED_AD_SIZE. Please don't use
     // 101 for a new error code.
     const val ERROR_CODE_AD_LOAD_FAILED_TO_LOAD = 102

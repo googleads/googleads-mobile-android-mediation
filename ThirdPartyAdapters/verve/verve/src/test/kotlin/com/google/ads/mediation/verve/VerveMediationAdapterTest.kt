@@ -27,6 +27,7 @@ import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_MISSING_APP_TOKEN
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
@@ -70,15 +71,12 @@ class VerveMediationAdapterTest {
 
   @After
   fun tearDown() {
-    // Reset child-directed and under-age tags.
+    // Reset child-directed, under-age, and age-restricted tags.
     MobileAds.setRequestConfiguration(
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
-        .build()
-    )
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder()
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
         .build()
     )
   }
@@ -137,6 +135,16 @@ class VerveMediationAdapterTest {
       RequestConfiguration.Builder()
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
         .build()
+    )
+    adapter.initialize(context, mockInitializationCallback, mediationConfigurations = listOf())
+
+    verify(mockInitializationCallback).onInitializationFailed(eq(ERROR_MSG_CHILD_USER))
+  }
+
+  @Test
+  fun initialize_whenAgeRestrictedTreatmentChild_invokesOnInitializationFailed() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
     )
     adapter.initialize(context, mockInitializationCallback, mediationConfigurations = listOf())
 
