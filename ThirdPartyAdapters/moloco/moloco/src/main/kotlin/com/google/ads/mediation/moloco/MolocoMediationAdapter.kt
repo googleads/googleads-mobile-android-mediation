@@ -17,6 +17,7 @@ package com.google.ads.mediation.moloco
 import android.content.Context
 import android.util.Log
 import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.VersionInfo
@@ -87,7 +88,8 @@ class MolocoMediationAdapter : RtbAdapter() {
       MobileAds.getRequestConfiguration().tagForChildDirectedTreatment ==
         RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
         MobileAds.getRequestConfiguration().tagForUnderAgeOfConsent ==
-          RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+          RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE ||
+        MobileAds.getRequestConfiguration().ageRestrictedTreatment == AgeRestrictedTreatment.CHILD
     MolocoAdapterUtils.setMolocoIsAgeRestricted(isAgeRestricted)
   }
 

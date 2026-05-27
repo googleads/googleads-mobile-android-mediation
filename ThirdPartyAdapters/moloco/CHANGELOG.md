@@ -1,5 +1,8 @@
 ## Moloco Android Mediation Adapter Changelog
 
+#### Next Version
+- Maps `AgeRestrictedTreatment` to Moloco's age restricted settings.
+
 #### Version 4.8.1.0
 - Verified compatibility with Moloco SDK 4.8.1.
 
