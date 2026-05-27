@@ -39,6 +39,7 @@ import com.google.ads.mediation.mintegral.MintegralUtils.getSdkVersion
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
@@ -100,6 +101,7 @@ class MintegralMediationAdapterTest {
           RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
         )
         .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
         .build()
     MobileAds.setRequestConfiguration(requestConfig)
     mintegralMediationAdapter =
@@ -303,6 +305,74 @@ class MintegralMediationAdapterTest {
           MintegralConstants.APP_ID to TEST_APP_ID,
         )
       val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+
+      mintegralMediationAdapter.initialize(
+        context,
+        mockInitializationCompleteCallback,
+        listOf(mediationConfiguration),
+      )
+
+      val initStatusCaptor = argumentCaptor<SDKInitStatusListener>()
+      verify(mockMBridgeSdk).init(any(), eq(context), initStatusCaptor.capture())
+      initStatusCaptor.firstValue.onInitSuccess()
+      verify(mockMBridgeSdk, never()).setCoppaStatus(eq(context), any())
+    }
+  }
+
+  @Test
+  fun initialize_withAgeRestrictedTreatmentChild_callsPrivacyConfiguration() {
+    mockStatic(MBridgeSDKFactory::class.java).use {
+      val mockMBridgeSdk = mock<MBridgeSDKImpl>()
+      whenever(MBridgeSDKFactory.getMBridgeSDK()) doReturn mockMBridgeSdk
+      val serverParameters =
+        bundleOf(
+          MintegralConstants.APP_KEY to TEST_APP_KEY,
+          MintegralConstants.APP_ID to TEST_APP_ID,
+        )
+      val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+      val requestConfig =
+        RequestConfiguration.Builder()
+          .setTagForChildDirectedTreatment(
+            RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+          )
+          .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+          .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
+          .build()
+      MobileAds.setRequestConfiguration(requestConfig)
+
+      mintegralMediationAdapter.initialize(
+        context,
+        mockInitializationCompleteCallback,
+        listOf(mediationConfiguration),
+      )
+
+      val initStatusCaptor = argumentCaptor<SDKInitStatusListener>()
+      verify(mockMBridgeSdk).init(any(), eq(context), initStatusCaptor.capture())
+      initStatusCaptor.firstValue.onInitSuccess()
+      verify(mockMBridgeSdk).setCoppaStatus(eq(context), eq(true))
+    }
+  }
+
+  @Test
+  fun initialize_withAgeRestrictedTreatmentTeen_neverSetsCoppa() {
+    mockStatic(MBridgeSDKFactory::class.java).use {
+      val mockMBridgeSdk = mock<MBridgeSDKImpl>()
+      whenever(MBridgeSDKFactory.getMBridgeSDK()) doReturn mockMBridgeSdk
+      val serverParameters =
+        bundleOf(
+          MintegralConstants.APP_KEY to TEST_APP_KEY,
+          MintegralConstants.APP_ID to TEST_APP_ID,
+        )
+      val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+      val requestConfig =
+        RequestConfiguration.Builder()
+          .setTagForChildDirectedTreatment(
+            RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+          )
+          .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+          .setAgeRestrictedTreatment(AgeRestrictedTreatment.TEEN)
+          .build()
+      MobileAds.setRequestConfiguration(requestConfig)
 
       mintegralMediationAdapter.initialize(
         context,

@@ -1,5 +1,8 @@
 ## Mintegral Android Mediation Adapter Changelog
 
+#### Next Version
+- Maps `AgeRestrictedTreatment` to Mintegral's COPPA API.
+
 #### Version 17.1.61.0
 - Verified compatibility with Mintegral SDK 17.1.61.
 

@@ -26,6 +26,7 @@ import android.util.TypedValue;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AgeRestrictedTreatment;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
@@ -107,8 +108,11 @@ public class MintegralUtils {
   protected static void configureMintegralPrivacy(Context context, MBridgeSDK mBridgeSDK) {
     int tagForChildDirected = getRequestConfiguration().getTagForChildDirectedTreatment();
     int tagForUnderAgeConsent = getRequestConfiguration().getTagForUnderAgeOfConsent();
+    AgeRestrictedTreatment ageRestrictedTreatment =
+        getRequestConfiguration().getAgeRestrictedTreatment();
     if (tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
-        || tagForUnderAgeConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE) {
+        || tagForUnderAgeConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+        || ageRestrictedTreatment == AgeRestrictedTreatment.CHILD) {
       mBridgeSDK.setCoppaStatus(context, true);
     } else if (tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
         || tagForUnderAgeConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE) {
