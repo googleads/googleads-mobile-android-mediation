@@ -1,5 +1,10 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
+#### Next version
+
+- Remove old API implementation for banner ads. Adapter will start using the new
+  API implementation.
+
 #### Version 8.4.5.0
 - Added watermark on bidding ads.
 - Verified compatibility with DT Exchange SDK 8.4.5.

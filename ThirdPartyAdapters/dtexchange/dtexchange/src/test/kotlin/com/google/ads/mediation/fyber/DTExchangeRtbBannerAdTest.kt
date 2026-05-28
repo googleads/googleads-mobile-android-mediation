@@ -1,3 +1,17 @@
+// Copyright 2026 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.fyber
 
 import android.content.Context
@@ -29,10 +43,11 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
+/** Tests for [DTExchangeRtbBannerAd]. */
 @RunWith(AndroidJUnit4::class)
-class DTExchangeBannerAdTest {
+class DTExchangeRtbBannerAdTest {
   // Subject of testing.
-  private lateinit var dtExchangeBannerAd: DTExchangeBannerAd
+  private lateinit var dtExchangeRtbBannerAd: DTExchangeRtbBannerAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val mockBannerAdCallback: MediationBannerAdCallback = mock()
@@ -50,7 +65,7 @@ class DTExchangeBannerAdTest {
 
   @Before
   fun setUp() {
-    dtExchangeBannerAd = DTExchangeBannerAd(mockAdLoadCallback)
+    dtExchangeRtbBannerAd = DTExchangeRtbBannerAd(mockAdLoadCallback)
   }
 
   @Test
@@ -66,9 +81,9 @@ class DTExchangeBannerAdTest {
           "DT Exchange's banner ad spot is not ready.",
           DTExchangeErrorCodes.ERROR_DOMAIN,
         )
-      dtExchangeBannerAd.loadAd(adConfiguration)
+      dtExchangeRtbBannerAd.loadAd(adConfiguration)
 
-      dtExchangeBannerAd.onInneractiveSuccessfulAdRequest(mock())
+      dtExchangeRtbBannerAd.onInneractiveSuccessfulAdRequest(mock())
 
       verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
       verify(mockAdSpot).destroy()
@@ -92,9 +107,9 @@ class DTExchangeBannerAdTest {
           "Unexpected controller type.",
           DTExchangeErrorCodes.ERROR_DOMAIN,
         )
-      dtExchangeBannerAd.loadAd(adConfiguration)
+      dtExchangeRtbBannerAd.loadAd(adConfiguration)
 
-      dtExchangeBannerAd.onInneractiveSuccessfulAdRequest(mock())
+      dtExchangeRtbBannerAd.onInneractiveSuccessfulAdRequest(mock())
 
       verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
       verify(mockAdSpot).destroy()
@@ -113,13 +128,13 @@ class DTExchangeBannerAdTest {
       val mockInneractiveAdSpotManager =
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
       whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
-      dtExchangeBannerAd.loadAd(adConfiguration)
+      dtExchangeRtbBannerAd.loadAd(adConfiguration)
 
-      dtExchangeBannerAd.onInneractiveSuccessfulAdRequest(mock())
-      val bannerView = dtExchangeBannerAd.view
+      dtExchangeRtbBannerAd.onInneractiveSuccessfulAdRequest(mock())
+      val bannerView = dtExchangeRtbBannerAd.view
 
       verify(mockAdViewController).bindView(any<RelativeLayout>())
-      verify(mockAdLoadCallback).onSuccess(eq(dtExchangeBannerAd))
+      verify(mockAdLoadCallback).onSuccess(eq(dtExchangeRtbBannerAd))
       assertIs<RelativeLayout>(bannerView)
     }
   }
@@ -135,7 +150,7 @@ class DTExchangeBannerAdTest {
         DTExchangeErrorCodes.ERROR_DOMAIN,
       )
 
-    dtExchangeBannerAd.onInneractiveFailedAdRequest(mockAdSpot, iErrorCode)
+    dtExchangeRtbBannerAd.onInneractiveFailedAdRequest(mockAdSpot, iErrorCode)
 
     verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
     verify(mockAdSpot).destroy()
@@ -153,10 +168,10 @@ class DTExchangeBannerAdTest {
       val mockInneractiveAdSpotManager =
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
       whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
-      dtExchangeBannerAd.loadAd(adConfiguration)
-      dtExchangeBannerAd.onInneractiveSuccessfulAdRequest(mock())
+      dtExchangeRtbBannerAd.loadAd(adConfiguration)
+      dtExchangeRtbBannerAd.onInneractiveSuccessfulAdRequest(mock())
 
-      dtExchangeBannerAd.onAdImpression(mock())
+      dtExchangeRtbBannerAd.onAdImpression(mock())
 
       verify(mockBannerAdCallback).reportAdImpression()
     }
@@ -174,10 +189,10 @@ class DTExchangeBannerAdTest {
       val mockInneractiveAdSpotManager =
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
       whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
-      dtExchangeBannerAd.loadAd(adConfiguration)
-      dtExchangeBannerAd.onInneractiveSuccessfulAdRequest(mock())
+      dtExchangeRtbBannerAd.loadAd(adConfiguration)
+      dtExchangeRtbBannerAd.onInneractiveSuccessfulAdRequest(mock())
 
-      dtExchangeBannerAd.onAdClicked(mock())
+      dtExchangeRtbBannerAd.onAdClicked(mock())
 
       verify(mockBannerAdCallback).reportAdClicked()
     }
@@ -195,10 +210,10 @@ class DTExchangeBannerAdTest {
       val mockInneractiveAdSpotManager =
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
       whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
-      dtExchangeBannerAd.loadAd(adConfiguration)
-      dtExchangeBannerAd.onInneractiveSuccessfulAdRequest(mock())
+      dtExchangeRtbBannerAd.loadAd(adConfiguration)
+      dtExchangeRtbBannerAd.onInneractiveSuccessfulAdRequest(mock())
 
-      dtExchangeBannerAd.onAdWillCloseInternalBrowser(mock())
+      dtExchangeRtbBannerAd.onAdWillCloseInternalBrowser(mock())
 
       verify(mockBannerAdCallback).onAdClosed()
     }
@@ -216,10 +231,10 @@ class DTExchangeBannerAdTest {
       val mockInneractiveAdSpotManager =
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
       whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
-      dtExchangeBannerAd.loadAd(adConfiguration)
-      dtExchangeBannerAd.onInneractiveSuccessfulAdRequest(mock())
+      dtExchangeRtbBannerAd.loadAd(adConfiguration)
+      dtExchangeRtbBannerAd.onInneractiveSuccessfulAdRequest(mock())
 
-      dtExchangeBannerAd.onAdWillOpenExternalApp(mock())
+      dtExchangeRtbBannerAd.onAdWillOpenExternalApp(mock())
 
       verify(mockBannerAdCallback).onAdOpened()
       verify(mockBannerAdCallback).onAdLeftApplication()
@@ -228,21 +243,21 @@ class DTExchangeBannerAdTest {
 
   @Test
   fun onAdEnteredErrorState_throwsNoException() {
-    dtExchangeBannerAd.onAdEnteredErrorState(mock(), mock())
+    dtExchangeRtbBannerAd.onAdEnteredErrorState(mock(), mock())
   }
 
   @Test
   fun onAdExpanded_throwsNoException() {
-    dtExchangeBannerAd.onAdExpanded(mock())
+    dtExchangeRtbBannerAd.onAdExpanded(mock())
   }
 
   @Test
   fun onAdResized_throwsNoException() {
-    dtExchangeBannerAd.onAdResized(mock())
+    dtExchangeRtbBannerAd.onAdResized(mock())
   }
 
   @Test
   fun onAdCollapsed_throwsNoException() {
-    dtExchangeBannerAd.onAdCollapsed(mock())
+    dtExchangeRtbBannerAd.onAdCollapsed(mock())
   }
 }
