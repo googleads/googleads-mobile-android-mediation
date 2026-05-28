@@ -14,6 +14,7 @@ import com.applovin.mediation.ads.MaxAppOpenAd
 import com.applovin.sdk.AppLovinAdService
 import com.applovin.sdk.AppLovinAdSize
 import com.applovin.sdk.AppLovinSdk
+import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.applovin.AppLovinInitializer.OnInitializeSuccessListener
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.APPLOVIN_SDK_ERROR_DOMAIN
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_AD_ALREADY_REQUESTED
@@ -29,6 +30,7 @@ import com.google.ads.mediation.applovin.AppLovinWaterfallInterstitialAd.ERROR_M
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
@@ -58,7 +60,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -158,11 +160,8 @@ class AppLovinMediationAdapterTest {
     MobileAds.setRequestConfiguration(
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
-        .build()
-    )
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder()
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
         .build()
     )
     AppLovinWaterfallInterstitialAd.appLovinWaterfallInterstitialAds.clear()
@@ -192,6 +191,21 @@ class AppLovinMediationAdapterTest {
       RequestConfiguration.Builder()
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
         .build()
+    )
+
+    appLovinMediationAdapter.initialize(
+      context,
+      initializationCompleteCallback,
+      /*mediationConfigurations=*/ emptyList(),
+    )
+
+    verify(initializationCompleteCallback).onInitializationFailed(ERROR_MSG_CHILD_USER)
+  }
+
+  @Test
+  fun initialize_ifUserIsAgeRestrictedTreatmentChild_invokesOnFailure() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
     )
 
     appLovinMediationAdapter.initialize(
@@ -311,14 +325,11 @@ class AppLovinMediationAdapterTest {
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
         .build()
     )
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
     appLovinMediationAdapter.collectSignals(mock<RtbSignalData>(), signalCallbacks)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(signalCallbacks).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_CHILD_USER)
-    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+    verify(signalCallbacks).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
@@ -328,14 +339,23 @@ class AppLovinMediationAdapterTest {
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
         .build()
     )
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
     appLovinMediationAdapter.collectSignals(mock<RtbSignalData>(), signalCallbacks)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(signalCallbacks).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_CHILD_USER)
-    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+    verify(signalCallbacks).onFailure(argThat(AdErrorMatcher(expectedError)))
+  }
+
+  @Test
+  fun collectSignals_ifUserIsAgeRestrictedTreatmentChild_failsWithCallback() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
+    )
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
+
+    appLovinMediationAdapter.collectSignals(mock<RtbSignalData>(), signalCallbacks)
+
+    verify(signalCallbacks).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   // region loadAppOpenAd tests
@@ -347,14 +367,11 @@ class AppLovinMediationAdapterTest {
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
         .build()
     )
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadAppOpenAd(appOpenAdWaterfallConfig, appOpenAdLoadCallback)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(appOpenAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_CHILD_USER)
-    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+    verify(appOpenAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
@@ -364,14 +381,23 @@ class AppLovinMediationAdapterTest {
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
         .build()
     )
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadAppOpenAd(appOpenAdWaterfallConfig, appOpenAdLoadCallback)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(appOpenAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_CHILD_USER)
-    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+    verify(appOpenAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+  }
+
+  @Test
+  fun loadAppOpenAd_ifUserIsAgeRestrictedTreatmentChild_failsWithCallback() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
+    )
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
+
+    appLovinMediationAdapter.loadAppOpenAd(appOpenAdWaterfallConfig, appOpenAdLoadCallback)
+
+    verify(appOpenAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
@@ -389,15 +415,11 @@ class AppLovinMediationAdapterTest {
         /*maxAdContentRating=*/ "",
         /*watermark=*/ "",
       )
+    val expectedError = AdError(ERROR_MISSING_SDK_KEY, ERROR_MSG_MISSING_SDK, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadAppOpenAd(appOpenAdConfigWithoutSdkKey, appOpenAdLoadCallback)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(appOpenAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val errorCaptured = adErrorCaptor.firstValue
-    assertThat(errorCaptured.code).isEqualTo(ERROR_MISSING_SDK_KEY)
-    assertThat(errorCaptured.message).isEqualTo(ERROR_MSG_MISSING_SDK)
-    assertThat(errorCaptured.domain).isEqualTo(ERROR_DOMAIN)
+    verify(appOpenAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
@@ -415,14 +437,11 @@ class AppLovinMediationAdapterTest {
         /*maxAdContentRating=*/ "",
         /*watermark=*/ "",
       )
+    val expectedError = AdError(ERROR_MISSING_AD_UNIT_ID, "Ad Unit ID is missing.", ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadAppOpenAd(appOpenAdConfigWithoutAdUnitId, appOpenAdLoadCallback)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(appOpenAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val errorCaptured = adErrorCaptor.firstValue
-    assertThat(errorCaptured.code).isEqualTo(ERROR_MISSING_AD_UNIT_ID)
-    assertThat(errorCaptured.domain).isEqualTo(ERROR_DOMAIN)
+    verify(appOpenAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
@@ -456,17 +475,14 @@ class AppLovinMediationAdapterTest {
         .build()
     )
     mediationBannerAdConfiguration = initializeBannerAd()
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadBannerAd(
       mediationBannerAdConfiguration,
       mediationBannerAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationBannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_CHILD_USER)
-    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+    verify(mediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
@@ -477,35 +493,44 @@ class AppLovinMediationAdapterTest {
         .build()
     )
     mediationBannerAdConfiguration = initializeBannerAd()
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadBannerAd(
       mediationBannerAdConfiguration,
       mediationBannerAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationBannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_CHILD_USER)
-    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+    verify(mediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+  }
+
+  @Test
+  fun loadBannerAd_ifUserIsAgeRestrictedTreatmentChild_failsWithCallback() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
+    )
+    mediationBannerAdConfiguration = initializeBannerAd()
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
+
+    appLovinMediationAdapter.loadBannerAd(
+      mediationBannerAdConfiguration,
+      mediationBannerAdLoadCallback,
+    )
+
+    verify(mediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
   fun loadBannerAd_withoutSdkKey_failsWithCallback() {
     serverParameters.remove(AppLovinUtils.ServerParameterKeys.SDK_KEY)
     mediationBannerAdConfiguration = initializeBannerAd()
+    val expectedError = AdError(ERROR_MISSING_SDK_KEY, ERROR_MSG_MISSING_SDK, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadBannerAd(
       mediationBannerAdConfiguration,
       mediationBannerAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationBannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val errorCaptured = adErrorCaptor.firstValue
-    assertThat(errorCaptured.code).isEqualTo(ERROR_MISSING_SDK_KEY)
-    assertThat(errorCaptured.message).isEqualTo(ERROR_MSG_MISSING_SDK)
-    assertThat(errorCaptured.domain).isEqualTo(ERROR_DOMAIN)
+    verify(mediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
@@ -513,18 +538,15 @@ class AppLovinMediationAdapterTest {
     adSize = AdSize.WIDE_SKYSCRAPER
     mediationBannerAdConfiguration = initializeBannerAd()
     whenever(mediationUtils.findClosestSize(any(), eq(AdSize.WIDE_SKYSCRAPER), any())) doReturn null
+    val expectedError =
+      AdError(ERROR_BANNER_SIZE_MISMATCH, ERROR_MSG_BANNER_SIZE_MISMATCH, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadBannerAd(
       mediationBannerAdConfiguration,
       mediationBannerAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationBannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val errorCaptured = adErrorCaptor.firstValue
-    assertThat(errorCaptured.code).isEqualTo(ERROR_BANNER_SIZE_MISMATCH)
-    assertThat(errorCaptured.message).isEqualTo(ERROR_MSG_BANNER_SIZE_MISMATCH)
-    assertThat(errorCaptured.domain).isEqualTo(ERROR_DOMAIN)
+    verify(mediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
@@ -603,17 +625,14 @@ class AppLovinMediationAdapterTest {
         .build()
     )
     mediationInterstitialAdConfiguration = initializeInterstitialAd()
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadInterstitialAd(
       mediationInterstitialAdConfiguration,
       mediationInterstitialAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationInterstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_CHILD_USER)
-    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+    verify(mediationInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
@@ -624,35 +643,45 @@ class AppLovinMediationAdapterTest {
         .build()
     )
     mediationInterstitialAdConfiguration = initializeInterstitialAd()
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadInterstitialAd(
       mediationInterstitialAdConfiguration,
       mediationInterstitialAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationInterstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_CHILD_USER)
-    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+    verify(mediationInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+  }
+
+  @Test
+  fun loadInterstitialAd_ifUserIsAgeRestrictedTreatmentChild_failsWithCallback() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
+    )
+    mediationInterstitialAdConfiguration = initializeInterstitialAd()
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
+
+    appLovinMediationAdapter.loadInterstitialAd(
+      mediationInterstitialAdConfiguration,
+      mediationInterstitialAdLoadCallback,
+    )
+
+    verify(mediationInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
   fun loadInterstitialAd_withoutSdkKey_failsWithCallback() {
     serverParameters.remove(AppLovinUtils.ServerParameterKeys.SDK_KEY)
     mediationInterstitialAdConfiguration = initializeInterstitialAd()
+    val expectedError =
+      AdError(ERROR_MISSING_SDK_KEY, ERROR_MSG_MISSING_SDK, APPLOVIN_SDK_ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadInterstitialAd(
       mediationInterstitialAdConfiguration,
       mediationInterstitialAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationInterstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val errorCaptured = adErrorCaptor.firstValue
-    assertThat(errorCaptured.code).isEqualTo(ERROR_MISSING_SDK_KEY)
-    assertThat(errorCaptured.message).isEqualTo(ERROR_MSG_MISSING_SDK)
-    assertThat(errorCaptured.domain).isEqualTo(APPLOVIN_SDK_ERROR_DOMAIN)
+    verify(mediationInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
     verify(appLovinSdk, never()).initialize(any(), any())
   }
 
@@ -677,7 +706,8 @@ class AppLovinMediationAdapterTest {
       .whenever(appLovinInitializer)
       .initialize(any(), any(), any())
     mediationInterstitialAdConfiguration = initializeInterstitialAd()
-    val adErrorCaptor = argumentCaptor<AdError>()
+    val expectedError =
+      AdError(ERROR_AD_ALREADY_REQUESTED, ERROR_MSG_MULTIPLE_INTERSTITIAL_AD, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadInterstitialAd(
       mediationInterstitialAdConfiguration,
@@ -688,11 +718,7 @@ class AppLovinMediationAdapterTest {
       mediationInterstitialAdLoadCallback,
     )
 
-    verify(mediationInterstitialAdLoadCallback, times(1)).onFailure(adErrorCaptor.capture())
-    val errorCaptured = adErrorCaptor.firstValue
-    assertThat(errorCaptured.code).isEqualTo(ERROR_AD_ALREADY_REQUESTED)
-    assertThat(errorCaptured.message).isEqualTo(ERROR_MSG_MULTIPLE_INTERSTITIAL_AD)
-    assertThat(errorCaptured.domain).isEqualTo(ERROR_DOMAIN)
+    verify(mediationInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
@@ -703,17 +729,14 @@ class AppLovinMediationAdapterTest {
         .build()
     )
     mediationInterstitialAdConfiguration = initializeInterstitialAd()
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadRtbInterstitialAd(
       mediationInterstitialAdConfiguration,
       mediationInterstitialAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationInterstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_CHILD_USER)
-    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+    verify(mediationInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
@@ -724,17 +747,30 @@ class AppLovinMediationAdapterTest {
         .build()
     )
     mediationInterstitialAdConfiguration = initializeInterstitialAd()
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadRtbInterstitialAd(
       mediationInterstitialAdConfiguration,
       mediationInterstitialAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationInterstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_CHILD_USER)
-    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+    verify(mediationInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+  }
+
+  @Test
+  fun loadRtbInterstitialAd_ifUserIsAgeRestrictedTreatmentChild_failsWithCallback() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
+    )
+    mediationInterstitialAdConfiguration = initializeInterstitialAd()
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
+
+    appLovinMediationAdapter.loadRtbInterstitialAd(
+      mediationInterstitialAdConfiguration,
+      mediationInterstitialAdLoadCallback,
+    )
+
+    verify(mediationInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
@@ -786,17 +822,14 @@ class AppLovinMediationAdapterTest {
         .build()
     )
     mediationRewardedAdConfiguration = initializeRewardedAd()
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadRewardedAd(
       mediationRewardedAdConfiguration,
       mediationRewardedAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationRewardedAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_CHILD_USER)
-    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+    verify(mediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
@@ -807,35 +840,45 @@ class AppLovinMediationAdapterTest {
         .build()
     )
     mediationRewardedAdConfiguration = initializeRewardedAd()
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadRewardedAd(
       mediationRewardedAdConfiguration,
       mediationRewardedAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationRewardedAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_CHILD_USER)
-    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+    verify(mediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+  }
+
+  @Test
+  fun loadRewardedAd_ifUserIsAgeRestrictedTreatmentChild_failsWithCallback() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
+    )
+    mediationRewardedAdConfiguration = initializeRewardedAd()
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
+
+    appLovinMediationAdapter.loadRewardedAd(
+      mediationRewardedAdConfiguration,
+      mediationRewardedAdLoadCallback,
+    )
+
+    verify(mediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
   fun loadRewardedAd_withoutSdkKey_failsWithCallback() {
     serverParameters.remove(AppLovinUtils.ServerParameterKeys.SDK_KEY)
     mediationRewardedAdConfiguration = initializeRewardedAd()
+    val expectedError =
+      AdError(ERROR_MISSING_SDK_KEY, ERROR_MSG_MISSING_SDK, APPLOVIN_SDK_ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadRewardedAd(
       mediationRewardedAdConfiguration,
       mediationRewardedAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationRewardedAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val errorCaptured = adErrorCaptor.firstValue
-    assertThat(errorCaptured.code).isEqualTo(ERROR_MISSING_SDK_KEY)
-    assertThat(errorCaptured.message).isEqualTo(ERROR_MSG_MISSING_SDK)
-    assertThat(errorCaptured.domain).isEqualTo(APPLOVIN_SDK_ERROR_DOMAIN)
+    verify(mediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
     verify(appLovinSdk, never()).initialize(any(), any())
   }
 
@@ -860,7 +903,8 @@ class AppLovinMediationAdapterTest {
       .whenever(appLovinInitializer)
       .initialize(any(), any(), any())
     mediationRewardedAdConfiguration = initializeRewardedAd()
-    val adErrorCaptor = argumentCaptor<AdError>()
+    val expectedError =
+      AdError(ERROR_AD_ALREADY_REQUESTED, ERROR_MSG_MULTIPLE_REWARDED_AD, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadRewardedAd(
       mediationRewardedAdConfiguration,
@@ -871,11 +915,7 @@ class AppLovinMediationAdapterTest {
       mediationRewardedAdLoadCallback,
     )
 
-    verify(mediationRewardedAdLoadCallback, times(1)).onFailure(adErrorCaptor.capture())
-    val errorCaptured = adErrorCaptor.firstValue
-    assertThat(errorCaptured.code).isEqualTo(ERROR_AD_ALREADY_REQUESTED)
-    assertThat(errorCaptured.message).isEqualTo(ERROR_MSG_MULTIPLE_REWARDED_AD)
-    assertThat(errorCaptured.domain).isEqualTo(ERROR_DOMAIN)
+    verify(mediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
@@ -886,17 +926,14 @@ class AppLovinMediationAdapterTest {
         .build()
     )
     mediationRewardedAdConfiguration = initializeRewardedAd()
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadRtbRewardedAd(
       mediationRewardedAdConfiguration,
       mediationRewardedAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationRewardedAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_CHILD_USER)
-    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+    verify(mediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test
@@ -907,17 +944,30 @@ class AppLovinMediationAdapterTest {
         .build()
     )
     mediationRewardedAdConfiguration = initializeRewardedAd()
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadRtbRewardedAd(
       mediationRewardedAdConfiguration,
       mediationRewardedAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationRewardedAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_CHILD_USER)
-    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+    verify(mediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+  }
+
+  @Test
+  fun loadRtbRewardedAd_ifUserIsAgeRestrictedTreatmentChild_failsWithCallback() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
+    )
+    mediationRewardedAdConfiguration = initializeRewardedAd()
+    val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
+
+    appLovinMediationAdapter.loadRtbRewardedAd(
+      mediationRewardedAdConfiguration,
+      mediationRewardedAdLoadCallback,
+    )
+
+    verify(mediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
   }
 
   @Test

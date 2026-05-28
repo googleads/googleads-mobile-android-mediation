@@ -17,6 +17,7 @@ package com.applovin.mediation;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.APPLOVIN_SDK_ERROR_DOMAIN;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_CHILD_USER;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_DOMAIN;
+import static com.google.android.gms.ads.AgeRestrictedTreatment.CHILD;
 import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE;
 import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
 
@@ -34,9 +35,7 @@ import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import java.util.ArrayList;
 
-/**
- * A helper class used by {@link ApplovinAdapter}.
- */
+/** A helper class used by {@link ApplovinAdapter}. */
 public class AppLovinUtils {
 
   private static final String DEFAULT_ZONE = "";
@@ -63,8 +62,7 @@ public class AppLovinUtils {
     public static final String AD_UNIT_ID = "ad_unit_id";
 
     // Private constructor
-    private ServerParameterKeys() {
-    }
+    private ServerParameterKeys() {}
   }
 
   /**
@@ -92,16 +90,12 @@ public class AppLovinUtils {
     return true;
   }
 
-  /**
-   * Retrieves whether or not to mute the ad that is about to be rendered.
-   */
+  /** Retrieves whether or not to mute the ad that is about to be rendered. */
   public static boolean shouldMuteAudio(Bundle networkExtras) {
     return networkExtras != null && networkExtras.getBoolean(AppLovinExtras.Keys.MUTE_AUDIO);
   }
 
-  /**
-   * Convert the given AppLovin SDK error code into a Google AdError.
-   */
+  /** Convert the given AppLovin SDK error code into a Google AdError. */
   public static AdError getAdError(int applovinErrorCode) {
     String reason = "AppLovin error code " + applovinErrorCode;
     switch (applovinErrorCode) {
@@ -185,7 +179,8 @@ public class AppLovinUtils {
     RequestConfiguration requestConfiguration = MobileAds.getRequestConfiguration();
     return requestConfiguration.getTagForChildDirectedTreatment()
             == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
-        || requestConfiguration.getTagForUnderAgeOfConsent() == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
+        || requestConfiguration.getTagForUnderAgeOfConsent() == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+        || requestConfiguration.getAgeRestrictedTreatment() == CHILD;
   }
 
   /**

@@ -49,10 +49,11 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.5.0'
     // Check for a 'useNextGenGma' flag passed via command line
     if (project.hasProperty('useNextGenGma')) {
-        implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.0.1'
+        implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.1.0'
     } else {
-        implementation 'com.google.android.gms:play-services-ads:25.1.0'
+        implementation 'com.google.android.gms:play-services-ads:25.3.0'
     }
+
 
     testImplementation 'androidx.core:core-ktx:1.8.0'
     testImplementation 'androidx.test:core:1.6.1'
@@ -61,6 +62,7 @@ dependencies {
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
     testImplementation 'org.robolectric:robolectric:4.9'
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
+    testImplementation project(':adaptertestkit')
 }
 
 /**
