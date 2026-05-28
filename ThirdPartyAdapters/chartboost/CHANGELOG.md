@@ -1,5 +1,8 @@
 ## Chartboost Android Mediation Adapter Changelog
 
+#### Next Version
+- Maps `AgeRestrictedTreatment` to Chartboost's COPPA API.
+
 #### Version 9.12.0.0
 - Verified compatibility with Chartboost SDK version 9.12.0.
 
