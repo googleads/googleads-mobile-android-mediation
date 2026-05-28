@@ -31,6 +31,7 @@ import com.google.ads.mediation.line.LineMediationAdapter.Companion.SDK_ERROR_DO
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.VersionInfo
@@ -354,6 +355,41 @@ class LineMediationAdapterTest {
         )
         .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
         .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1)
+    val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+
+    lineMediationAdapter.initialize(
+      context,
+      mockInitializationCompleteCallback,
+      listOf(mediationConfiguration),
+    )
+
+    assertThat(fiveAdConfig.needChildDirectedTreatment)
+      .isEqualTo(NeedChildDirectedTreatment.UNSPECIFIED)
+  }
+
+  @Test
+  fun initialize_withAgeRestrictedTreatmentChild_configuresFiveAdSDKWithTrue() {
+    val requestConfiguration =
+      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1)
+    val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+
+    lineMediationAdapter.initialize(
+      context,
+      mockInitializationCompleteCallback,
+      listOf(mediationConfiguration),
+    )
+
+    assertThat(fiveAdConfig.needChildDirectedTreatment).isEqualTo(NeedChildDirectedTreatment.TRUE)
+  }
+
+  @Test
+  fun initialize_withAgeRestrictedTreatmentTeen_configuresFiveAdSDKWithUnspecified() {
+    val requestConfiguration =
+      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.TEEN).build()
     MobileAds.setRequestConfiguration(requestConfiguration)
     val serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1)
     val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)

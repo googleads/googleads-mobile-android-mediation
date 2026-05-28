@@ -1,5 +1,8 @@
 ## LINE Android Mediation Adapter Changelog
 
+#### Next Version
+- Maps `AgeRestrictedTreatment` to Line's ChildDirectedTreatment API.
+
 #### Version 3.1.1.0 (In progress)
 
 #### Version 3.1.0.0
