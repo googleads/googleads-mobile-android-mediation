@@ -36,6 +36,7 @@ import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfigurat
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
@@ -106,6 +107,7 @@ class FyberMediationAdapterTest {
           RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
         )
         .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
     adapter = FyberMediationAdapter()
@@ -174,6 +176,30 @@ class FyberMediationAdapterTest {
     val requestConfiguration =
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val initializationParameters = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+    adapter.initialize(
+      activity,
+      mockInitializationCompleteCallback,
+      listOf(initializationParameters),
+    )
+
+    mockInneractiveAdManager.verify {
+      InneractiveAdManager.currentAudienceAppliesToCoppa()
+      InneractiveAdManager.initialize(eq(activity), eq(AdapterTestKitConstants.TEST_APP_ID), any())
+    }
+  }
+
+  @Test
+  fun initialize_withAgeRestrictedTreatmentChild_initializesInneractiveAdManagerAndSetsCoppa() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
     val initializationParameters = createMediationConfiguration(AdFormat.BANNER, serverParameters)

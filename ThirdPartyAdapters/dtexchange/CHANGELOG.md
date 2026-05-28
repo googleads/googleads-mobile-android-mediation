@@ -1,5 +1,8 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
+#### Next Version
+- Maps `AgeRestrictedTreatment` to DT Exchange's COPPA API.
+
 #### Version 8.4.5.0
 - Added watermark on bidding ads.
 - Verified compatibility with DT Exchange SDK 8.4.5.
