@@ -1,5 +1,8 @@
 ## i-mobile Android Mediation Adapter Changelog
 
+#### Next Version
+- Filter age-restricted requests for i-mobile SDK when new `AgeRestrictedTreatment` is set to `CHILD`.
+
 #### Version 2.3.2.3
 - Filter age-restricted requests for i-mobile SDK because it cannot receive age-restricted signals.
 

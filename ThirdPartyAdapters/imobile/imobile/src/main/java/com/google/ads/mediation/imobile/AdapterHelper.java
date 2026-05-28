@@ -20,6 +20,7 @@ import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_
 
 import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AgeRestrictedTreatment;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import jp.co.imobile.sdkads.android.FailNotificationReason;
@@ -83,7 +84,9 @@ public final class AdapterHelper {
     RequestConfiguration requestConfiguration = MobileAds.getRequestConfiguration();
     int tagForChildDirectedTreatment = requestConfiguration.getTagForChildDirectedTreatment();
     int tagForUnderAgeOfConsent = requestConfiguration.getTagForUnderAgeOfConsent();
+    AgeRestrictedTreatment ageRestrictedTreatment = requestConfiguration.getAgeRestrictedTreatment();
     return tagForChildDirectedTreatment == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
-        || tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
+        || tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+        || ageRestrictedTreatment == AgeRestrictedTreatment.CHILD;
   }
 }

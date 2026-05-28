@@ -21,6 +21,7 @@ import com.google.ads.mediation.imobile.IMobileMediationAdapter.ERROR_USER_IS_AG
 import com.google.ads.mediation.imobile.IMobileMediationAdapter.ERROR_USER_IS_AGE_RESTRICTED_MSG
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
@@ -90,6 +91,7 @@ class IMobileMediationAdapterTest {
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
     adapter = IMobileMediationAdapter(iMobileSdkWrapper, mediationUtils)
@@ -198,6 +200,24 @@ class IMobileMediationAdapterTest {
   }
 
   @Test
+  fun initialize_withAgeRestrictedTreatmentChild_invokesOnInitializationFailed() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
+        .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+
+    adapter.mediationAdapterInitializeVerifyFailure(
+      context,
+      initializationCompleteCallback,
+      /* serverParameters= */ bundleOf(),
+      ERROR_USER_IS_AGE_RESTRICTED_MSG,
+    )
+  }
+
+  @Test
   fun loadBannerAd_withTFCDTrue_invokesOnFailure() {
     val requestConfiguration =
       RequestConfiguration.Builder()
@@ -219,6 +239,23 @@ class IMobileMediationAdapterTest {
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val expectedAdError =
+      AdError(ERROR_USER_IS_AGE_RESTRICTED, ERROR_USER_IS_AGE_RESTRICTED_MSG, ERROR_DOMAIN)
+
+    adapter.loadBannerAd(mockBannerAdConfiguration, mockBannerAdLoadCallback)
+
+    verify(mockBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadBannerAd_withAgeRestrictedTreatmentChild_invokesOnFailure() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
+        .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
     val expectedAdError =
@@ -307,6 +344,23 @@ class IMobileMediationAdapterTest {
   }
 
   @Test
+  fun loadInterstitialAd_withAgeRestrictedTreatmentChild_invokesOnFailure() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
+        .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val expectedAdError =
+      AdError(ERROR_USER_IS_AGE_RESTRICTED, ERROR_USER_IS_AGE_RESTRICTED_MSG, ERROR_DOMAIN)
+
+    adapter.loadInterstitialAd(mockInterstitialAdConfiguration, mockInterstitialAdLoadCallback)
+
+    verify(mockInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
   fun loadInterstitialAd_ifContextIsNotActivity_fails() {
     whenever(mockInterstitialAdConfiguration.context) doReturn context
     val adErrorCaptor = argumentCaptor<AdError>()
@@ -372,6 +426,24 @@ class IMobileMediationAdapterTest {
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    whenever(mediationNativeAdConfig.context) doReturn context
+    val expectedAdError =
+      AdError(ERROR_USER_IS_AGE_RESTRICTED, ERROR_USER_IS_AGE_RESTRICTED_MSG, ERROR_DOMAIN)
+
+    adapter.loadNativeAdMapper(mediationNativeAdConfig, nativeAdLoadCallback)
+
+    verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadNativeAdMapper_withAgeRestrictedTreatmentChild_invokesOnFailure() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
+        .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
     whenever(mediationNativeAdConfig.context) doReturn context
