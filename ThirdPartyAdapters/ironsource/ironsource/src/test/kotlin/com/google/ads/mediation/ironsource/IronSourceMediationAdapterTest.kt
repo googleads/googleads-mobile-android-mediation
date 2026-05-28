@@ -32,6 +32,7 @@ import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
@@ -96,6 +97,7 @@ class IronSourceMediationAdapterTest {
           RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
         )
         .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
     adapter = IronSourceMediationAdapter(mediationUtils)
@@ -275,6 +277,57 @@ class IronSourceMediationAdapterTest {
       )
 
       mockStaticLevelPlay.verify { LevelPlay.setMetaData("is_child_directed", "false") }
+    }
+    mockStaticLevelPlay.close()
+  }
+
+  @Test
+  fun initialize_withAgeRestrictedTreatmentChild_setsLevelPlayMetaDataToTrue() {
+    val requestConfiguration =
+      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val mockStaticLevelPlay = mockStatic(LevelPlay::class.java)
+    mockStatic(IronSourceAds::class.java).use { _ ->
+      val mediationConfiguration =
+        createMediationConfiguration(
+          AdFormat.BANNER,
+          serverParameters = bundleOf(KEY_APP_KEY to TEST_APP_ID_1),
+        )
+
+      adapter.initialize(
+        context,
+        mockInitializationCompleteCallback,
+        listOf(mediationConfiguration),
+      )
+
+      mockStaticLevelPlay.verify { LevelPlay.setMetaData("is_child_directed", "true") }
+    }
+    mockStaticLevelPlay.close()
+  }
+
+  @Test
+  fun initialize_withAgeRestrictedTreatmentTeen_doesNotChangeLevelPlayMetaData() {
+    val requestConfiguration =
+      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.TEEN).build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val mockStaticLevelPlay = mockStatic(LevelPlay::class.java)
+    mockStatic(IronSourceAds::class.java).use { _ ->
+      val mediationConfiguration =
+        createMediationConfiguration(
+          AdFormat.BANNER,
+          serverParameters = bundleOf(KEY_APP_KEY to TEST_APP_ID_1),
+        )
+
+      adapter.initialize(
+        context,
+        mockInitializationCompleteCallback,
+        listOf(mediationConfiguration),
+      )
+
+      mockStaticLevelPlay.verify(
+        { LevelPlay.setMetaData(eq("is_child_directed"), any<String>()) },
+        never(),
+      )
     }
     mockStaticLevelPlay.close()
   }
