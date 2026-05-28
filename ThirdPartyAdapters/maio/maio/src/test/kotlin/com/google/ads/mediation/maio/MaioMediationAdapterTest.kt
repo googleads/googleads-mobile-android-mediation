@@ -19,6 +19,7 @@ import com.google.ads.mediation.maio.MaioMediationAdapter.MAIO_IS_AGE_RESTRICTED
 import com.google.ads.mediation.maio.MaioUtils.getVersionInfo
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
@@ -81,6 +82,7 @@ class MaioMediationAdapterTest {
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
   }
@@ -205,6 +207,24 @@ class MaioMediationAdapterTest {
     )
   }
 
+  @Test
+  fun initialize_withAgeRestrictedTreatmentChild_invokesOnInitializationFailed() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
+        .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+
+    adapter.mediationAdapterInitializeVerifyFailure(
+      activity,
+      mockInitializationCompleteCallback,
+      /* serverParameters= */ bundleOf(),
+      MAIO_IS_AGE_RESTRICTED_ERROR,
+    )
+  }
+
   // endregion
 
   // region Rewarded ad tests
@@ -231,6 +251,24 @@ class MaioMediationAdapterTest {
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val rewardedAdConfiguration = createRewardedAdConfiguration()
+
+    adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+
+    val expectedAdError =
+      AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN)
+    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRewardedAd_withAgeRestrictedTreatmentChild_invokesOnFailure() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
+        .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
     val rewardedAdConfiguration = createRewardedAdConfiguration()
@@ -332,6 +370,24 @@ class MaioMediationAdapterTest {
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val bannerAdConfiguration = createBannerAdConfiguration()
+
+    adapter.loadBannerAd(bannerAdConfiguration, mockMediationBannerAdLoadCallback)
+
+    val expectedAdError =
+      AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN)
+    verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadBannerAd_withAgeRestrictedTreatmentChild_invokesOnFailure() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
+        .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
     val bannerAdConfiguration = createBannerAdConfiguration()

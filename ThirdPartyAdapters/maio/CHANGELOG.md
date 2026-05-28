@@ -1,5 +1,8 @@
 ## maio Android Mediation Adapter Changelog
 
+#### Next Version
+- Filter age-restricted requests for maio SDK when new `AgeRestrictedTreatment` is set to `CHILD`.
+
 #### Version 2.0.8.2
 - Filter age-restricted requests for maio SDK because it cannot receive age-restricted signals.
 - Added property to build the adapter with GMA Next-Gen SDK dependency.
