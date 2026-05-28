@@ -1,5 +1,13 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Version 7.7.4.1 (In progress)
+- Added MediationLogging for the case multiple app ids are detected
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.2.0.
+- Google Mobile Ads Next-Gen SDK version 1.0.1.
+
+
 #### Version 7.7.4.0
 - Added `MediationInterstitialAd` implementation to the interstitial ad format.
 - Verified compatibility with Vungle SDK 7.7.4.

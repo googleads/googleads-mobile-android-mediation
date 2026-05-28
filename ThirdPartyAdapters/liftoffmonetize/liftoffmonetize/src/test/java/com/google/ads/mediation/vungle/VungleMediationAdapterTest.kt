@@ -464,7 +464,7 @@ class VungleMediationAdapterTest {
     verify(vungleAdConfig).adOrientation = LANDSCAPE
     verify(vungleFactory).createInterstitialAd(context, TEST_PLACEMENT_ID, vungleAdConfig)
     verify(vungleInterstitialAd).adListener = any()
-    verify(vungleInterstitialAd).load(null)
+    verify(vungleInterstitialAd).load()
   }
 
   @Test
@@ -592,7 +592,7 @@ class VungleMediationAdapterTest {
     verify(vungleFactory).createRewardedAd(context, TEST_PLACEMENT_ID, vungleAdConfig)
     verify(vungleRewardedAd).adListener = adapter
     verify(vungleRewardedAd).setUserId(TEST_USER_ID)
-    verify(vungleRewardedAd).load(eq(null))
+    verify(vungleRewardedAd).load()
   }
 
   @Test
@@ -890,7 +890,7 @@ class VungleMediationAdapterTest {
     verify(vungleFactory).createRewardedAd(context, TEST_PLACEMENT_ID, vungleAdConfig)
     verify(vungleRewardedAd).adListener = adapter
     verify(vungleRewardedAd).setUserId(TEST_USER_ID)
-    verify(vungleRewardedAd).load(eq(null))
+    verify(vungleRewardedAd).load()
   }
 
   @Test

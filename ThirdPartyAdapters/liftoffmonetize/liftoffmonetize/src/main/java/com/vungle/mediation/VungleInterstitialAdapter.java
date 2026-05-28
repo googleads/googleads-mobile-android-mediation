@@ -43,7 +43,6 @@ import com.vungle.ads.BaseAd;
 import com.vungle.ads.InterstitialAd;
 import com.vungle.ads.InterstitialAdListener;
 import com.vungle.ads.VungleAdSize;
-import com.vungle.ads.VungleAds;
 import com.vungle.ads.VungleBannerView;
 import com.vungle.ads.VungleError;
 
@@ -116,7 +115,7 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
                 interstitialAd = new InterstitialAd(context, placement, adConfig);
                 interstitialAd.setAdListener(new VungleInterstitialListener());
                 interstitialAd.setAdapterAdFormat("VungleInterstitialAdapter-interstitial");
-                interstitialAd.load((String) null);
+                interstitialAd.load();
               }
 
               @Override
@@ -274,7 +273,7 @@ public class VungleInterstitialAdapter extends VungleMediationAdapter
                 VungleSdkWrapper.logCustomSizeForBannerPlacement(
                     bannerAdView, "VungleInterstitialAdapter-banner-custom", placement, adSize);
 
-                bannerAdView.load((String) null);
+                bannerAdView.load();
               }
 
               @Override
