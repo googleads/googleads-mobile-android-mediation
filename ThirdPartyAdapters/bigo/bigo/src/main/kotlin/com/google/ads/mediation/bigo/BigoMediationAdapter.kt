@@ -17,6 +17,7 @@ package com.google.ads.mediation.bigo
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.MobileAds.getRequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration
@@ -223,9 +224,11 @@ constructor(val mediationUtils: MediationUtilsWrapper = MediationUtilsWrapper())
   private fun configureBigoPrivacy(context: Context) {
     val tagForChildDirected = getRequestConfiguration().tagForChildDirectedTreatment
     val tagForUnderAgeOfConsent = getRequestConfiguration().tagForUnderAgeOfConsent
+    val ageRestrictedTreatment = getRequestConfiguration().ageRestrictedTreatment
     if (
       tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
-        tagForUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+        tagForUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE ||
+        ageRestrictedTreatment == AgeRestrictedTreatment.CHILD
     ) {
       // A value of "true" indicates that the user is not a child under 13 years old, and a value of
       // "false" indicates that the user is a child under 13 years old.

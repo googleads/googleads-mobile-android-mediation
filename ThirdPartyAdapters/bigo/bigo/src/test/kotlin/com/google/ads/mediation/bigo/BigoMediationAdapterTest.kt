@@ -37,6 +37,7 @@ import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MI
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
@@ -176,6 +177,34 @@ class BigoMediationAdapterTest {
           RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
         )
         .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+        .build()
+    )
+    val callbackCaptor = argumentCaptor<BigoAdSdk.InitListener>()
+
+    adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
+
+    mockBigoSdk.verify { BigoAdSdk.initialize(eq(context), any(), callbackCaptor.capture()) }
+    callbackCaptor.firstValue.onInitialized()
+    verify(mockInitializationCallback).onInitializationSucceeded()
+    mockBigoSdk.verify {
+      BigoAdSdk.setUserConsent(eq(context), eq(ConsentOptions.COPPA), eq(false))
+    }
+  }
+
+  @Test
+  fun initialize_ageRestrictedTreatmentChild_invokesOnInitializationSucceededAndBigoCoppaToFalse() {
+    val mediationConfiguration =
+      MediationConfiguration(
+        AdFormat.BANNER,
+        /* serverParameters= */ bundleOf(APP_ID_KEY to TEST_APP_ID),
+      )
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
         .build()
     )
     val callbackCaptor = argumentCaptor<BigoAdSdk.InitListener>()

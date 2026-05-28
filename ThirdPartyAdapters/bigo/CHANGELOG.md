@@ -1,5 +1,8 @@
 ## Bigo Android Mediation Adapter Changelog
 
+#### Next Version
+- Maps `AgeRestrictedTreatment` to Bigo's COPPA API.
+
 #### Version 5.9.0.0
 - Verified compatibility with Bigo Ads SDK 5.9.0.
 
