@@ -14,10 +14,11 @@
 
 package com.applovin.mediation;
 
+import static com.google.ads.mediation.applovin.AgeRestrictedTreatment.CHILD;
+import static com.google.ads.mediation.applovin.AgeRestrictedTreatment.getAgeRestrictedTreatment;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.APPLOVIN_SDK_ERROR_DOMAIN;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_CHILD_USER;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_DOMAIN;
-import static com.google.android.gms.ads.AgeRestrictedTreatment.CHILD;
 import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE;
 import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
 
@@ -180,7 +181,7 @@ public class AppLovinUtils {
     return requestConfiguration.getTagForChildDirectedTreatment()
             == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
         || requestConfiguration.getTagForUnderAgeOfConsent() == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
-        || requestConfiguration.getAgeRestrictedTreatment() == CHILD;
+        || getAgeRestrictedTreatment() == CHILD;
   }
 
   /**

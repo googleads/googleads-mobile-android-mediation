@@ -36,7 +36,6 @@ import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
@@ -101,6 +100,7 @@ class BidMachineMediationAdapterTest {
   @After
   fun tearDown() {
     mockBidMachine.close()
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(null)
   }
 
   // region Version tests
@@ -226,9 +226,9 @@ class BidMachineMediationAdapterTest {
           RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
         )
         .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
-        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
         .build()
     )
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
 
     adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
 

@@ -18,7 +18,6 @@ import android.content.Context
 import androidx.annotation.VisibleForTesting
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.NeedChildDirectedTreatment
-import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 
@@ -51,7 +50,7 @@ object LineInitializer {
           RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
           requestConfiguration.tagForUnderAgeOfConsent ==
             RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE ||
-          requestConfiguration.ageRestrictedTreatment == AgeRestrictedTreatment.CHILD
+          AgeRestrictedTreatment.getAgeRestrictedTreatment() == AgeRestrictedTreatment.CHILD
       ) {
         fiveAdConfig?.needChildDirectedTreatment = NeedChildDirectedTreatment.TRUE
       } else if (

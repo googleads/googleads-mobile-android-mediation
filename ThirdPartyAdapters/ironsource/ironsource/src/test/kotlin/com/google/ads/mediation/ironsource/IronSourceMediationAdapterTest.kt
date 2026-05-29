@@ -32,7 +32,6 @@ import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
@@ -97,9 +96,9 @@ class IronSourceMediationAdapterTest {
           RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
         )
         .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
-        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
     adapter = IronSourceMediationAdapter(mediationUtils)
   }
 
@@ -283,9 +282,7 @@ class IronSourceMediationAdapterTest {
 
   @Test
   fun initialize_withAgeRestrictedTreatmentChild_setsLevelPlayMetaDataToTrue() {
-    val requestConfiguration =
-      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
-    MobileAds.setRequestConfiguration(requestConfiguration)
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
     val mockStaticLevelPlay = mockStatic(LevelPlay::class.java)
     mockStatic(IronSourceAds::class.java).use { _ ->
       val mediationConfiguration =
@@ -307,9 +304,7 @@ class IronSourceMediationAdapterTest {
 
   @Test
   fun initialize_withAgeRestrictedTreatmentTeen_doesNotChangeLevelPlayMetaData() {
-    val requestConfiguration =
-      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.TEEN).build()
-    MobileAds.setRequestConfiguration(requestConfiguration)
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.TEEN)
     val mockStaticLevelPlay = mockStatic(LevelPlay::class.java)
     mockStatic(IronSourceAds::class.java).use { _ ->
       val mediationConfiguration =
@@ -845,6 +840,7 @@ class IronSourceMediationAdapterTest {
     IronSourceBannerAd.removeFromAvailableInstances(/* instanceId= */ "0")
     IronSourceInterstitialAd.removeFromAvailableInstances(/* instanceId= */ "0")
     IronSourceRewardedAd.removeFromAvailableInstances(/* instanceId= */ "0")
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(null)
   }
 
   private fun createMediationConfiguration(

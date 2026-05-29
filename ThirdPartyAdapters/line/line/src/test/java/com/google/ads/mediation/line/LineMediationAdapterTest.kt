@@ -31,7 +31,6 @@ import com.google.ads.mediation.line.LineMediationAdapter.Companion.SDK_ERROR_DO
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.VersionInfo
@@ -55,6 +54,7 @@ import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.google.common.truth.Truth.assertThat
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -125,6 +125,19 @@ class LineMediationAdapterTest {
     LineSdkWrapper.delegate = mockSdkWrapper
     LineSdkFactory.delegate = mockSdkFactory
     LineInitializer.resetFiveAdConfig()
+  }
+
+  @After
+  fun tearDown() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .build()
+    )
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(null)
   }
 
   // region Version Tests
@@ -371,9 +384,7 @@ class LineMediationAdapterTest {
 
   @Test
   fun initialize_withAgeRestrictedTreatmentChild_configuresFiveAdSDKWithTrue() {
-    val requestConfiguration =
-      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
-    MobileAds.setRequestConfiguration(requestConfiguration)
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
     val serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1)
     val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
 
@@ -388,9 +399,7 @@ class LineMediationAdapterTest {
 
   @Test
   fun initialize_withAgeRestrictedTreatmentTeen_configuresFiveAdSDKWithUnspecified() {
-    val requestConfiguration =
-      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.TEEN).build()
-    MobileAds.setRequestConfiguration(requestConfiguration)
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.TEEN)
     val serverParameters = bundleOf(KEY_APP_ID to TEST_APP_ID_1)
     val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
 

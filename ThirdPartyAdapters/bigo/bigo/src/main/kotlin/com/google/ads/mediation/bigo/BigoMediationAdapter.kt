@@ -17,7 +17,6 @@ package com.google.ads.mediation.bigo
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
-import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.MobileAds.getRequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration
@@ -224,7 +223,7 @@ constructor(val mediationUtils: MediationUtilsWrapper = MediationUtilsWrapper())
   private fun configureBigoPrivacy(context: Context) {
     val tagForChildDirected = getRequestConfiguration().tagForChildDirectedTreatment
     val tagForUnderAgeOfConsent = getRequestConfiguration().tagForUnderAgeOfConsent
-    val ageRestrictedTreatment = getRequestConfiguration().ageRestrictedTreatment
+    val ageRestrictedTreatment = AgeRestrictedTreatment.getAgeRestrictedTreatment()
     if (
       tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
         tagForUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE ||

@@ -14,6 +14,8 @@
 
 package com.google.ads.mediation.chartboost;
 
+import static com.google.ads.mediation.chartboost.AgeRestrictedTreatment.CHILD;
+import static com.google.ads.mediation.chartboost.AgeRestrictedTreatment.getAgeRestrictedTreatment;
 import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG;
 
 import android.content.Context;
@@ -27,7 +29,6 @@ import com.chartboost.sdk.Mediation;
 import com.chartboost.sdk.ads.Banner;
 import com.chartboost.sdk.privacy.model.COPPA;
 import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.AgeRestrictedTreatment;
 import com.google.android.gms.ads.MediationUtils;
 import com.google.android.gms.ads.RequestConfiguration;
 import java.util.ArrayList;
@@ -175,10 +176,9 @@ class ChartboostAdapterUtils {
     // Chartboost's SDK only supports updating a user's COPPA status with true and false values.
     int tagForChildDirected = requestConfiguration.getTagForChildDirectedTreatment();
     int tagForUnderAgeConsent = requestConfiguration.getTagForUnderAgeOfConsent();
-    AgeRestrictedTreatment ageRestrictedTreatment = requestConfiguration.getAgeRestrictedTreatment();
     if (tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
         || tagForUnderAgeConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
-        || ageRestrictedTreatment == AgeRestrictedTreatment.CHILD) {
+        || getAgeRestrictedTreatment() == CHILD) {
         Chartboost.addDataUseConsent(context, new COPPA(true));
     } else if (tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
         || tagForUnderAgeConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE) {

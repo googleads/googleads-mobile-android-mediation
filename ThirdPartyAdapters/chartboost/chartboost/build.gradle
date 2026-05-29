@@ -51,6 +51,13 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
     sourceSets {
+        main {
+            if (project.hasProperty('useNextGenGma')) {
+                java.srcDirs += 'src/nextGenGmaSDK/java'
+            } else {
+                java.srcDirs += 'src/playServices/java'
+            }
+        }
         test.java.srcDirs += 'src/test/kotlin'
     }
     testOptions {

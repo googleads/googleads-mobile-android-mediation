@@ -42,6 +42,15 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
+    sourceSets {
+        main {
+            if (project.hasProperty('useNextGenGma')) {
+                java.srcDirs += 'src/nextGenGmaSDK/java'
+            } else {
+                java.srcDirs += 'src/playServices/java'
+            }
+        }
+    }
 }
 
 dependencies {
@@ -53,7 +62,6 @@ dependencies {
     } else {
         implementation 'com.google.android.gms:play-services-ads:25.3.0'
     }
-
 
     testImplementation 'androidx.core:core-ktx:1.8.0'
     testImplementation 'androidx.test:core:1.6.1'

@@ -30,7 +30,6 @@ import com.google.ads.mediation.applovin.AppLovinWaterfallInterstitialAd.ERROR_M
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
@@ -161,9 +160,9 @@ class AppLovinMediationAdapterTest {
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
-        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
         .build()
     )
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(null)
     AppLovinWaterfallInterstitialAd.appLovinWaterfallInterstitialAds.clear()
     AppLovinWaterfallRewardedRenderer.incentivizedAdsMap.clear()
   }
@@ -204,9 +203,7 @@ class AppLovinMediationAdapterTest {
 
   @Test
   fun initialize_ifUserIsAgeRestrictedTreatmentChild_invokesOnFailure() {
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
-    )
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
 
     appLovinMediationAdapter.initialize(
       context,
@@ -348,9 +345,7 @@ class AppLovinMediationAdapterTest {
 
   @Test
   fun collectSignals_ifUserIsAgeRestrictedTreatmentChild_failsWithCallback() {
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
-    )
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
     val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
     appLovinMediationAdapter.collectSignals(mock<RtbSignalData>(), signalCallbacks)
@@ -390,9 +385,7 @@ class AppLovinMediationAdapterTest {
 
   @Test
   fun loadAppOpenAd_ifUserIsAgeRestrictedTreatmentChild_failsWithCallback() {
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
-    )
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
     val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
     appLovinMediationAdapter.loadAppOpenAd(appOpenAdWaterfallConfig, appOpenAdLoadCallback)
@@ -505,9 +498,7 @@ class AppLovinMediationAdapterTest {
 
   @Test
   fun loadBannerAd_ifUserIsAgeRestrictedTreatmentChild_failsWithCallback() {
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
-    )
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
     mediationBannerAdConfiguration = initializeBannerAd()
     val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
@@ -655,9 +646,7 @@ class AppLovinMediationAdapterTest {
 
   @Test
   fun loadInterstitialAd_ifUserIsAgeRestrictedTreatmentChild_failsWithCallback() {
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
-    )
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
     mediationInterstitialAdConfiguration = initializeInterstitialAd()
     val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
@@ -759,9 +748,7 @@ class AppLovinMediationAdapterTest {
 
   @Test
   fun loadRtbInterstitialAd_ifUserIsAgeRestrictedTreatmentChild_failsWithCallback() {
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
-    )
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
     mediationInterstitialAdConfiguration = initializeInterstitialAd()
     val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
@@ -852,9 +839,7 @@ class AppLovinMediationAdapterTest {
 
   @Test
   fun loadRewardedAd_ifUserIsAgeRestrictedTreatmentChild_failsWithCallback() {
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
-    )
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
     mediationRewardedAdConfiguration = initializeRewardedAd()
     val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 
@@ -956,9 +941,7 @@ class AppLovinMediationAdapterTest {
 
   @Test
   fun loadRtbRewardedAd_ifUserIsAgeRestrictedTreatmentChild_failsWithCallback() {
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
-    )
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
     mediationRewardedAdConfiguration = initializeRewardedAd()
     val expectedError = AdError(ERROR_CHILD_USER, ERROR_MSG_CHILD_USER, ERROR_DOMAIN)
 

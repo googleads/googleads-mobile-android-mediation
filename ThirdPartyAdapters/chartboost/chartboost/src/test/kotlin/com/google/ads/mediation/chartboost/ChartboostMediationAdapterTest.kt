@@ -16,7 +16,6 @@ import com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_INVALID_SER
 import com.google.ads.mediation.chartboost.ChartboostInitializer.getInstance
 import com.google.ads.mediation.chartboost.ChartboostMediationAdapter.ERROR_MESSAGE_INVALID_SERVER_PARAMETERS
 import com.google.ads.mediation.chartboost.ChartboostMediationAdapter.ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID
-import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
@@ -54,9 +53,9 @@ class ChartboostMediationAdapterTest {
           RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
         )
         .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
-        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
         .build()
     )
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(null)
     ChartboostInitializer.clearInstance()
     adapter = ChartboostMediationAdapter()
   }
@@ -366,9 +365,9 @@ class ChartboostMediationAdapterTest {
           RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
         )
         .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
-        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
         .build()
     )
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
     val coppaCaptor = argumentCaptor<COPPA>()
     ChartboostMediationAdapter.setAppParams("app_id", "app_signature")
     mockStatic(Chartboost::class.java).use {

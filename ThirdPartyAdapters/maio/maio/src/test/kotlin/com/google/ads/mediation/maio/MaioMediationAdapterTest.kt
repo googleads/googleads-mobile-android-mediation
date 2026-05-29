@@ -19,7 +19,6 @@ import com.google.ads.mediation.maio.MaioMediationAdapter.MAIO_IS_AGE_RESTRICTED
 import com.google.ads.mediation.maio.MaioUtils.getVersionInfo
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
@@ -41,6 +40,7 @@ import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager.KEY_MEDIA_ID
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager.KEY_ZONE_ID
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager.getSdkVersion
 import jp.maio.sdk.android.v2.Version
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -82,9 +82,13 @@ class MaioMediationAdapterTest {
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
-        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
+  }
+
+  @After
+  fun tearDown() {
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(null)
   }
 
   // region version tests
@@ -209,11 +213,11 @@ class MaioMediationAdapterTest {
 
   @Test
   fun initialize_withAgeRestrictedTreatmentChild_invokesOnInitializationFailed() {
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
     val requestConfiguration =
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
-        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
 
@@ -264,11 +268,11 @@ class MaioMediationAdapterTest {
 
   @Test
   fun loadRewardedAd_withAgeRestrictedTreatmentChild_invokesOnFailure() {
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
     val requestConfiguration =
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
-        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
     val rewardedAdConfiguration = createRewardedAdConfiguration()
@@ -383,11 +387,11 @@ class MaioMediationAdapterTest {
 
   @Test
   fun loadBannerAd_withAgeRestrictedTreatmentChild_invokesOnFailure() {
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
     val requestConfiguration =
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
-        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
     val bannerAdConfiguration = createBannerAdConfiguration()

@@ -37,7 +37,6 @@ import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MI
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
@@ -92,6 +91,7 @@ class BigoMediationAdapterTest {
   @After
   fun tearDown() {
     mockBigoSdk.close()
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(null)
   }
 
   // region Version tests
@@ -204,9 +204,9 @@ class BigoMediationAdapterTest {
           RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
         )
         .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
-        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
         .build()
     )
+    AgeRestrictedTreatment.setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
     val callbackCaptor = argumentCaptor<BigoAdSdk.InitListener>()
 
     adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))

@@ -14,7 +14,6 @@
 
 package com.google.ads.mediation.maio
 
-import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import jp.maio.sdk.android.mediation.admob.adapter.BuildConfig
@@ -28,7 +27,7 @@ object MaioUtils {
     val requestConfiguration = MobileAds.getRequestConfiguration()
     val tagForChildDirectedTreatment = requestConfiguration.tagForChildDirectedTreatment
     val tagForUnderAgeOfConsent = requestConfiguration.tagForUnderAgeOfConsent
-    val ageRestrictedTreatment = requestConfiguration.ageRestrictedTreatment
+    val ageRestrictedTreatment = AgeRestrictedTreatment.getAgeRestrictedTreatment()
     return tagForChildDirectedTreatment ==
       RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
       tagForUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE ||

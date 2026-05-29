@@ -60,6 +60,13 @@ android {
     }
 
     sourceSets {
+        main {
+            if (project.hasProperty('useNextGenGma')) {
+                kotlin.srcDirs += 'src/nextGenGmaSDK/kotlin'
+            } else {
+                kotlin.srcDirs += 'src/playServices/kotlin'
+            }
+        }
         test.kotlin.srcDirs += 'src/test/kotlin'
     }
 
