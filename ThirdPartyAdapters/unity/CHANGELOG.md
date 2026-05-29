@@ -1,5 +1,10 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Next version
+
+- Removed old API implementation for interstitial ads. Adapter will start using
+  the new API implementation.
+
 #### Version 4.18.0.0
 - Added property to build the adapter with GMA Next-Gen SDK dependency.
 - Verified compatibility with Unity Ads SDK 4.18.0.
