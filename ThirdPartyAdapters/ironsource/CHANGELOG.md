@@ -1,7 +1,13 @@
 ## IronSource Android Mediation Adapter Changelog
 
-#### Next Version
-- Maps `AgeRestrictedTreatment` to IronSource's `is_child_directed` metadata.
+#### Version 9.4.3.0
+- Verified compatibility with ironSource SDK version 9.4.3.
+- Maps the `AgeRestrictedTreatment` parameter to IronSource's `is_child_directed` metadata.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.3.0.
+- Google Mobile Ads Next-Gen SDK version 1.1.0.
+- IronSource SDK version 9.4.3.
 
 #### Version 9.4.2.0
 - Verified compatibility with ironSource SDK version 9.4.2.
