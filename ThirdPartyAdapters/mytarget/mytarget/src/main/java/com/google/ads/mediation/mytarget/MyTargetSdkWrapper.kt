@@ -19,6 +19,7 @@ import com.my.target.ads.InterstitialAd
 import com.my.target.ads.MyTargetView
 import com.my.target.ads.RewardedAd
 import com.my.target.common.MyTargetVersion
+import com.my.target.nativeads.NativeAd
 
 object MyTargetSdkWrapper {
   @JvmStatic
@@ -33,4 +34,6 @@ object MyTargetSdkWrapper {
 
   @JvmStatic
   fun createRewardedAd(slotId: Int, context: Context): RewardedAd = RewardedAd(slotId, context)
+
+  @JvmStatic fun createNativeAd(slotId: Int, context: Context): NativeAd = NativeAd(slotId, context)
 }

@@ -19,6 +19,7 @@ import static com.google.ads.mediation.mytarget.MyTargetTools.handleMediationExt
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdError;
@@ -34,9 +35,12 @@ import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
+import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
+import com.google.android.gms.ads.mediation.NativeAdMapper;
 import com.my.target.ads.Reward;
 import com.my.target.ads.RewardedAd;
 import com.my.target.ads.RewardedAd.RewardedAdListener;
@@ -170,6 +174,15 @@ public class MyTargetMediationAdapter extends Adapter
               callback) {
     MyTargetInterstitialAd interstitialAd = new MyTargetInterstitialAd(callback);
     interstitialAd.loadAd(adConfiguration);
+  }
+
+  @Override
+  public void loadNativeAdMapper(
+      @NonNull MediationNativeAdConfiguration adConfiguration,
+      @NonNull MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> callback)
+      throws RemoteException {
+    MyTargetNativeAd nativeAd = new MyTargetNativeAd(callback);
+    nativeAd.loadAd(adConfiguration);
   }
 
   @Override
