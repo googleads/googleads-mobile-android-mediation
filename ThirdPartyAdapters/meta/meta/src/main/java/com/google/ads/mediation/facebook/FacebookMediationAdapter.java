@@ -28,6 +28,8 @@ import com.google.ads.mediation.facebook.rtb.FacebookRtbInterstitialAd;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbNativeAd;
 import com.google.ads.mediation.facebook.rtb.MetaRtbAppOpenAd;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AgeRestrictedTreatment;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -320,7 +322,9 @@ public class FacebookMediationAdapter extends RtbAdapter {
     if (mediationAdConfiguration.taggedForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
         || mediationAdConfiguration.taggedForUnderAgeTreatment()
-            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE) {
+            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+        || MobileAds.getRequestConfiguration().getAgeRestrictedTreatment()
+            == AgeRestrictedTreatment.CHILD) {
       AdSettings.setMixedAudience(true);
     } else if (mediationAdConfiguration.taggedForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
