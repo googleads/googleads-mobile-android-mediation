@@ -10,8 +10,9 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "UnityAds"
     // String property to store version name.
-    stringVersion = "4.18.0.0"
+    stringVersion = "4.18.1.0"
     // String property to store group id.
+
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
     jacocoVersion = '0.8.13'
@@ -29,7 +30,7 @@ android {
             minSdk 23
         }
         targetSdk 33
-        versionCode 4180000
+        versionCode 418010000
         versionName stringVersion
         buildConfigField("String", "ADAPTER_VERSION", "\"${stringVersion}\"")
         android.buildFeatures.buildConfig true
@@ -120,13 +121,13 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
-    implementation 'com.unity3d.ads:unity-ads:4.18.0'
+    implementation 'com.unity3d.ads:unity-ads:4.18.1'
     implementation 'androidx.annotation:annotation:1.5.0'
     // Check for a 'useNextGenGma' flag to use the next generation GMA SDK.
     if (project.hasProperty('useNextGenGma')) {
         implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.0.1'
     } else {
-        implementation 'com.google.android.gms:play-services-ads:25.2.0'
+        implementation 'com.google.android.gms:play-services-ads:25.3.0'
     }
 
     testImplementation 'androidx.core:core-ktx:1.8.0'
@@ -136,7 +137,7 @@ dependencies {
     testImplementation 'androidx.test.ext:truth:1.6.0'
     testImplementation "com.google.truth:truth:1.2.0"
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.10'
+    testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
     testImplementation 'org.robolectric:robolectric:4.14'
 }
