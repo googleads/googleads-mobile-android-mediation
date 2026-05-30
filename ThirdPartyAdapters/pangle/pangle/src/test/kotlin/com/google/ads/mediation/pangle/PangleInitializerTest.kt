@@ -27,8 +27,6 @@ class PangleInitializerTest {
   private val pagConfigBuilder: PAGConfig.Builder = mock {
     on { appId(any()) } doReturn this.mock
     on { setAdxId(PangleConstants.ADX_ID) } doReturn this.mock
-    on { setPAConsent(any()) } doReturn this.mock
-    on { setUserData(any()) } doReturn this.mock
     on { build() } doReturn pagConfig
   }
   private val pangleFactory: PangleFactory = mock {

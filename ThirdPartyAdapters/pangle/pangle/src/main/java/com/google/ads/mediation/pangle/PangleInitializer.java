@@ -95,10 +95,6 @@ public class PangleInitializer implements PAGInitCallback {
             .createPAGConfigBuilder()
             .appId(appId)
             .setAdxId(PangleConstants.ADX_ID)
-            .setUserData(
-                String.format(
-                    "[{\"name\":\"mediation\",\"value\":\"google\"},{\"name\":\"adapter_version\",\"value\":\"%s\"}]",
-                    BuildConfig.ADAPTER_VERSION))
             .build();
     pangleSdkWrapper.init(context, adConfig, PangleInitializer.this);
   }

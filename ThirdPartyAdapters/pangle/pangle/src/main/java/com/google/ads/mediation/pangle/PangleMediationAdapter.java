@@ -28,7 +28,6 @@ import com.bytedance.sdk.openadsdk.api.PAGConstant;
 import com.bytedance.sdk.openadsdk.api.bidding.PAGBiddingRequest;
 import com.bytedance.sdk.openadsdk.api.init.PAGBidCallback;
 import com.bytedance.sdk.openadsdk.api.init.PAGBidError;
-import com.bytedance.sdk.openadsdk.api.init.PAGConfig;
 import com.google.ads.mediation.pangle.PangleInitializer.Listener;
 import com.google.ads.mediation.pangle.renderer.PangleAppOpenAd;
 import com.google.ads.mediation.pangle.renderer.PangleBannerAd;
@@ -324,6 +323,7 @@ public class PangleMediationAdapter extends RtbAdapter {
   }
 
   public static int getPAConsent() {
-    return PAGConfig.getPAConsent();
+    // PAGConfig.getPAConsent() has been removed in Pangle SDK 8.1.0.3.0.
+    return 0;
   }
 }

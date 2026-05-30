@@ -55,11 +55,11 @@ public class PangleSdkWrapper {
 
 
   void setPAConsent(@PAGConstant.PAGPAConsentType int pa) {
-    PAGConfig.setPAConsent(pa);
+    // PAGConfig.setPAConsent(int) has been removed in Pangle SDK 8.1.0.3.0.
   }
 
   void setUserData(String userData) {
-    PAGConfig.setUserData(userData);
+    // PAGConfig.setUserData(String) has been removed in Pangle SDK 8.1.0.3.0.
   }
 
   void getBiddingToken(
