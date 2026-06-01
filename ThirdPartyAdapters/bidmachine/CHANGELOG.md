@@ -1,6 +1,6 @@
 ## BidMachine Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 3.7.1.0 (In progress)
 - Maps `AgeRestrictedTreatment` to BidMachine's COPPA API.
 
 #### Version 3.7.0.0
