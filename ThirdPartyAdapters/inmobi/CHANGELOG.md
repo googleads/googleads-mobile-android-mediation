@@ -1,5 +1,9 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Next Version
+- Downgraded Kotlin version to 1.9.20 to match Google Mobile Ads Next-Gen SDK's
+  minimum Kotlin version requirement.
+
 #### Version 11.3.0.0
 - Verified compatibility with InMobi Kotlin SDK version 11.3.0.
 
