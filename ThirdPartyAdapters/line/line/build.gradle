@@ -47,6 +47,11 @@ android {
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
+
+        // Nonagon's Kotlin version is 2.3.0 but we want to build with 1.9.20
+        // (since Decagon uses Kotlin 1.9.20). Adding this line to ignore the
+        // Kotlin version check when building with Nonagon.
+        freeCompilerArgs += ["-Xskip-metadata-version-check"]
     }
 
     buildFeatures {
@@ -141,11 +146,11 @@ dependencies {
         implementation 'com.google.android.gms:play-services-ads:25.3.0'
     }
     implementation 'com.linecorp.adsnetwork:fivead:3.1.1'
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.0'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'androidx.test:core:1.5.0'
-    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.3.0'
+    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.20'
     testImplementation 'org.mockito:mockito-core:5.5.0'
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
     testImplementation 'androidx.test.ext:junit-ktx:1.1.5'

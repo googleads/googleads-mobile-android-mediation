@@ -2,6 +2,8 @@
 
 #### Next Version
 - Maps `AgeRestrictedTreatment` to Line's ChildDirectedTreatment API.
+- Downgraded Kotlin version to 1.9.20 to match Google Mobile Ads Next-Gen SDK's
+  minimum Kotlin version requirement.
 
 #### Version 3.1.1.0 (In progress)
 
