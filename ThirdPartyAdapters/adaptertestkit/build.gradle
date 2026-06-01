@@ -21,6 +21,8 @@ android {
 
   kotlinOptions {
     jvmTarget = JavaVersion.VERSION_11.toString()
+    languageVersion = "1.9"
+    apiVersion = "1.9"
   }
 
 }
@@ -30,6 +32,6 @@ dependencies {
   implementation 'com.google.android.gms:play-services-ads:25.2.0'
   implementation 'junit:junit:4.13.2'
   implementation "com.google.truth:truth:1.1.5"
-  implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.10'
+  implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.20'
   implementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
 }
