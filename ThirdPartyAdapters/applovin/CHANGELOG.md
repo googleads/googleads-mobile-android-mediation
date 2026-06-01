@@ -2,6 +2,8 @@
 
 #### Next version
 - Filter age-restricted requests for AppLovin SDK when new `AgeRestrictedTreatment` is set to `CHILD`.
+- Downgraded Kotlin version to 1.9.20 to match Google Mobile Ads Next-Gen SDK's
+  minimum Kotlin version requirement.
 
 #### Version 13.6.2.0
 - Verified compatibility with AppLovin SDK 13.6.2.

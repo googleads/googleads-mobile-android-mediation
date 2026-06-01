@@ -41,6 +41,10 @@ android {
     }
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
+        // Nonagon's Kotlin version is 2.3.0 but we want to build with 1.9.20
+        // (since Decagon uses Kotlin 1.9.20). Adding this line to ignore the
+        // Kotlin version check when building with Nonagon.
+        freeCompilerArgs += ["-Xskip-metadata-version-check"]
     }
 }
 
