@@ -1,7 +1,12 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 6.21.0.4
+- Testing something else - this should still fail.
 - Fixed a memory leak issue with interstitial ads.
+
+Built and tested with:
+- Google Mobile Ads Next-Gen SDK version 1.1.1.
+- Meta Audience Network SDK version 6.21.0.
 
 #### Version 6.21.0.3
 - Updated native ad implementation to use the updated `NativeAdMapper` API.
