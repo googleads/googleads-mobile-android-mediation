@@ -37,12 +37,12 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: "Install Gradle"
-        run: |
-          brew install gradle
       - name: "Unit Tests"
         run: |
           cd ThirdPartyAdapters/chartboost/
           GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
           gradle wrapper --gradle-version $GRADLE_VERSION
           ./gradlew test --scan
