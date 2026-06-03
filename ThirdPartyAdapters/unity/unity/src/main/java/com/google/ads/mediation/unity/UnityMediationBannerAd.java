@@ -31,7 +31,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
@@ -39,7 +38,6 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
 import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.UnityAdsLoadOptions;
-import com.unity3d.ads.metadata.MetaData;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.BannerView;
 import com.unity3d.services.banners.UnityBannerSize;
@@ -203,9 +201,6 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
                         + "and can now load banner ad with placement ID: %s",
                     gameId, bannerPlacementId);
             Log.d(UnityMediationAdapter.TAG, logMessage);
-
-            UnityAdsAdapterUtils.setUnityAdsPrivacy(
-                MobileAds.getRequestConfiguration(), new MetaData(context));
 
             if (unityBannerViewWrapper == null) {
               unityBannerViewWrapper =

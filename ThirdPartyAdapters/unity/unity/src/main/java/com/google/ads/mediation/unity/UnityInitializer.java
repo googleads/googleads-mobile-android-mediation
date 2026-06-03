@@ -19,6 +19,7 @@ import static com.google.ads.mediation.unity.UnityMediationAdapter.AD_TECHNOLOGY
 import android.content.Context;
 import androidx.annotation.VisibleForTesting;
 import com.google.ads.mediation.unity.UnityAdsAdapterUtils.ConsentResult;
+import com.google.android.gms.ads.MobileAds;
 import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.metadata.MediationMetaData;
@@ -72,6 +73,8 @@ public class UnityInitializer {
    */
   public void initializeUnityAds(Context context, String gameId, IUnityAdsInitializationListener
       initializationListener) {
+    UnityAdsAdapterUtils.setUnityAdsPrivacy(
+        MobileAds.getRequestConfiguration(), unityAdsWrapper.getMetaData(context));
 
     if (unityAdsWrapper.isInitialized()) {
       // Unity Ads is already initialized.
