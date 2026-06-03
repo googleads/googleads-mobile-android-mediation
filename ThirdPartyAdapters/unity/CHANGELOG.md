@@ -1,9 +1,11 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
-#### Version 4.18.1.0 (In progress)
-
+#### Next version
+- Maps `AgeRestrictedTreatment` to Unity Ads SDK's privacy settings.
 - Removed old API implementation for interstitial ads. Adapter will start using
   the new API implementation.
+
+#### Version 4.18.1.0 (In progress)
 
 #### Version 4.18.0.0
 - Added property to build the adapter with GMA Next-Gen SDK dependency.

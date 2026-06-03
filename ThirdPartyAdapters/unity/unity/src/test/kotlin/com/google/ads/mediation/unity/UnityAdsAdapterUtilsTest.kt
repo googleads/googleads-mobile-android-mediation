@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.common.truth.Truth.assertThat
@@ -349,6 +350,120 @@ class UnityAdsAdapterUtilsTest {
     UnityAdsAdapterUtils.setUnityAdsPrivacy(requestConfiguration, mockMetaData)
 
     verify(mockMetaData).set("user.nonbehavioral", false)
+    verify(mockMetaData).commit()
+  }
+
+  @Test
+  fun setUnityAdsPrivacy_withAgeRestrictedTreatmentChild_commitsNonBehavioralMetaDataTrue() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val mockMetaData = mock<MetaData>()
+
+    UnityAdsAdapterUtils.setUnityAdsPrivacy(requestConfiguration, mockMetaData)
+
+    verify(mockMetaData).set("user.nonbehavioral", true)
+    verify(mockMetaData).commit()
+  }
+
+  @Test
+  fun setUnityAdsPrivacy_withAgeRestrictedTreatmentTeenAndLegacyUnspecified_commitsNonBehavioralMetaDataTrue() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.TEEN)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val mockMetaData = mock<MetaData>()
+
+    UnityAdsAdapterUtils.setUnityAdsPrivacy(requestConfiguration, mockMetaData)
+
+    verify(mockMetaData).set("user.nonbehavioral", true)
+    verify(mockMetaData).commit()
+  }
+
+  @Test
+  fun setUnityAdsPrivacy_withAgeRestrictedTreatmentTeenAndLegacyAdult_commitsNonBehavioralMetaDataFalse() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.TEEN)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val mockMetaData = mock<MetaData>()
+
+    UnityAdsAdapterUtils.setUnityAdsPrivacy(requestConfiguration, mockMetaData)
+
+    verify(mockMetaData).set("user.nonbehavioral", false)
+    verify(mockMetaData).commit()
+  }
+
+  @Test
+  fun setUnityAdsPrivacy_withAgeRestrictedTreatmentUnspecifiedAndLegacyAdult_commitsNonBehavioralMetaDataFalse() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val mockMetaData = mock<MetaData>()
+
+    UnityAdsAdapterUtils.setUnityAdsPrivacy(requestConfiguration, mockMetaData)
+
+    verify(mockMetaData).set("user.nonbehavioral", false)
+    verify(mockMetaData).commit()
+  }
+
+  @Test
+  fun setUnityAdsPrivacy_withAgeRestrictedTreatmentUnspecifiedAndLegacyUnspecified_commitsNonBehavioralMetaDataTrue() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val mockMetaData = mock<MetaData>()
+
+    UnityAdsAdapterUtils.setUnityAdsPrivacy(requestConfiguration, mockMetaData)
+
+    verify(mockMetaData).set("user.nonbehavioral", true)
+    verify(mockMetaData).commit()
+  }
+
+  @Test
+  fun setUnityAdsPrivacy_withAgeRestrictedTreatmentChildAndLegacyAdult_commitsNonBehavioralMetaDataTrue() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val mockMetaData = mock<MetaData>()
+
+    UnityAdsAdapterUtils.setUnityAdsPrivacy(requestConfiguration, mockMetaData)
+
+    verify(mockMetaData).set("user.nonbehavioral", true)
     verify(mockMetaData).commit()
   }
 }
