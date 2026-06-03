@@ -28,15 +28,16 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AgeRestrictedTreatment;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.UnityAds.UnityAdsInitializationError;
-import com.unity3d.ads.metadata.MetaData;
 import com.unity3d.services.banners.BannerErrorInfo;
 import com.unity3d.services.banners.UnityBannerSize;
 import java.util.ArrayList;
@@ -246,25 +247,33 @@ public class UnityAdsAdapterUtils {
   }
 
   /**
-   * Set the COPPA setting in Unity Ads SDK.
+   * Set the privacy setting in Unity Ads SDK.
    *
    * @param requestConfiguration used to read the value that indicates whether the app should be
-   *     treated as child-directed for purposes of the COPPA or under age consent.
-   * @param userMetaData used to save changes on configuration values in the Unity3D SDK.
+   *     treated as child-directed for purposes of the COPPA, under age consent, or age-restricted.
    */
-  public static void setUnityAdsPrivacy(
-      RequestConfiguration requestConfiguration, MetaData userMetaData) {
+  public static void setUnityAdsPrivacy(RequestConfiguration requestConfiguration) {
+    int tagForChildDirectedTreatment = requestConfiguration.getTagForChildDirectedTreatment();
+    int tagForUnderAgeOfConsent = requestConfiguration.getTagForUnderAgeOfConsent();
 
-    if (shouldTreatAsAdult(requestConfiguration)) {
-      // If no signal is tagged as child and one signal indicates adult session is treated as an
-      // adult.
-      userMetaData.set("user.nonbehavioral", false);
-    } else {
-      // Otherwise, if any signal is child or signals are conflicting or both are UNSPECIFIED,
-      // session is treated as a child.
-      userMetaData.set("user.nonbehavioral", true);
+    boolean isChildDirected = tagForChildDirectedTreatment == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE;
+    boolean isUnderAge = tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
+    boolean isAgeRestrictedTreatmentChild =
+        AgeRestrictedTreatmentUtils.runtimeGmaSdkSupportsChildAgeRestrictedTreatment()
+            && requestConfiguration.getAgeRestrictedTreatment() == AgeRestrictedTreatment.CHILD;
+    boolean isNotChildDirected =
+        tagForChildDirectedTreatment == TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE;
+    boolean isNotUnderAge = tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE;
+
+    // If at least one signal indicates child, we set non-behavioral to true for this session
+    if (isChildDirected || isUnderAge || isAgeRestrictedTreatmentChild) {
+      UnityAds.setNonBehavioral(true);
     }
-    userMetaData.commit();
+    // If none indicates child but we get explicit non-child signals, we set non-behavioral to false
+    // for this session
+    else if (isNotChildDirected || isNotUnderAge) {
+      UnityAds.setNonBehavioral(false);
+    }
   }
 
   /**
@@ -421,22 +430,5 @@ public class UnityAdsAdapterUtils {
       Log.w(TAG, errorMessage);
       return ConsentResult.UNKNOWN;
     }
-  }
-
-  /**
-   * Returns true if none TFCD nor TFUA are True and at least one of them is
-   *
-   * @param requestConfiguration used to read both signals tag for Child Treatment and tag for Under
-   *     Age Consent
-   * @return if session will be treat the user as adult by UnityAds.
-   */
-  private static boolean shouldTreatAsAdult(RequestConfiguration requestConfiguration) {
-    int tagForChildDirectedTreatment = requestConfiguration.getTagForChildDirectedTreatment();
-    int tagForUnderAgeOfConsent = requestConfiguration.getTagForUnderAgeOfConsent();
-
-    return tagForChildDirectedTreatment != TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
-        && tagForUnderAgeOfConsent != TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
-        && (tagForChildDirectedTreatment == TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
-            || tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
   }
 }
