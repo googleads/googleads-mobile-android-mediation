@@ -2,6 +2,8 @@
 
 #### Next Version
 - Maps `AgeRestrictedTreatment` to DT Exchange's COPPA API.
+- Removed old API implementation for Waterfall Banner ads. Adapter will start
+  using the new API implementation.
 
 #### Version 8.4.5.0
 - Added watermark on bidding ads.
