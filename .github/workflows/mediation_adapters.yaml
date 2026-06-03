@@ -1,0 +1,569 @@
+#  Copyright 2026 Google LLC
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#  https://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+name: Mediation Adapters CI
+
+on:
+  pull_request:
+    paths:
+      - "ThirdPartyAdapters/**"
+      - "Example/**"
+      - ".github/workflows/mediation_adapters.yaml"
+  push:
+    branches:
+      - main
+
+jobs:
+  check-paths:
+    runs-on: ubuntu-latest
+    outputs:
+      applovin: ${{ steps.filter.outputs.applovin }}
+      bidmachine: ${{ steps.filter.outputs.bidmachine }}
+      bigo: ${{ steps.filter.outputs.bigo }}
+      chartboost: ${{ steps.filter.outputs.chartboost }}
+      dtexchange: ${{ steps.filter.outputs.dtexchange }}
+      example: ${{ steps.filter.outputs.example }}
+      imobile: ${{ steps.filter.outputs.imobile }}
+      inmobi: ${{ steps.filter.outputs.inmobi }}
+      ironsource: ${{ steps.filter.outputs.ironsource }}
+      liftoffmonetize: ${{ steps.filter.outputs.liftoffmonetize }}
+      line: ${{ steps.filter.outputs.line }}
+      maio: ${{ steps.filter.outputs.maio }}
+      meta: ${{ steps.filter.outputs.meta }}
+      mintegral: ${{ steps.filter.outputs.mintegral }}
+      moloco: ${{ steps.filter.outputs.moloco }}
+      mytarget: ${{ steps.filter.outputs.mytarget }}
+      pangle: ${{ steps.filter.outputs.pangle }}
+      pubmatic: ${{ steps.filter.outputs.pubmatic }}
+      unity: ${{ steps.filter.outputs.unity }}
+      verve: ${{ steps.filter.outputs.verve }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check changes
+        id: filter
+        run: |
+          # Fetch base branch to compare
+          git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }} HEAD)
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          set_output() {
+            local name=$1
+            local pattern=$2
+            if echo "$CHANGED_FILES" | grep -q -E "$pattern"; then
+              echo "$name=true" >> $GITHUB_OUTPUT
+            else
+              echo "$name=false" >> $GITHUB_OUTPUT
+            fi
+          }
+
+          set_output "applovin" "^ThirdPartyAdapters/applovin/"
+          set_output "bidmachine" "^ThirdPartyAdapters/bidmachine/"
+          set_output "bigo" "^ThirdPartyAdapters/bigo/"
+          set_output "chartboost" "^ThirdPartyAdapters/chartboost/"
+          set_output "dtexchange" "^ThirdPartyAdapters/dtexchange/"
+          set_output "example" "^Example/"
+          set_output "imobile" "^ThirdPartyAdapters/imobile/"
+          set_output "inmobi" "^ThirdPartyAdapters/inmobi/"
+          set_output "ironsource" "^ThirdPartyAdapters/ironsource/"
+          set_output "liftoffmonetize" "^ThirdPartyAdapters/liftoffmonetize/"
+          set_output "line" "^ThirdPartyAdapters/line/"
+          set_output "maio" "^ThirdPartyAdapters/maio/"
+          set_output "meta" "^ThirdPartyAdapters/meta/"
+          set_output "mintegral" "^ThirdPartyAdapters/mintegral/"
+          set_output "moloco" "^ThirdPartyAdapters/moloco/"
+          set_output "mytarget" "^ThirdPartyAdapters/mytarget/"
+          set_output "pangle" "^ThirdPartyAdapters/pangle/"
+          set_output "pubmatic" "^ThirdPartyAdapters/pubmatic/"
+          set_output "unity" "^ThirdPartyAdapters/unity/"
+          set_output "verve" "^ThirdPartyAdapters/verve/"
+
+  TestApplovinAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.applovin == 'true' }}
+    name: TestAppLovinAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |
+          cd ThirdPartyAdapters/applovin/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  TestBidmachineAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.bidmachine == 'true' }}
+    name: TestBidMachineAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |-
+          cd ThirdPartyAdapters/bidmachine/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  TestBigoAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.bigo == 'true' }}
+    name: TestBigoAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |-
+          cd ThirdPartyAdapters/bigo/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  TestChartboostAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.chartboost == 'true' }}
+    name: TestChartboostAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |
+          cd ThirdPartyAdapters/chartboost/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  TestDtexchangeAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.dtexchange == 'true' }}
+    name: TestDTExchangeAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |
+          cd ThirdPartyAdapters/dtexchange/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  Build:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.example == 'true' }}
+    name: Build
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build Example
+        run: |-
+          cd Example/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew build -P includeSnippets=true
+
+  TestImobileAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.imobile == 'true' }}
+    name: TestIMobileAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |
+          cd ThirdPartyAdapters/imobile/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  TestInmobiAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.inmobi == 'true' }}
+    name: TestInMobiAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |
+          cd ThirdPartyAdapters/inmobi/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  TestIronsourceAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.ironsource == 'true' }}
+    name: TestIronSourceAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |
+          cd ThirdPartyAdapters/ironsource/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  TestLiftoffmonetizeAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.liftoffmonetize == 'true' }}
+    name: TestLiftoffMonetizeAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |
+          cd ThirdPartyAdapters/liftoffmonetize/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  TestLineAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.line == 'true' }}
+    name: TestLineAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |
+          cd ThirdPartyAdapters/line/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  TestMaioAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.maio == 'true' }}
+    name: TestMaioAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |
+          cd ThirdPartyAdapters/maio/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  TestMetaAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.meta == 'true' }}
+    name: TestMetaAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |
+          cd ThirdPartyAdapters/meta/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  TestMintegralAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.mintegral == 'true' }}
+    name: TestMintegralAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |
+          cd ThirdPartyAdapters/mintegral/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  TestMolocoAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.moloco == 'true' }}
+    name: TestMolocoAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |
+          cd ThirdPartyAdapters/moloco/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  TestMytargetAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.mytarget == 'true' }}
+    name: TestMyTargetAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |
+          cd ThirdPartyAdapters/mytarget/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  TestPangleAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.pangle == 'true' }}
+    name: TestPangleAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |
+          cd ThirdPartyAdapters/pangle/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  TestPubmaticAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.pubmatic == 'true' }}
+    name: TestPubMaticAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |-
+          cd ThirdPartyAdapters/pubmatic/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  TestUnityAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.unity == 'true' }}
+    name: TestUnityAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |
+          cd ThirdPartyAdapters/unity/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
+
+  TestVerveAdapter:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.verve == 'true' }}
+    name: TestVerveAdapter
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Unit Tests
+        run: |-
+          cd ThirdPartyAdapters/verve/
+          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
+          brew install gradle@$GRADLE_MAJOR_VERSION
+          brew link gradle@$GRADLE_MAJOR_VERSION
+          gradle wrapper --gradle-version $GRADLE_VERSION
+          ./gradlew test --scan
