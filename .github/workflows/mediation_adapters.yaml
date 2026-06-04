@@ -16,10 +16,6 @@ name: Mediation Adapters CI
 
 on:
   pull_request:
-    paths:
-      - "ThirdPartyAdapters/**"
-      - "Example/**"
-      - ".github/workflows/mediation_adapters.yaml"
   push:
     branches:
       - main
@@ -28,26 +24,8 @@ jobs:
   check-paths:
     runs-on: ubuntu-latest
     outputs:
-      applovin: ${{ steps.filter.outputs.applovin }}
-      bidmachine: ${{ steps.filter.outputs.bidmachine }}
-      bigo: ${{ steps.filter.outputs.bigo }}
-      chartboost: ${{ steps.filter.outputs.chartboost }}
-      dtexchange: ${{ steps.filter.outputs.dtexchange }}
+      adapters_to_test: ${{ steps.filter.outputs.adapters_to_test }}
       example: ${{ steps.filter.outputs.example }}
-      imobile: ${{ steps.filter.outputs.imobile }}
-      inmobi: ${{ steps.filter.outputs.inmobi }}
-      ironsource: ${{ steps.filter.outputs.ironsource }}
-      liftoffmonetize: ${{ steps.filter.outputs.liftoffmonetize }}
-      line: ${{ steps.filter.outputs.line }}
-      maio: ${{ steps.filter.outputs.maio }}
-      meta: ${{ steps.filter.outputs.meta }}
-      mintegral: ${{ steps.filter.outputs.mintegral }}
-      moloco: ${{ steps.filter.outputs.moloco }}
-      mytarget: ${{ steps.filter.outputs.mytarget }}
-      pangle: ${{ steps.filter.outputs.pangle }}
-      pubmatic: ${{ steps.filter.outputs.pubmatic }}
-      unity: ${{ steps.filter.outputs.unity }}
-      verve: ${{ steps.filter.outputs.verve }}
     steps:
       - uses: actions/checkout@v4
       - name: Check changes
@@ -59,41 +37,59 @@ jobs:
           echo "Changed files:"
           echo "$CHANGED_FILES"
 
-          set_output() {
+          # 1. Check if Example changed
+          if echo "$CHANGED_FILES" | grep -q "^Example/"; then
+            echo "example=true" >> $GITHUB_OUTPUT
+          else
+            echo "example=false" >> $GITHUB_OUTPUT
+          fi
+
+          # 2. Discover and filter adapters
+          NON_ADAPTERS="adaptertestkit common prerelease"
+          # TODO(b/519896882): Remove these directories once they are cleaned up on GitHub.
+          DEPRECATED_ADAPTERS="adcolony fyber nend tapjoy vungle"
+          ADAPTERS=$(ls -d ThirdPartyAdapters/*/ | sed 's/ThirdPartyAdapters\///' | sed 's/\///')
+
+          # Check for global changes (common utilities or workflow files themselves)
+          TEST_ALL=false
+          if echo "$CHANGED_FILES" | grep -q -E "^ThirdPartyAdapters/(common|adaptertestkit)/|^\.github/workflows/"; then
+            TEST_ALL=true
+          fi
+
+          is_non_adapter() {
             local name=$1
-            local pattern=$2
-            if echo "$CHANGED_FILES" | grep -q -E "$pattern"; then
-              echo "$name=true" >> $GITHUB_OUTPUT
-            else
-              echo "$name=false" >> $GITHUB_OUTPUT
-            fi
+            for non_ad in $NON_ADAPTERS $DEPRECATED_ADAPTERS; do
+              if [ "$name" = "$non_ad" ]; then
+                return 0 # True
+              fi
+            done
+            return 1 # False
           }
 
-          set_output "applovin" "^ThirdPartyAdapters/applovin/"
-          set_output "bidmachine" "^ThirdPartyAdapters/bidmachine/"
-          set_output "bigo" "^ThirdPartyAdapters/bigo/"
-          set_output "chartboost" "^ThirdPartyAdapters/chartboost/"
-          set_output "dtexchange" "^ThirdPartyAdapters/dtexchange/"
-          set_output "example" "^Example/"
-          set_output "imobile" "^ThirdPartyAdapters/imobile/"
-          set_output "inmobi" "^ThirdPartyAdapters/inmobi/"
-          set_output "ironsource" "^ThirdPartyAdapters/ironsource/"
-          set_output "liftoffmonetize" "^ThirdPartyAdapters/liftoffmonetize/"
-          set_output "line" "^ThirdPartyAdapters/line/"
-          set_output "maio" "^ThirdPartyAdapters/maio/"
-          set_output "meta" "^ThirdPartyAdapters/meta/"
-          set_output "mintegral" "^ThirdPartyAdapters/mintegral/"
-          set_output "moloco" "^ThirdPartyAdapters/moloco/"
-          set_output "mytarget" "^ThirdPartyAdapters/mytarget/"
-          set_output "pangle" "^ThirdPartyAdapters/pangle/"
-          set_output "pubmatic" "^ThirdPartyAdapters/pubmatic/"
-          set_output "unity" "^ThirdPartyAdapters/unity/"
-          set_output "verve" "^ThirdPartyAdapters/verve/"
+          TEST_LIST=()
+          for adapter in $ADAPTERS; do
+            if ! is_non_adapter "$adapter"; then
+              if $TEST_ALL || echo "$CHANGED_FILES" | grep -q "^ThirdPartyAdapters/$adapter/"; then
+                TEST_LIST+=("$adapter")
+              fi
+            fi
+          done
 
-  TestApplovinAdapter:
+          # Convert to JSON array
+          if [ ${#TEST_LIST[@]} -eq 0 ]; then
+            JSON_ARRAY="[]"
+          else
+            JSON_ARRAY=$(python3 -c "import json, sys; print(json.dumps(sys.argv[1:]))" "${TEST_LIST[@]}")
+          fi
+          echo "adapters_to_test=$JSON_ARRAY" >> $GITHUB_OUTPUT
+
+  test-adapters:
     needs: check-paths
-    if: ${{ needs.check-paths.outputs.applovin == 'true' }}
-    name: TestAppLovinAdapter
+    if: ${{ needs.check-paths.outputs.adapters_to_test != '[]' }}
+    strategy:
+      matrix:
+        adapter: ${{ fromJson(needs.check-paths.outputs.adapters_to_test) }}
+    name: Test ${{ matrix.adapter }} Adapter
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
@@ -106,103 +102,7 @@ jobs:
           java-version: '17'
       - name: Unit Tests
         run: |
-          cd ThirdPartyAdapters/applovin/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
-
-  TestBidmachineAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.bidmachine == 'true' }}
-    name: TestBidMachineAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
-        run: |-
-          cd ThirdPartyAdapters/bidmachine/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
-
-  TestBigoAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.bigo == 'true' }}
-    name: TestBigoAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
-        run: |-
-          cd ThirdPartyAdapters/bigo/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
-
-  TestChartboostAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.chartboost == 'true' }}
-    name: TestChartboostAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
-        run: |
-          cd ThirdPartyAdapters/chartboost/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
-
-  TestDtexchangeAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.dtexchange == 'true' }}
-    name: TestDTExchangeAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
-        run: |
-          cd ThirdPartyAdapters/dtexchange/
+          cd ThirdPartyAdapters/${{ matrix.adapter }}/
           GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
           GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
           brew install gradle@$GRADLE_MAJOR_VERSION
@@ -232,338 +132,23 @@ jobs:
           gradle wrapper --gradle-version $GRADLE_VERSION
           ./gradlew build -P includeSnippets=true
 
-  TestImobileAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.imobile == 'true' }}
-    name: TestIMobileAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
+  all-checks-passed:
+    needs: [check-paths, test-adapters, Build]
+    if: always()
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
+      - name: Check Status
         run: |
-          cd ThirdPartyAdapters/imobile/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
-
-  TestInmobiAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.inmobi == 'true' }}
-    name: TestInMobiAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
-        run: |
-          cd ThirdPartyAdapters/inmobi/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
-
-  TestIronsourceAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.ironsource == 'true' }}
-    name: TestIronSourceAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
-        run: |
-          cd ThirdPartyAdapters/ironsource/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
-
-  TestLiftoffmonetizeAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.liftoffmonetize == 'true' }}
-    name: TestLiftoffMonetizeAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
-        run: |
-          cd ThirdPartyAdapters/liftoffmonetize/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
-
-  TestLineAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.line == 'true' }}
-    name: TestLineAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
-        run: |
-          cd ThirdPartyAdapters/line/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
-
-  TestMaioAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.maio == 'true' }}
-    name: TestMaioAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
-        run: |
-          cd ThirdPartyAdapters/maio/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
-
-  TestMetaAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.meta == 'true' }}
-    name: TestMetaAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
-        run: |
-          cd ThirdPartyAdapters/meta/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
-
-  TestMintegralAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.mintegral == 'true' }}
-    name: TestMintegralAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
-        run: |
-          cd ThirdPartyAdapters/mintegral/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
-
-  TestMolocoAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.moloco == 'true' }}
-    name: TestMolocoAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
-        run: |
-          cd ThirdPartyAdapters/moloco/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
-
-  TestMytargetAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.mytarget == 'true' }}
-    name: TestMyTargetAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
-        run: |
-          cd ThirdPartyAdapters/mytarget/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
-
-  TestPangleAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.pangle == 'true' }}
-    name: TestPangleAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
-        run: |
-          cd ThirdPartyAdapters/pangle/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
-
-  TestPubmaticAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.pubmatic == 'true' }}
-    name: TestPubMaticAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
-        run: |-
-          cd ThirdPartyAdapters/pubmatic/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
-
-  TestUnityAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.unity == 'true' }}
-    name: TestUnityAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
-        run: |
-          cd ThirdPartyAdapters/unity/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
-
-  TestVerveAdapter:
-    needs: check-paths
-    if: ${{ needs.check-paths.outputs.verve == 'true' }}
-    name: TestVerveAdapter
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Unit Tests
-        run: |-
-          cd ThirdPartyAdapters/verve/
-          GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
-          GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
-          brew install gradle@$GRADLE_MAJOR_VERSION
-          brew link gradle@$GRADLE_MAJOR_VERSION
-          gradle wrapper --gradle-version $GRADLE_VERSION
-          ./gradlew test --scan
+          if [[ "${{ needs.check-paths.result }}" == "failure" || "${{ needs.check-paths.result }}" == "cancelled" ]]; then
+            echo "check-paths failed or was cancelled."
+            exit 1
+          fi
+          if [[ "${{ needs.Build.result }}" == "failure" || "${{ needs.Build.result }}" == "cancelled" ]]; then
+            echo "Build failed or was cancelled."
+            exit 1
+          fi
+          if [[ "${{ needs.test-adapters.result }}" == "failure" || "${{ needs.test-adapters.result }}" == "cancelled" ]]; then
+            echo "test-adapters failed or was cancelled."
+            exit 1
+          fi
+          echo "All checks completed successfully or were skipped."
