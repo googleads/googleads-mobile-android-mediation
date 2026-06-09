@@ -17,7 +17,6 @@ package com.applovin.mediation;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.APPLOVIN_SDK_ERROR_DOMAIN;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_CHILD_USER;
 import static com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_DOMAIN;
-import static com.google.android.gms.ads.AgeRestrictedTreatment.CHILD;
 import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE;
 import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
 
@@ -174,13 +173,24 @@ public class AppLovinUtils {
     return null;
   }
 
-  /** Returns whether the user has been tagged as a child or not. */
   public static boolean isChildUser() {
     RequestConfiguration requestConfiguration = MobileAds.getRequestConfiguration();
+    boolean isAgeRestrictedChild = false;
+    try {
+      java.lang.reflect.Method method =
+          requestConfiguration.getClass().getMethod("getAgeRestrictedTreatment");
+      Object ageRestrictedTreatment = method.invoke(requestConfiguration);
+      if (ageRestrictedTreatment != null && "CHILD".equals(ageRestrictedTreatment.toString())) {
+        isAgeRestrictedChild = true;
+      }
+    } catch (Exception e) {
+      // Safe to ignore if running on next-gen where the API is missing.
+    }
+
     return requestConfiguration.getTagForChildDirectedTreatment()
             == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
         || requestConfiguration.getTagForUnderAgeOfConsent() == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
-        || requestConfiguration.getAgeRestrictedTreatment() == CHILD;
+        || isAgeRestrictedChild;
   }
 
   /**
