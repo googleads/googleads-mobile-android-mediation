@@ -16,6 +16,13 @@ Built and tested with:
 - Google Mobile Ads SDK version 25.2.0.
 - Vungle SDK version 7.7.4.
 
+#### 7.7.2.1
+- Verified compatibility with Vungle SDK 7.7.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.1.0.
+- Vungle SDK version 7.7.2.
+
 #### Version 7.7.2.0
 - Added property to build the adapter with GMA Next-Gen SDK dependency.
 - Added logging using `VungleMediationLogger` for adaptive banner size mismatch.
