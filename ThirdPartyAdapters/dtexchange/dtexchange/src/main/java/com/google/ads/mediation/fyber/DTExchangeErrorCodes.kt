@@ -39,6 +39,9 @@ object DTExchangeErrorCodes {
   /** Context is not an activity instance. */
   const val ERROR_CONTEXT_NOT_ACTIVITY_INSTANCE = 107
 
+  /** Ad failed to be displayed. */
+  const val ERROR_AD_FAILED_TO_DISPLAY = 108
+
   /**
    * Gets the specific AdError for the specified [FyberInitStatus].
    *
@@ -67,7 +70,7 @@ object DTExchangeErrorCodes {
    * @return The corresponding AdError.
    */
   @JvmStatic // Optional: if you need to call this as a static method from Java
-  fun getAdError(inneractiveErrorCode: InneractiveErrorCode): AdError {
+  fun getAdError(inneractiveErrorCode: InneractiveErrorCode?): AdError {
     val code =
       when (inneractiveErrorCode) {
         InneractiveErrorCode.CONNECTION_ERROR -> 300
