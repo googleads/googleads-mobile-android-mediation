@@ -38,8 +38,13 @@ android {
         targetCompatibility JavaVersion.VERSION_11
     }
 
+    def useNextGen = project.hasProperty('useNextGenGma')
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11
+        if (!useNextGen) {
+            languageVersion = "1.9"
+            apiVersion = "1.9"
+        }
     }
 
     buildTypes {
