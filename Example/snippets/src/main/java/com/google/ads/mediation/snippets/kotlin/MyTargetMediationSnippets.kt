@@ -39,3 +39,4 @@ class MyTargetMediationSnippets {
     MyTargetPrivacy.setCcpaUserConsent(true)
     // [END set_ccpa_user_consent]
   }
+}

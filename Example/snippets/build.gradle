@@ -47,4 +47,5 @@ dependencies {
     implementation("com.google.ads.mediation:bigo:+")
     implementation("com.google.ads.mediation:moloco:+")
     implementation("com.google.ads.mediation:mytarget:+")
+    implementation("com.google.ads.mediation:pangle:+")
 }
