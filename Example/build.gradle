@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '2.1.0'
+    ext.kotlin_version = '2.3.0'
     repositories {
         google()
         mavenCentral()
@@ -28,6 +28,9 @@ allprojects {
             }
             maven {
                 url = uri("https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea")
+            }
+            maven {
+                url = uri("https://artifact.bytedance.com/repository/pangle/")
             }
         }
     }
