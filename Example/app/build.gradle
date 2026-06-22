@@ -17,7 +17,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
@@ -28,7 +28,7 @@ dependencies {
     implementation project(':customevent')
 
     // Include partner mediation snippets if property is set explicitly to true.
-    if (project.hasProperty('includeSnippets') && includeSnippets.toBoolean()) {
+//    if (project.hasProperty('includeSnippets') && includeSnippets.toBoolean()) {
         implementation project(':snippets')
-    }
+//    }
 }

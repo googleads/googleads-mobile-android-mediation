@@ -1,4 +1,4 @@
 include ':app', ':customevent', ':sdk'
-if (hasProperty('includeSnippets') && includeSnippets.toBoolean()) {
+//if (hasProperty('includeSnippets') && includeSnippets.toBoolean()) {
     include ':snippets'
-}
+//}

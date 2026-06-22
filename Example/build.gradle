@@ -1,13 +1,13 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '2.3.0'
+    ext.kotlin_version = '2.1.0'
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.11.1'
+        classpath 'com.android.tools.build:gradle:9.0.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
 
@@ -22,7 +22,7 @@ allprojects {
         mavenCentral()
 
         // Include partner mediation repositories if property is set explicitly to true.
-        if (project.hasProperty('includeSnippets') && includeSnippets.toBoolean()) {
+//        if (project.hasProperty('includeSnippets') && includeSnippets.toBoolean()) {
             maven {
                 url = uri("https://verve.jfrog.io/artifactory/verve-gradle-release")
             }
@@ -32,7 +32,7 @@ allprojects {
             maven {
                 url = uri("https://artifact.bytedance.com/repository/pangle/")
             }
-        }
+//        }
     }
 }
 
