@@ -41,6 +41,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -88,7 +89,7 @@ class InMobiMediationAdapterTest {
     serverParameters.putString(InMobiAdapterUtils.KEY_PLACEMENT_ID, "67890")
 
     setupMockAdConfiguration(bannerAdConfiguration)
-    whenever(bannerAdConfiguration.adSize).thenReturn(originalBannerSize)
+    bannerAdConfiguration.stub { on { getAdSize() } doReturn originalBannerSize }
     whenever(
       mediationUtils.findClosestSize(
         org.mockito.kotlin.eq(context),
@@ -115,9 +116,11 @@ class InMobiMediationAdapterTest {
   }
 
   private fun setupMockAdConfiguration(config: MediationAdConfiguration) {
-    whenever(config.context).thenReturn(context)
-    whenever(config.serverParameters).thenReturn(serverParameters)
-    whenever(config.watermark).thenReturn(TEST_WATERMARK)
+    config.stub {
+      on { getContext() } doReturn context
+      on { getServerParameters() } doReturn serverParameters
+      on { watermark } doReturn TEST_WATERMARK
+    }
   }
 
   @Test
@@ -147,7 +150,7 @@ class InMobiMediationAdapterTest {
   @Test
   fun getSDKVersionInfo_ifInMobiSDKVersionIsValid_returnSameVersion() {
     // set a valid InMobi SDK version.
-    whenever(inMobiSdkWrapper.version).thenReturn("10.5.4")
+    inMobiSdkWrapper.stub { on { version } doReturn "10.5.4" }
 
     val versionInfo = adapter.sdkVersionInfo
 
@@ -159,7 +162,7 @@ class InMobiMediationAdapterTest {
   @Test
   fun getSDKVersionInfo_ifInMobiSDKVersionIsInvalid_returnsZeros() {
     // set an invalid InMobi SDK version
-    whenever(inMobiSdkWrapper.version).thenReturn("10.4")
+    inMobiSdkWrapper.stub { on { version } doReturn "10.4" }
 
     val versionInfo = adapter.sdkVersionInfo
 
@@ -170,7 +173,7 @@ class InMobiMediationAdapterTest {
 
   @Test
   fun initialize_ifInMobiSDKInitialized_invokesOnInitializationSucceededCallback() {
-    whenever(inMobiSdkWrapper.isSDKInitialized).thenReturn(true)
+    inMobiSdkWrapper.stub { on { isSDKInitialized } doReturn true }
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
@@ -182,7 +185,7 @@ class InMobiMediationAdapterTest {
     whenever(inMobiSdkWrapper.isSDKInitialized).thenReturn(false)
     val invalidServerParameters = Bundle()
     invalidServerParameters.putString(InMobiAdapterUtils.KEY_ACCOUNT_ID, "")
-    whenever(mediationConfiguration.serverParameters).thenReturn(invalidServerParameters)
+    mediationConfiguration.stub { on { getServerParameters() } doReturn invalidServerParameters }
     // Create an AdError object so that it can be verified that this object's toString() matches the
     // error string that's passed to the initialization callback.
     val adError =
@@ -200,7 +203,7 @@ class InMobiMediationAdapterTest {
 
   @Test
   fun initialize_ifInMobiSDKNotInitialized_invokesInitOnInMobiInitializer() {
-    whenever(inMobiSdkWrapper.isSDKInitialized).thenReturn(false)
+    inMobiSdkWrapper.stub { on { isSDKInitialized } doReturn false }
     whenever(mediationConfiguration.serverParameters).thenReturn(serverParameters)
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
@@ -254,7 +257,7 @@ class InMobiMediationAdapterTest {
 
   @Test
   fun loadBannerAd_invalidBannerSize_invokesFailureCallback() {
-    whenever(bannerAdConfiguration.adSize).thenReturn(AdSize(350, 100))
+    bannerAdConfiguration.stub { on { getAdSize() } doReturn AdSize(350, 100) }
 
     adapter.loadBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
 
@@ -353,7 +356,7 @@ class InMobiMediationAdapterTest {
       val listener = it.arguments[2] as Listener
       listener.onInitializeSuccess()
     }
-    whenever(bannerAdConfiguration.bidResponse).thenReturn(biddingToken)
+    bannerAdConfiguration.stub { on { bidResponse } doReturn biddingToken }
 
     adapter.loadRtbBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
 
@@ -459,7 +462,7 @@ class InMobiMediationAdapterTest {
       val listener = it.arguments[2] as Listener
       listener.onInitializeSuccess()
     }
-    whenever(interstitialAdConfiguration.bidResponse).thenReturn(biddingToken)
+    interstitialAdConfiguration.stub { on { bidResponse } doReturn biddingToken }
 
     adapter.loadRtbInterstitialAd(interstitialAdConfiguration, interstitialAdLoadCallback)
 
@@ -549,7 +552,7 @@ class InMobiMediationAdapterTest {
       val listener = it.arguments[2] as Listener
       listener.onInitializeSuccess()
     }
-    whenever(rewardedAdConfiguration.bidResponse).thenReturn(biddingToken)
+    rewardedAdConfiguration.stub { on { bidResponse } doReturn biddingToken }
 
     adapter.loadRtbRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
@@ -639,7 +642,7 @@ class InMobiMediationAdapterTest {
       val listener = it.arguments[2] as Listener
       listener.onInitializeSuccess()
     }
-    whenever(nativeAdConfiguration.bidResponse).thenReturn(biddingToken)
+    nativeAdConfiguration.stub { on { bidResponse } doReturn biddingToken }
 
     adapter.loadRtbNativeAd(nativeAdConfiguration, nativeAdLoadCallback)
 
