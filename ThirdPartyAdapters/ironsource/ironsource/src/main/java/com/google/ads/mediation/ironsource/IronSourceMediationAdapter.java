@@ -29,6 +29,7 @@ import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AgeRestrictedTreatment;
 import com.google.android.gms.ads.MobileAds;
@@ -381,10 +382,13 @@ public class IronSourceMediationAdapter extends RtbAdapter {
 
   private void configureIronSourcePrivacy() {
     RequestConfiguration requestConfiguration = MobileAds.getRequestConfiguration();
+    boolean isAgeRestrictedTreatmentChild =
+        AgeRestrictedTreatmentUtils.runtimeGmaSdkSupportsChildAgeRestrictedTreatment()
+            && requestConfiguration.getAgeRestrictedTreatment() == AgeRestrictedTreatment.CHILD;
     if (requestConfiguration.getTagForChildDirectedTreatment()
             == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
         || requestConfiguration.getTagForUnderAgeOfConsent() == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
-        || requestConfiguration.getAgeRestrictedTreatment() == AgeRestrictedTreatment.CHILD) {
+        || isAgeRestrictedTreatmentChild) {
       LevelPlay.setMetaData("is_child_directed", "true");
     } else if (requestConfiguration.getTagForChildDirectedTreatment()
             == TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
