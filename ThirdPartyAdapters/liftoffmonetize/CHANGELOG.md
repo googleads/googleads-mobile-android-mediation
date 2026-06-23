@@ -1,5 +1,12 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Next version
+
+- Removed the old API implementations for the following waterfall ad formats:
+  Banner, Interstitial.
+- Updated the adapter to use `loadBannerAd` for Waterfall Banner ads and
+  `loadInterstitialAd` for Waterfall Interstitial ads.
+
 #### Version 7.7.4.1 (In progress)
 - Added MediationLogging for the case multiple app ids are detected
 
