@@ -1,7 +1,11 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Next version
-- Filter age-restricted requests for AppLovin SDK when new `AgeRestrictedTreatment` is set to `CHILD`.
+#### Version 13.6.2.1 (In progress)
+- Filter age-restricted requests for AppLovin SDK when new
+  `AgeRestrictedTreatment` is set to `CHILD`.
+Built and tested with:
+- Google Mobile Ads SDK version 25.3.0.
+- Google Mobile Ads Next-Gen SDK version 1.1.0.
 
 #### Version 13.6.2.0
 - Verified compatibility with AppLovin SDK 13.6.2.
