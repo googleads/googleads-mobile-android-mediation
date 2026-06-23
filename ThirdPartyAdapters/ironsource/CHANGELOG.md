@@ -1,6 +1,6 @@
 ## IronSource Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 9.4.3.0 (In progress)
 - Maps `AgeRestrictedTreatment` to IronSource's `is_child_directed` metadata.
 
 #### Version 9.4.2.0
