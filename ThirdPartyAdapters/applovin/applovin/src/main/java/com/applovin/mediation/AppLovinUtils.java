@@ -29,6 +29,7 @@ import androidx.annotation.VisibleForTesting;
 import com.applovin.sdk.AppLovinAdSize;
 import com.applovin.sdk.AppLovinErrorCodes;
 import com.google.ads.mediation.applovin.MediationUtilsWrapper;
+import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.MobileAds;
@@ -177,10 +178,15 @@ public class AppLovinUtils {
   /** Returns whether the user has been tagged as a child or not. */
   public static boolean isChildUser() {
     RequestConfiguration requestConfiguration = MobileAds.getRequestConfiguration();
-    return requestConfiguration.getTagForChildDirectedTreatment()
+    if (requestConfiguration.getTagForChildDirectedTreatment()
             == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
-        || requestConfiguration.getTagForUnderAgeOfConsent() == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
-        || requestConfiguration.getAgeRestrictedTreatment() == CHILD;
+        || requestConfiguration.getTagForUnderAgeOfConsent() == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE) {
+      return true;
+    }
+    if (AgeRestrictedTreatmentUtils.runtimeGmaSdkSupportsChildAgeRestrictedTreatment()) {
+      return requestConfiguration.getAgeRestrictedTreatment() == CHILD;
+    }
+    return false;
   }
 
   /**
