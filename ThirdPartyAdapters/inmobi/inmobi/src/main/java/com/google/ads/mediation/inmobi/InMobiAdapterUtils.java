@@ -24,8 +24,10 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AgeRestrictedTreatment;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.inmobi.ads.InMobiAdRequestStatus;
@@ -142,10 +144,14 @@ public class InMobiAdapterUtils {
     RequestConfiguration requestConfiguration = MobileAds.getRequestConfiguration();
     // If the COPPA or underage consent value is unspecified in GMA SDK, we don't default it to
     // either one since the value could have been updated before.
+    boolean isAgeRestrictedTreatmentChild =
+        AgeRestrictedTreatmentUtils.runtimeGmaSdkSupportsChildAgeRestrictedTreatment()
+            && requestConfiguration.getAgeRestrictedTreatment() == AgeRestrictedTreatment.CHILD;
     if (requestConfiguration.getTagForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
         || requestConfiguration.getTagForUnderAgeOfConsent()
-            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE) {
+            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+        || isAgeRestrictedTreatmentChild) {
       inMobiSdkWrapper.setIsAgeRestricted(true);
     } else if (requestConfiguration.getTagForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
