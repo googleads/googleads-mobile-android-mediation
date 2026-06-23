@@ -1,6 +1,6 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 7.7.4.2 (In progress)
 - Maps `AgeRestrictedTreatment` to Liftoff Monetize's COPPA API.
 - Removed the old API implementations for the following waterfall ad formats:
   Banner, Interstitial.
