@@ -90,6 +90,7 @@ public class VungleMediationAdapter extends RtbAdapter
 
   private AdConfig adConfig;
   private String userId;
+  private String placementId;
   private RewardedAd rewardedAd;
   private MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
       mediationAdLoadCallback;
@@ -342,6 +343,7 @@ public class VungleMediationAdapter extends RtbAdapter
       return;
     }
 
+    this.placementId = placement;
     adConfig = vungleFactory.createAdConfig();
     if (mediationExtras != null && mediationExtras.containsKey(KEY_ORIENTATION)) {
       adConfig.setAdOrientation(mediationExtras.getInt(KEY_ORIENTATION, AdConfig.AUTO_ROTATE));
@@ -381,14 +383,17 @@ public class VungleMediationAdapter extends RtbAdapter
   public void showAd(@NonNull Context context) {
     if (rewardedAd != null) {
       rewardedAd.play(context);
-    } else if (mediationRewardedAdCallback != null) {
-      AdError error =
-          new AdError(
-              ERROR_CANNOT_PLAY_AD,
-              "Failed to show waterfall rewarded" + " ad from Liftoff Monetize.",
-              ERROR_DOMAIN);
-      Log.w(TAG, error.toString());
-      mediationRewardedAdCallback.onAdFailedToShow(error);
+    } else {
+      if (mediationRewardedAdCallback != null) {
+        AdError error =
+            new AdError(
+                ERROR_CANNOT_PLAY_AD,
+                "Failed to show waterfall rewarded" + " ad from Liftoff Monetize.",
+                ERROR_DOMAIN);
+        Log.w(TAG, error.toString());
+        mediationRewardedAdCallback.onAdFailedToShow(error);
+      }
+      VungleMediationLogger.logError(null, "Rewarded(WF) ad instance is null: " + placementId);
     }
   }
 

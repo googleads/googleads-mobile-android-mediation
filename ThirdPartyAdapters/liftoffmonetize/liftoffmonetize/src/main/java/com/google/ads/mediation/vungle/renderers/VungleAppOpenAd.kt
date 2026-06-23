@@ -23,6 +23,7 @@ import com.vungle.ads.BaseAd
 import com.vungle.ads.InterstitialAd
 import com.vungle.ads.InterstitialAdListener
 import com.vungle.ads.VungleError
+import com.vungle.ads.VungleMediationLogger
 
 /** Abstract class with app-open adapter logic common for both waterfall and RTB integrations. */
 abstract class VungleAppOpenAd(
@@ -35,9 +36,11 @@ abstract class VungleAppOpenAd(
    * Liftoff's app open ad object. Note: Liftoff uses [InterstitialAd] object for displaying app
    * open ads.
    */
-  private lateinit var appOpenAd: InterstitialAd
+  private var appOpenAd: InterstitialAd? = null
 
   private var mediationAppOpenAdCallback: MediationAppOpenAdCallback? = null
+
+  private var placementId: String? = null
 
   /** Loads an app open ad. */
   fun render(mediationAppOpenAdConfiguration: MediationAppOpenAdConfiguration) {
@@ -73,6 +76,8 @@ abstract class VungleAppOpenAd(
       return
     }
 
+    placementId = placement
+
     val context: Context = mediationAppOpenAdConfiguration.context
 
     VungleInitializer.getInstance()
@@ -97,9 +102,9 @@ abstract class VungleAppOpenAd(
             // Note: Safe to access placement here since we do a null-check for placement earlier in
             // the function and return if it's null.
             appOpenAd = vungleFactory.createInterstitialAd(context, placement!!, adConfig)
-            appOpenAd.adListener = this@VungleAppOpenAd
-            appOpenAd.adapterAdFormat = "VungleAppOpenAd"
-            appOpenAd.load(getAdMarkup(mediationAppOpenAdConfiguration))
+            appOpenAd?.adListener = this@VungleAppOpenAd
+            appOpenAd?.adapterAdFormat = "VungleAppOpenAd"
+            appOpenAd?.load(getAdMarkup(mediationAppOpenAdConfiguration))
           }
 
           override fun onInitializeError(error: AdError) {
@@ -122,9 +127,7 @@ abstract class VungleAppOpenAd(
   )
 
   override fun showAd(context: Context) {
-    if (appOpenAd.canPlayAd()) {
-      appOpenAd.play(context)
-    } else {
+    if (appOpenAd == null) {
       val error =
         AdError(
           ERROR_CANNOT_PLAY_AD,
@@ -132,8 +135,14 @@ abstract class VungleAppOpenAd(
           ERROR_DOMAIN,
         )
       Log.w(TAG, error.toString())
-      mediationAppOpenAdCallback?.onAdFailedToShow(error)
+      if (mediationAppOpenAdCallback != null) {
+        mediationAppOpenAdCallback?.onAdFailedToShow(error)
+      }
+      VungleMediationLogger.logError(null, "AppOpen ad instance is null: $placementId")
+      return
     }
+
+    appOpenAd?.play(context)
   }
 
   override fun onAdLoaded(baseAd: BaseAd) {
