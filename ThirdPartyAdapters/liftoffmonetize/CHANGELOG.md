@@ -14,6 +14,7 @@ Built and tested with:
 
 Built and tested with:
 - Google Mobile Ads SDK version 25.2.0.
+- Google Mobile Ads Next-Gen SDK version 1.0.0-beta01.
 - Vungle SDK version 7.7.4.
 
 #### Version 7.7.2.0
