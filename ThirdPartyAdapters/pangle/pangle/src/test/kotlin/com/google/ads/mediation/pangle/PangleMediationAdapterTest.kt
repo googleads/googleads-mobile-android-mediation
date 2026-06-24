@@ -21,6 +21,9 @@ import com.google.ads.mediation.pangle.utils.mockPangleSdkInitializationSuccess
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AgeRestrictedTreatment
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAd
@@ -104,6 +107,16 @@ class PangleMediationAdapterTest {
     // Resetting the PA Consent Information to their default value.
     PangleMediationAdapter.setPAConsent(PAGPAConsentType.PAG_PA_CONSENT_TYPE_CONSENT)
 
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+
     pangleMediationAdapter =
       PangleMediationAdapter(pangleInitializer, pangleSdkWrapper, pangleFactory)
   }
@@ -159,6 +172,32 @@ class PangleMediationAdapterTest {
     val error = errorCaptor.firstValue
     assertThat(error.code).isEqualTo(ERROR_CODE_BIDDING_TOKEN_FAILURE)
     assertThat(error.domain).isEqualTo(PANGLE_SDK_ERROR_DOMAIN)
+  }
+
+  @Test
+  fun collectSignals_withAgeRestrictedTreatmentChild_callsOnFailure() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val signalCallbacks: SignalCallbacks = mock()
+
+    pangleMediationAdapter.collectSignals(
+      RtbSignalData(context, emptyList(), bundleOf(), AdSize(1, 1)),
+      signalCallbacks,
+    )
+
+    val errorCaptor = argumentCaptor<AdError>()
+    verify(signalCallbacks).onFailure(errorCaptor.capture())
+    val error = errorCaptor.firstValue
+    assertThat(error.code).isEqualTo(PangleConstants.ERROR_CHILD_USER)
+    assertThat(error.domain).isEqualTo(PangleConstants.ERROR_DOMAIN)
+    assertThat(error.message).isEqualTo(PangleConstants.ERROR_MSG_CHILD_USER)
   }
 
   @Test
@@ -218,6 +257,28 @@ class PangleMediationAdapterTest {
     )
 
     verify(initializationCompleteCallback).onInitializationFailed(PANGLE_INIT_FAILURE_MESSAGE)
+  }
+
+  @Test
+  fun initialize_withAgeRestrictedTreatmentChild_callsFailureCallback() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+
+    pangleMediationAdapter.initialize(
+      context,
+      initializationCompleteCallback,
+      listOf(buildProperMediationConfig()),
+    )
+
+    verify(initializationCompleteCallback)
+      .onInitializationFailed(PangleConstants.ERROR_MSG_CHILD_USER)
   }
 
   @Test
@@ -283,6 +344,28 @@ class PangleMediationAdapterTest {
     verify(pangleFactory)
       .createPangleBannerAd(bannerAdLoadCallback, pangleInitializer, pangleSdkWrapper)
     verify(bannerAd).render(bannerAdConfig)
+  }
+
+  @Test
+  fun loadBannerAd_withAgeRestrictedTreatmentChild_callsOnFailure() {
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+
+    pangleMediationAdapter.loadBannerAd(bannerAdConfig, bannerAdLoadCallback)
+
+    val errorCaptor = argumentCaptor<AdError>()
+    verify(bannerAdLoadCallback).onFailure(errorCaptor.capture())
+    val error = errorCaptor.firstValue
+    assertThat(error.code).isEqualTo(PangleConstants.ERROR_CHILD_USER)
+    assertThat(error.domain).isEqualTo(PangleConstants.ERROR_DOMAIN)
+    assertThat(error.message).isEqualTo(PangleConstants.ERROR_MSG_CHILD_USER)
   }
 
   @Test

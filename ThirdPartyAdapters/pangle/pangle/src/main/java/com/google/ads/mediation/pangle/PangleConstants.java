@@ -16,7 +16,9 @@ package com.google.ads.mediation.pangle;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AgeRestrictedTreatment;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import java.lang.annotation.Retention;
@@ -91,10 +93,14 @@ public class PangleConstants {
   /** Returns whether the user has been tagged as a child or not. */
   public static boolean isChildUser() {
     RequestConfiguration requestConfiguration = MobileAds.getRequestConfiguration();
+    boolean isAgeRestrictedTreatmentChild =
+        AgeRestrictedTreatmentUtils.runtimeGmaSdkSupportsChildAgeRestrictedTreatment()
+            && requestConfiguration.getAgeRestrictedTreatment() == AgeRestrictedTreatment.CHILD;
     return requestConfiguration.getTagForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
         || requestConfiguration.getTagForUnderAgeOfConsent()
-            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
+            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+        || isAgeRestrictedTreatmentChild;
   }
 
   /** A private constructor since this is a utility class which should not be instantiated. */
