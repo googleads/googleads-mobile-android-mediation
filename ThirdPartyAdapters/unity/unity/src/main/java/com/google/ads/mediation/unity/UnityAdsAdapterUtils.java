@@ -24,9 +24,11 @@ import android.content.Context;
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AgeRestrictedTreatment;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
@@ -280,10 +282,14 @@ public class UnityAdsAdapterUtils {
    * @return if session will be treat the user as adult by UnityAds.
    */
   private static boolean shouldTreatAsAdult(RequestConfiguration requestConfiguration) {
+    boolean isAgeRestrictedTreatmentChild =
+        AgeRestrictedTreatmentUtils.runtimeGmaSdkSupportsChildAgeRestrictedTreatment()
+            && requestConfiguration.getAgeRestrictedTreatment() == AgeRestrictedTreatment.CHILD;
     int tagForChildDirectedTreatment = requestConfiguration.getTagForChildDirectedTreatment();
     int tagForUnderAgeOfConsent = requestConfiguration.getTagForUnderAgeOfConsent();
 
-    return tagForChildDirectedTreatment != TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+    return !isAgeRestrictedTreatmentChild
+        && tagForChildDirectedTreatment != TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
         && tagForUnderAgeOfConsent != TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
         && (tagForChildDirectedTreatment == TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
             || tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
