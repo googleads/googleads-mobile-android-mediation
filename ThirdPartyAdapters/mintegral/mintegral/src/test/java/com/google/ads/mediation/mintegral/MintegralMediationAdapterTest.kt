@@ -320,6 +320,28 @@ class MintegralMediationAdapterTest {
   }
 
   @Test
+  fun initialize_callsMintegralSetConsentStatusAPI() {
+    mockStatic(MBridgeSDKFactory::class.java).use {
+      val mockMBridgeSdk = mock<MBridgeSDKImpl>()
+      whenever(MBridgeSDKFactory.getMBridgeSDK()) doReturn mockMBridgeSdk
+      val serverParameters =
+        bundleOf(
+          MintegralConstants.APP_KEY to TEST_APP_KEY,
+          MintegralConstants.APP_ID to TEST_APP_ID,
+        )
+      val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+
+      mintegralMediationAdapter.initialize(
+        context,
+        mockInitializationCompleteCallback,
+        listOf(mediationConfiguration),
+      )
+
+      verify(mockMBridgeSdk).setConsentStatus(context)
+    }
+  }
+
+  @Test
   fun initialize_withAgeRestrictedTreatmentChild_callsPrivacyConfiguration() {
     mockStatic(MBridgeSDKFactory::class.java).use {
       val mockMBridgeSdk = mock<MBridgeSDKImpl>()
@@ -390,7 +412,6 @@ class MintegralMediationAdapterTest {
   // endregion
 
   // region Banner Ad Tests
-
   @Test
   fun loadWaterfallBannerAd_forUnsupportedAdSize_fails() {
     val mediationBannerAdConfiguration =
