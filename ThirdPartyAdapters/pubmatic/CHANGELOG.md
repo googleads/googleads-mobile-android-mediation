@@ -1,5 +1,8 @@
 ## PubMatic Android Mediation Adapter Changelog
 
+#### Next Version
+- Maps `AgeRestrictedTreatment` to PubMatic's COPPA API.
+
 #### Version 5.1.2.1
 - Added native ad video(VAST) support using PubMatic OpenWrapSDK MediaView API.
 
