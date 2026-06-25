@@ -1,6 +1,6 @@
 ## Pangle Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 8.1.0.3.1 (In progress)
 - Filter age-restricted requests for Pangle SDK when new `AgeRestrictedTreatment` is set to `CHILD`.
 
 #### Version 8.1.0.3.0
