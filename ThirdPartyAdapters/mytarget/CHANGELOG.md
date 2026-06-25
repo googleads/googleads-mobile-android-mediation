@@ -1,6 +1,6 @@
 ## myTarget Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 5.47.1.1 (In progress)
 - Maps `AgeRestrictedTreatment` to myTarget's age restriction settings.
 - Updated interstitial and native ad implementation to use updated mediation adapter APIs.
 
