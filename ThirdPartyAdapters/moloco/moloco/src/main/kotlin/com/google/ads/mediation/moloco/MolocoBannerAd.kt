@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.moloco
 
+import android.content.Context
 import android.view.View
 import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.MEDIATION_PLATFORM_NAME
 import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.SDK_ERROR_DOMAIN
@@ -26,6 +27,7 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
 import com.moloco.sdk.publisher.AdLoad
 import com.moloco.sdk.publisher.Banner
 import com.moloco.sdk.publisher.BannerAdShowListener
+import com.moloco.sdk.publisher.BannerAdSize
 import com.moloco.sdk.publisher.CreateBannerCallback
 import com.moloco.sdk.publisher.MediationInfo
 import com.moloco.sdk.publisher.Moloco
@@ -75,32 +77,13 @@ private constructor(
         }
       }
     val mediationInfo = MediationInfo(MEDIATION_PLATFORM_NAME)
-    when (adSize) {
-      AdSize.LEADERBOARD -> {
-        Moloco.createBannerTablet(
-          mediationInfo = mediationInfo,
-          adUnitId = adUnitId,
-          watermarkString = watermark,
-          callback = createBannerCallback,
-        )
-      }
-      AdSize.MEDIUM_RECTANGLE -> {
-        Moloco.createMREC(
-          mediationInfo = mediationInfo,
-          adUnitId = adUnitId,
-          watermarkString = watermark,
-          callback = createBannerCallback,
-        )
-      }
-      else -> {
-        Moloco.createBanner(
-          mediationInfo = mediationInfo,
-          adUnitId = adUnitId,
-          watermarkString = watermark,
-          callback = createBannerCallback,
-        )
-      }
-    }
+    Moloco.createMolocoBanner(
+      mediationInfo = mediationInfo,
+      adUnitId = adUnitId,
+      size = resolveBannerAdSize(context, adSize),
+      watermarkString = watermark,
+      callback = createBannerCallback,
+    )
   }
 
   override fun getView(): View = molocoAd
@@ -173,6 +156,38 @@ private constructor(
       return Result.success(
         MolocoBannerAd(mediationAdLoadCallback, adSize, adUnitId, bidResponse, watermark)
       )
+    }
+
+    /**
+     * Maps a Google [AdSize] to the appropriate [BannerAdSize] for the Moloco SDK.
+     *
+     * 1. `height == 0` → [BannerAdSize.InlineAdaptive]. All Google inline
+     *    adaptive factory methods return `height == 0`; `isAutoHeight` covers the legacy
+     *    smart-banner path. Checked first — fixed formats always carry a positive height.
+     * 2. Exact dimensions → [BannerAdSize.Standard] / [BannerAdSize.MREC] / [BannerAdSize.Tablet].
+     * 3. Height matches [AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize], [AdSize.getPortraitAnchoredAdaptiveBannerAdSize]
+     *    or [AdSize.getLandscapeAnchoredAdaptiveBannerAdSize] for the same width → [BannerAdSize.AnchoredAdaptive].
+     * 4. Fallback → [BannerAdSize.InlineAdaptive].
+     */
+    internal fun resolveBannerAdSize(context: Context, adSize: AdSize): BannerAdSize = when {
+      // 1. Inline adaptive — height == 0 is Google's unambiguous inline signal.
+      adSize.height == 0 -> BannerAdSize.InlineAdaptive(availableWidth = adSize.width)
+      // 2. Fixed sizes — matched by exact dimensions.
+      adSize == AdSize.BANNER -> BannerAdSize.Standard
+      adSize == AdSize.MEDIUM_RECTANGLE -> BannerAdSize.MREC
+      adSize == AdSize.LEADERBOARD -> BannerAdSize.Tablet
+      // 3. Anchored adaptive — positive height that matches the anchored API for this width.
+      else -> {
+        if (adSize.height == AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, adSize.width).height ||
+          adSize.height == AdSize.getPortraitAnchoredAdaptiveBannerAdSize(context, adSize.width).height ||
+          adSize.height == AdSize.getLandscapeAnchoredAdaptiveBannerAdSize(context, adSize.width).height
+        ) {
+          BannerAdSize.AnchoredAdaptive(availableWidth = adSize.width)
+        } else {
+          // 4. Fallback — custom or non-standard size; treat as inline.
+          BannerAdSize.InlineAdaptive(availableWidth = adSize.width)
+        }
+      }
     }
   }
 }
