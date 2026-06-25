@@ -1,6 +1,6 @@
 ## PubMatic Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 5.1.2.2 (In progress)
 - Maps `AgeRestrictedTreatment` to PubMatic's COPPA API.
 
 #### Version 5.1.2.1
