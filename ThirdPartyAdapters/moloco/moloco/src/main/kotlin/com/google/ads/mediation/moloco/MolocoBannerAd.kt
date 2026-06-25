@@ -43,6 +43,7 @@ class MolocoBannerAd
 private constructor(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
+  private val context: Context,
   private val adSize: AdSize,
   private val adUnitId: String,
   private val bidResponse: String,
@@ -154,7 +155,7 @@ private constructor(
       val watermark = mediationBannerAdConfiguration.watermark
 
       return Result.success(
-        MolocoBannerAd(mediationAdLoadCallback, adSize, adUnitId, bidResponse, watermark)
+        MolocoBannerAd(mediationAdLoadCallback, mediationBannerAdConfiguration.context, adSize, adUnitId, bidResponse, watermark)
       )
     }
 
