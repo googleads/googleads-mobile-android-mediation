@@ -23,11 +23,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.facebook.ads.AdSettings;
 import com.facebook.ads.BidderTokenProvider;
+import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbBannerAd;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbInterstitialAd;
 import com.google.ads.mediation.facebook.rtb.FacebookRtbNativeAd;
 import com.google.ads.mediation.facebook.rtb.MetaRtbAppOpenAd;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AgeRestrictedTreatment;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
@@ -317,10 +320,15 @@ public class FacebookMediationAdapter extends RtbAdapter {
    * directed treatment and tagged for under age of consent treatment.
    */
   public static void setMixedAudience(@NonNull MediationAdConfiguration mediationAdConfiguration) {
+    boolean isAgeRestrictedTreatmentChild =
+        AgeRestrictedTreatmentUtils.runtimeGmaSdkSupportsChildAgeRestrictedTreatment()
+            && MobileAds.getRequestConfiguration().getAgeRestrictedTreatment()
+                == AgeRestrictedTreatment.CHILD;
     if (mediationAdConfiguration.taggedForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
         || mediationAdConfiguration.taggedForUnderAgeTreatment()
-            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE) {
+            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+        || isAgeRestrictedTreatmentChild) {
       AdSettings.setMixedAudience(true);
     } else if (mediationAdConfiguration.taggedForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE

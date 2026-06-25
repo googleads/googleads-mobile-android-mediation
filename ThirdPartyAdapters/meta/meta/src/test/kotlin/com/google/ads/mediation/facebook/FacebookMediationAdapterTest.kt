@@ -44,6 +44,8 @@ import com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudien
 import com.google.ads.mediation.facebook.FacebookSdkWrapper.sdkVersion
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AgeRestrictedTreatment
+import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdConfiguration
@@ -161,6 +163,11 @@ class FacebookMediationAdapterTest {
   @Before
   fun setUp() {
     facebookMediationAdapter = FacebookMediationAdapter(metaFactory)
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
   }
 
   // region Version Tests
@@ -261,6 +268,45 @@ class FacebookMediationAdapterTest {
 
     setMixedAudience(mediationAdConfiguration)
 
+    assertThat(AdSettings.isMixedAudience()).isFalse()
+  }
+
+  @Test
+  fun setMixedAudience_whenAgeRestrictedTreatmentChild_setsMixedAudienceTrue() {
+    whenever(mediationAdConfiguration.taggedForChildDirectedTreatment()) doReturn
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+    whenever(mediationAdConfiguration.taggedForUnderAgeTreatment()) doReturn
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
+    val requestConfiguration =
+      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+
+    setMixedAudience(mediationAdConfiguration)
+
+    assertThat(AdSettings.isMixedAudience()).isTrue()
+  }
+
+  @Test
+  fun setMixedAudience_whenAgeRestrictedTreatmentTeen_doesNotChangeMixedAudience() {
+    // Set mixed audience to true initially.
+    AdSettings.setMixedAudience(true)
+    whenever(mediationAdConfiguration.taggedForChildDirectedTreatment()) doReturn
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+    whenever(mediationAdConfiguration.taggedForUnderAgeTreatment()) doReturn
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
+    val requestConfiguration =
+      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.TEEN).build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+
+    setMixedAudience(mediationAdConfiguration)
+
+    // Should still be true because TEEN doesn't map to false explicitly if others are unspecified.
+    assertThat(AdSettings.isMixedAudience()).isTrue()
+
+    // Set mixed audience to false initially.
+    AdSettings.setMixedAudience(false)
+    setMixedAudience(mediationAdConfiguration)
+    // Should still be false.
     assertThat(AdSettings.isMixedAudience()).isFalse()
   }
 
