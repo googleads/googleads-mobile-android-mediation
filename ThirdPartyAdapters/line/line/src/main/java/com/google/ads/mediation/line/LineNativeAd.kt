@@ -58,7 +58,7 @@ private constructor(
   private val slotId: String?,
   private val bidResponse: String,
   private val watermark: String,
-  private val nativeAdOptions: NativeAdOptions,
+  private val nativeAdOptions: NativeAdOptions?,
   private val mediationNativeAdLoadCallback:
     MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
   private val adapterScope: CoroutineScope,
@@ -84,7 +84,7 @@ private constructor(
     }
     LineInitializer.initialize(context, appId)
     nativeAd = LineSdkFactory.delegate.createFiveAdNative(context, slotId)
-    val videoOptions = nativeAdOptions.videoOptions
+    val videoOptions = nativeAdOptions?.videoOptions
     if (videoOptions != null) {
       nativeAd.enableSound(!videoOptions.startMuted)
     }
@@ -105,7 +105,7 @@ private constructor(
       object : AdLoader.LoadNativeAdCallback {
         override fun onLoad(fiveAdNative: FiveAdNative) {
           nativeAd = fiveAdNative
-          val videoOptions = nativeAdOptions.videoOptions
+          val videoOptions = nativeAdOptions?.videoOptions
           if (videoOptions != null) {
             nativeAd.enableSound(!videoOptions.startMuted)
           }
@@ -183,8 +183,8 @@ private constructor(
 
   override fun trackViews(
     containerView: View,
-    clickableAssetViews: MutableMap<String, View>,
-    nonClickableAssetViews: MutableMap<String, View>,
+    clickableAssetViews: Map<String, View>,
+    nonClickableAssetViews: Map<String, View>,
   ) {
     nativeAd.registerViews(containerView, adChoicesContent, clickableAssetViews.values.toList())
   }
