@@ -18,15 +18,20 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
+import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.APP_TOKEN_KEY
+import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_CODE_CHILD_USER
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_CHILD_USER
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_ERROR_INITIALIZE_VERVE_SDK
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_MISSING_APP_TOKEN
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
@@ -34,7 +39,20 @@ import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TR
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
+import com.google.android.gms.ads.mediation.MediationAdLoadCallback
+import com.google.android.gms.ads.mediation.MediationBannerAd
+import com.google.android.gms.ads.mediation.MediationBannerAdCallback
+import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
 import com.google.android.gms.ads.mediation.MediationConfiguration
+import com.google.android.gms.ads.mediation.MediationInterstitialAd
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import com.google.android.gms.ads.mediation.MediationNativeAdCallback
+import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
+import com.google.android.gms.ads.mediation.MediationRewardedAd
+import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
+import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
+import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import net.pubnative.lite.sdk.HyBid
@@ -46,6 +64,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -70,15 +89,12 @@ class VerveMediationAdapterTest {
 
   @After
   fun tearDown() {
-    // Reset child-directed and under-age tags.
+    // Reset child-directed, under-age, and age-restricted tags.
     MobileAds.setRequestConfiguration(
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
-        .build()
-    )
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder()
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
         .build()
     )
   }
@@ -137,6 +153,16 @@ class VerveMediationAdapterTest {
       RequestConfiguration.Builder()
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
         .build()
+    )
+    adapter.initialize(context, mockInitializationCallback, mediationConfigurations = listOf())
+
+    verify(mockInitializationCallback).onInitializationFailed(eq(ERROR_MSG_CHILD_USER))
+  }
+
+  @Test
+  fun initialize_whenAgeRestrictedTreatmentChild_invokesOnInitializationFailed() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
     )
     adapter.initialize(context, mockInitializationCallback, mediationConfigurations = listOf())
 
@@ -251,6 +277,117 @@ class VerveMediationAdapterTest {
       adapter.collectSignals(signalData, mockSignalCallbacks)
 
       verify(mockSignalCallbacks).onSuccess(TEST_BID_RESPONSE)
+    }
+  }
+
+  private fun runTestWithChildConfigurations(testBlock: () -> Unit) {
+    val childConfigurations =
+      listOf(
+        RequestConfiguration.Builder()
+          .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+          .build(),
+        RequestConfiguration.Builder()
+          .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+          .build(),
+        RequestConfiguration.Builder()
+          .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
+          .build(),
+      )
+
+    for (config in childConfigurations) {
+      MobileAds.setRequestConfiguration(config)
+      testBlock()
+    }
+  }
+
+  @Test
+  fun collectSignals_whenChildUser_invokesOnFailure() {
+    runTestWithChildConfigurations {
+      val signalData =
+        RtbSignalData(
+          context,
+          /* configurations = */ listOf<MediationConfiguration>(),
+          /* networkExtras = */ bundleOf(),
+          /* adSize = */ null,
+        )
+      val mockSignalCallbacks = mock<SignalCallbacks>()
+
+      adapter.collectSignals(signalData, mockSignalCallbacks)
+
+      val expectedError = AdError(ERROR_CODE_CHILD_USER, ERROR_MSG_CHILD_USER, ADAPTER_ERROR_DOMAIN)
+      verify(mockSignalCallbacks).onFailure(argThat(AdErrorMatcher(expectedError)))
+    }
+  }
+
+  // endregion
+
+  // region Load ad tests
+  @Test
+  fun loadRtbBannerAd_whenChildUser_invokesOnFailure() {
+    runTestWithChildConfigurations {
+      val mockAdConfiguration = mock<MediationBannerAdConfiguration>()
+      val mockCallback =
+        mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
+
+      adapter.loadRtbBannerAd(mockAdConfiguration, mockCallback)
+
+      val expectedError = AdError(ERROR_CODE_CHILD_USER, ERROR_MSG_CHILD_USER, ADAPTER_ERROR_DOMAIN)
+      verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    }
+  }
+
+  @Test
+  fun loadRtbInterstitialAd_whenChildUser_invokesOnFailure() {
+    runTestWithChildConfigurations {
+      val mockAdConfiguration = mock<MediationInterstitialAdConfiguration>()
+      val mockCallback =
+        mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
+
+      adapter.loadRtbInterstitialAd(mockAdConfiguration, mockCallback)
+
+      val expectedError = AdError(ERROR_CODE_CHILD_USER, ERROR_MSG_CHILD_USER, ADAPTER_ERROR_DOMAIN)
+      verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    }
+  }
+
+  @Test
+  fun loadRtbRewardedAd_whenChildUser_invokesOnFailure() {
+    runTestWithChildConfigurations {
+      val mockAdConfiguration = mock<MediationRewardedAdConfiguration>()
+      val mockCallback =
+        mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+
+      adapter.loadRtbRewardedAd(mockAdConfiguration, mockCallback)
+
+      val expectedError = AdError(ERROR_CODE_CHILD_USER, ERROR_MSG_CHILD_USER, ADAPTER_ERROR_DOMAIN)
+      verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    }
+  }
+
+  @Test
+  fun loadRtbRewardedInterstitialAd_whenChildUser_invokesOnFailure() {
+    runTestWithChildConfigurations {
+      val mockAdConfiguration = mock<MediationRewardedAdConfiguration>()
+      val mockCallback =
+        mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+
+      adapter.loadRtbRewardedInterstitialAd(mockAdConfiguration, mockCallback)
+
+      val expectedError = AdError(ERROR_CODE_CHILD_USER, ERROR_MSG_CHILD_USER, ADAPTER_ERROR_DOMAIN)
+      verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    }
+  }
+
+  @Test
+  fun loadRtbNativeAdMapper_whenChildUser_invokesOnFailure() {
+    runTestWithChildConfigurations {
+      val mockAdConfiguration = mock<MediationNativeAdConfiguration>()
+      val mockCallback = mock<MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>>()
+
+      adapter.loadRtbNativeAdMapper(mockAdConfiguration, mockCallback)
+
+      val expectedError = AdError(ERROR_CODE_CHILD_USER, ERROR_MSG_CHILD_USER, ADAPTER_ERROR_DOMAIN)
+      verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
     }
   }
 
