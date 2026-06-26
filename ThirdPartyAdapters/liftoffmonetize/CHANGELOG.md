@@ -1,11 +1,16 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
-#### Version 7.7.4.2 (In progress)
+#### Version 7.7.4.2
 - Maps `AgeRestrictedTreatment` to Liftoff Monetize's COPPA API.
 - Removed the old API implementations for the following waterfall ad formats:
   Banner, Interstitial.
 - Updated the adapter to use `loadBannerAd` for Waterfall Banner ads and
   `loadInterstitialAd` for Waterfall Interstitial ads.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.2.1.
+- Vungle SDK version 7.7.4.
 
 #### Version 7.7.4.1
 - Added logging using `VungleMediationLogger` to highlight the case when multiple app ids are detected.
@@ -13,6 +18,7 @@
 Built and tested with:
 - Google Mobile Ads SDK version 25.3.0.
 - Google Mobile Ads Next-Gen SDK version 1.2.1.
+
 #### Version 7.7.4.0
 - Added `MediationInterstitialAd` implementation to the interstitial ad format.
 - Verified compatibility with Vungle SDK 7.7.4.
