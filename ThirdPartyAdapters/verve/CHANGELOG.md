@@ -1,5 +1,7 @@
 ## Verve Android Mediation Adapter Changelog
 
+#### Version 3.9.0.0 (In progress)
+
 #### Version 3.8.2.1 (In progress)
 - Filter age-restricted requests for Verve SDK when new `AgeRestrictedTreatment` is set to `CHILD`.
 
