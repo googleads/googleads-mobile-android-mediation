@@ -1,12 +1,14 @@
 package com.google.ads.mediation.unity;
 
-import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.WATERMARK;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKInitializationError;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKLoadError;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKShowError;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ADAPTER_ERROR_DOMAIN;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_MISSING_PARAMETERS;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.KEY_GAME_ID;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.KEY_PLACEMENT_ID;
-import static com.google.ads.mediation.unity.UnityMediationAdapter.KEY_WATERMARK;
 
 import android.app.Activity;
 import android.content.Context;
@@ -20,15 +22,16 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration;
-import com.unity3d.ads.IUnityAdsInitializationListener;
-import com.unity3d.ads.IUnityAdsLoadListener;
-import com.unity3d.ads.IUnityAdsShowListener;
-import com.unity3d.ads.UnityAds;
-import com.unity3d.ads.UnityAds.UnityAdsLoadError;
-import com.unity3d.ads.UnityAds.UnityAdsShowError;
-import com.unity3d.ads.UnityAdsLoadOptions;
-import com.unity3d.ads.UnityAdsShowOptions;
-import com.unity3d.ads.metadata.MetaData;
+import com.unity3d.ads.InitializationListener;
+import com.unity3d.ads.InterstitialAd;
+import com.unity3d.ads.InterstitialShowListener;
+import com.unity3d.ads.LoadListener;
+import com.unity3d.ads.ShowConfiguration;
+import com.unity3d.ads.ShowFinishState;
+import com.unity3d.ads.UnityAdsError;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -36,10 +39,14 @@ import java.util.UUID;
  * between Google Mobile Ads SDK and Unity Ads SDK.
  */
 public class UnityInterstitialAd
-    implements MediationInterstitialAd, IUnityAdsLoadListener, IUnityAdsShowListener {
+    implements MediationInterstitialAd, LoadListener<InterstitialAd>, InterstitialShowListener {
 
   static final String ERROR_MSG_INTERSTITIAL_INITIALIZATION_FAILED =
       "Unity Ads initialization failed for game ID '%s' with error message: %s";
+
+  /** The loaded InterstitialAd instance from Unity Ads SDK. */
+  @Nullable
+  private InterstitialAd loadedInterstitialAd;
 
   /** Object ID used to track loaded/shown ads. */
   private String objectId;
@@ -74,26 +81,26 @@ public class UnityInterstitialAd
   }
 
   @Override
-  public void onUnityAdsAdLoaded(String placementId) {
-    String logMessage =
-        String.format(
-            "Unity Ads interstitial ad successfully loaded for placement ID: %s", placementId);
-    Log.d(UnityMediationAdapter.TAG, logMessage);
-    this.placementId = placementId;
-    interstitialAdCallback = adLoadCallback.onSuccess(this);
+  public void onAdLoaded(
+      @Nullable InterstitialAd ad,
+      @Nullable UnityAdsError error) {
+    if (error == null) {
+      // Success
+      String logMessage1 = String.format(
+          "Unity Ads interstitial ad successfully loaded for placement ID: %s", placementId);
+      Log.d(UnityMediationAdapter.TAG, logMessage1);
+      loadedInterstitialAd = ad;
+      interstitialAdCallback = adLoadCallback.onSuccess(UnityInterstitialAd.this);
+    } else {
+      // Failure
+      AdError loadError = createSDKLoadError(error, error.getMessage());
+      Log.w(UnityMediationAdapter.TAG, loadError.toString());
+      adLoadCallback.onFailure(loadError);
+    }
   }
 
   @Override
-  public void onUnityAdsFailedToLoad(String placementId, UnityAdsLoadError error, String message) {
-    this.placementId = placementId;
-
-    AdError loadError = createSDKError(error, message);
-    Log.w(UnityMediationAdapter.TAG, loadError.toString());
-    adLoadCallback.onFailure(loadError);
-  }
-
-  @Override
-  public void onUnityAdsShowStart(String placementId) {
+  public void onStarted(InterstitialAd interstitialAd) {
     String logMessage =
         String.format("Unity Ads interstitial ad started for placement ID: %s", placementId);
     Log.d(UnityMediationAdapter.TAG, logMessage);
@@ -106,7 +113,7 @@ public class UnityInterstitialAd
   }
 
   @Override
-  public void onUnityAdsShowClick(String placementId) {
+  public void onClicked(InterstitialAd interstitialAd) {
     String logMessage =
         String.format("Unity Ads interstitial ad was clicked for placement ID: %s", placementId);
     Log.d(UnityMediationAdapter.TAG, logMessage);
@@ -125,8 +132,8 @@ public class UnityInterstitialAd
   }
 
   @Override
-  public void onUnityAdsShowComplete(
-      String placementId, UnityAds.UnityAdsShowCompletionState state) {
+  public void onCompleted(
+      InterstitialAd interstitialAd, @NonNull ShowFinishState showFinishState) {
     String logMessage =
         String.format(
             "Unity Ads interstitial ad finished playing for placement ID: %s", placementId);
@@ -139,9 +146,9 @@ public class UnityInterstitialAd
   }
 
   @Override
-  public void onUnityAdsShowFailure(String placementId, UnityAdsShowError error, String message) {
+  public void onFailed(InterstitialAd interstitialAd, @NonNull UnityAdsError error) {
     // Unity Ads ad failed to show.
-    AdError adError = createSDKError(error, message);
+    AdError adError = createSDKShowError(error, error.getMessage());
     Log.w(UnityMediationAdapter.TAG, adError.toString());
 
     if (interstitialAdCallback != null) {
@@ -166,58 +173,65 @@ public class UnityInterstitialAd
     final String adMarkup = adConfiguration.getBidResponse();
 
     unityInitializer.initializeUnityAds(
-        context,
         gameId,
-        new IUnityAdsInitializationListener() {
+        new InitializationListener() {
           @Override
-          public void onInitializationComplete() {
-            String logMessage =
-                String.format(
-                    "Unity Ads is initialized for game ID '%s' "
-                        + "and can now load interstitial ad with placement ID: %s",
-                    gameId, placementId);
-            Log.d(UnityMediationAdapter.TAG, logMessage);
-            UnityAdsAdapterUtils.setUnityAdsPrivacy(
-                MobileAds.getRequestConfiguration(), new MetaData(context));
+          public void onInitializationComplete(@Nullable UnityAdsError unityAdsError) {
+            if (unityAdsError == null) {
+              String logMessage =
+                  String.format(
+                      "Unity Ads is initialized for game ID '%s' "
+                          + "and can now load interstitial ad with placement ID: %s",
+                      gameId, placementId);
+              Log.d(UnityMediationAdapter.TAG, logMessage);
+              UnityAdsAdapterUtils.setUnityAdsPrivacy(MobileAds.getRequestConfiguration());
 
-            objectId = UUID.randomUUID().toString();
-            UnityAdsLoadOptions unityAdsLoadOptions =
-                unityAdsLoader.createUnityAdsLoadOptionsWithId(objectId);
-            if (adMarkup != null) {
-              unityAdsLoadOptions.setAdMarkup(adMarkup);
+              objectId = UUID.randomUUID().toString();
+
+              // Use new load API
+              unityAdsLoader.loadInterstitial(
+                      placementId, adMarkup, objectId, UnityInterstitialAd.this);
+            } else {
+              String adErrorMessage =
+                  String.format(ERROR_MSG_INTERSTITIAL_INITIALIZATION_FAILED, gameId,
+                      unityAdsError.getMessage());
+              AdError adError = createSDKInitializationError(unityAdsError, adErrorMessage);
+              Log.w(UnityMediationAdapter.TAG, adError.toString());
+
+              adLoadCallback.onFailure(adError);
+
             }
-            unityAdsLoader.load(placementId, unityAdsLoadOptions, UnityInterstitialAd.this);
-          }
-
-          @Override
-          public void onInitializationFailed(
-              UnityAds.UnityAdsInitializationError unityAdsInitializationError,
-              String errorMessage) {
-            String adErrorMessage =
-                String.format(ERROR_MSG_INTERSTITIAL_INITIALIZATION_FAILED, gameId, errorMessage);
-            AdError adError = createSDKError(unityAdsInitializationError, adErrorMessage);
-            Log.w(UnityMediationAdapter.TAG, adError.toString());
-
-            adLoadCallback.onFailure(adError);
           }
         });
   }
 
   @Override
   public void showAd(Context context) {
-    if (placementId == null) {
+    if (loadedInterstitialAd == null) {
       Log.w(
           UnityMediationAdapter.TAG,
           "Unity Ads received call to show before successfully loading an ad.");
+      if (interstitialAdCallback != null) {
+        AdError adError = new AdError(
+            UnityMediationAdapter.ERROR_AD_NOT_READY, "InterstitialAd is not loaded",
+            ADAPTER_ERROR_DOMAIN);
+        interstitialAdCallback.onAdFailedToShow(adError);
+      }
+      return;
     }
 
-    UnityAdsShowOptions unityAdsShowOptions =
-        unityAdsLoader.createUnityAdsShowOptionsWithId(objectId);
-    unityAdsShowOptions.set(KEY_WATERMARK, watermark);
-    // UnityAds can handle a null placement ID so show is always called here.
+    ShowConfiguration.Builder builder = new ShowConfiguration.Builder();
+
+    if (watermark != null) {
+      Map<String, String> extras = new HashMap<>();
+      extras.put(WATERMARK, watermark);
+      builder.withExtras(extras);
+    }
+
+    ShowConfiguration showConfig = builder.build();
     // Note: Context here is the activity that the publisher passed to GMA SDK's show() method
     // (https://developers.google.com/admob/android/reference/com/google/android/gms/ads/appopen/AppOpenAd#show(android.app.Activity)).
     // So, this is guaranteed to be an activity context.
-    unityAdsLoader.show((Activity) context, placementId, unityAdsShowOptions, this);
+    loadedInterstitialAd.show((Activity) context, showConfig, this);
   }
 }

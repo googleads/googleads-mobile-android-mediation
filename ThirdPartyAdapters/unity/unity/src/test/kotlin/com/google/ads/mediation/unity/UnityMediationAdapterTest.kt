@@ -6,17 +6,12 @@ import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.unity.UnityAdsAdapterUtils.getMediationErrorCode
-import com.google.ads.mediation.unity.UnityInitializer.ADMOB
-import com.google.ads.mediation.unity.UnityInitializer.KEY_ADAPTER_VERSION
 import com.google.ads.mediation.unity.UnityInterstitialAd.ERROR_MSG_INTERSTITIAL_INITIALIZATION_FAILED
 import com.google.ads.mediation.unity.UnityMediationAdapter.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_BANNER_SIZE_MISMATCH
-import com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY
 import com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS
 import com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_INITIALIZATION_FAILURE
 import com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_MISSING_PARAMETERS
-import com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_NON_ACTIVITY
 import com.google.ads.mediation.unity.UnityMediationAdapter.SDK_ERROR_DOMAIN
 import com.google.ads.mediation.unity.UnityMediationBannerAd.ERROR_MSG_INITIALIZATION_FAILED_FOR_GAME_ID
 import com.google.ads.mediation.unity.UnityMediationBannerAd.ERROR_MSG_NO_MATCHING_AD_SIZE
@@ -39,13 +34,10 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
-import com.unity3d.ads.IUnityAdsInitializationListener
 import com.unity3d.ads.IUnityAdsTokenListener
+import com.unity3d.ads.InitializationListener
 import com.unity3d.ads.TokenConfiguration
-import com.unity3d.ads.UnityAds.UnityAdsInitializationError
-import com.unity3d.ads.UnityAdsLoadOptions
-import com.unity3d.ads.metadata.MediationMetaData
-import com.unity3d.services.banners.UnityBannerSize
+import com.unity3d.ads.UnityAdsError
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -79,7 +71,7 @@ class UnityMediationAdapterTest {
   private lateinit var mediationRewardedAdConfiguration: MediationRewardedAdConfiguration
 
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
-  private val nonActivityContext: Context = ApplicationProvider.getApplicationContext()
+
 
   private val initializationCompleteCallback: InitializationCompleteCallback = mock()
   private val mediationBannerAdLoadCallback:
@@ -94,9 +86,6 @@ class UnityMediationAdapterTest {
   private val unityAdsWrapper: UnityAdsWrapper = mock()
   private val unityInitializer: UnityInitializer = spy(UnityInitializer(unityAdsWrapper))
   private val unityAdsLoader: UnityAdsLoader = mock()
-  private val mediationMetadata: MediationMetaData = mock()
-  private val unityBannerViewWrapper: UnityBannerViewWrapper = mock()
-  private val unityBannerViewFactory: UnityBannerViewFactory = mock()
   private val signalCallbacks: SignalCallbacks = mock()
   private val mediationUtils: MediationUtilsWrapper = mock()
 
@@ -106,7 +95,6 @@ class UnityMediationAdapterTest {
       UnityMediationAdapter(
         unityInitializer,
         unityAdsWrapper,
-        unityBannerViewFactory,
         unityAdsLoader,
         mediationUtils,
       )
@@ -118,10 +106,6 @@ class UnityMediationAdapterTest {
         UnityMediationAdapter.KEY_PLACEMENT_ID to TEST_PLACEMENT_ID,
         UnityMediationAdapter.KEY_GAME_ID to TEST_GAME_ID,
       )
-
-    whenever(unityBannerViewFactory.createBannerView(any(), eq(TEST_PLACEMENT_ID), any())) doReturn
-      unityBannerViewWrapper
-    whenever(unityAdsWrapper.getMediationMetaData(any())) doReturn mediationMetadata
   }
 
   @Test
@@ -141,10 +125,10 @@ class UnityMediationAdapterTest {
   fun initialize_withCorrectParametersAndSuccess_invokesOnInitializationSucceeded() {
     doAnswer { invocation ->
         val args = invocation.arguments
-        (args[2] as IUnityAdsInitializationListener).onInitializationComplete()
+        (args[1] as InitializationListener).onInitializationComplete(null)
       }
       .whenever(unityInitializer)
-      .initializeUnityAds(any(), any(), any())
+      .initializeUnityAds(any(), any())
     mediationConfigurations = listOf(MediationConfiguration(AdFormat.BANNER, serverParameters))
 
     unityMediationAdapter.initialize(
@@ -158,22 +142,22 @@ class UnityMediationAdapterTest {
 
   @Test
   fun initialize_withCorrectParametersAndFailure_invokesOnInitializationFailed() {
+    val unityAdsError = mock<UnityAdsError>()
+    whenever(unityAdsError.code).doReturn(52000)
+    whenever(unityAdsError.message).doReturn(TEST_ERROR_MESSAGE)
     doAnswer { invocation ->
         val args = invocation.arguments
-        (args[2] as IUnityAdsInitializationListener).onInitializationFailed(
-          UnityAdsInitializationError.INTERNAL_ERROR,
-          TEST_ERROR_MESSAGE,
-        )
+        (args[1] as InitializationListener).onInitializationComplete(unityAdsError)
       }
       .whenever(unityInitializer)
-      .initializeUnityAds(any(), any(), any())
+      .initializeUnityAds(any(), any())
     mediationConfigurations = listOf(MediationConfiguration(AdFormat.BANNER, serverParameters))
-    val errorCode = getMediationErrorCode(UnityAdsInitializationError.INTERNAL_ERROR)
+    val errorCode = UnityAdsAdapterUtils.getMediationInitializationErrorCode(unityAdsError)
     val adError: AdError =
       AdError(
         errorCode,
         ERROR_MSG_INITIALIZATION_FAILURE.format(
-          UnityAdsInitializationError.INTERNAL_ERROR,
+          unityAdsError,
           TEST_ERROR_MESSAGE,
         ),
         SDK_ERROR_DOMAIN,
@@ -188,54 +172,6 @@ class UnityMediationAdapterTest {
     verify(initializationCompleteCallback).onInitializationFailed(eq(adError.toString()))
   }
 
-  @Test
-  fun initialize_withCorrectParameters_commitsUnityMediationMetaDataBeforeInitialization() {
-    doReturn(TEST_VERSION_NUMBER).whenever(unityAdsWrapper).getVersion()
-    mediationConfigurations = listOf(MediationConfiguration(AdFormat.BANNER, serverParameters))
-
-    unityMediationAdapter.initialize(
-      activity,
-      initializationCompleteCallback,
-      mediationConfigurations,
-    )
-
-    inOrder(mediationMetadata) {
-      verify(mediationMetadata).setName(ADMOB)
-      verify(mediationMetadata).commit()
-    }
-    inOrder(mediationMetadata) {
-      verify(mediationMetadata).setVersion(TEST_VERSION_NUMBER)
-      verify(mediationMetadata).commit()
-    }
-    inOrder(mediationMetadata) {
-      verify(mediationMetadata).set(KEY_ADAPTER_VERSION, BuildConfig.ADAPTER_VERSION)
-      verify(mediationMetadata).commit()
-    }
-    inOrder(mediationMetadata, unityAdsWrapper) {
-      verify(mediationMetadata).commit()
-      verify(unityAdsWrapper).initialize(any(), any(), any())
-    }
-  }
-
-  @Test
-  fun collectSignals_forBannerFormatAndNonActivityContext_fails() {
-    val rtbSignalData =
-      RtbSignalData(
-        nonActivityContext,
-        listOf(MediationConfiguration(AdFormat.BANNER, /* serverParameters= */ bundleOf())),
-        /* networkExtras= */ bundleOf(),
-        AdSize.BANNER,
-      )
-
-    unityMediationAdapter.collectSignals(rtbSignalData, signalCallbacks)
-
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(signalCallbacks).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_CONTEXT_NOT_ACTIVITY)
-    assertThat(adError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
-    verifyNoMoreInteractions(signalCallbacks)
-  }
 
   @Test
   fun collectSignals_forBannerFormatAndActivityContext_invokesSignalCallbacks() {
@@ -374,7 +310,7 @@ class UnityMediationAdapterTest {
     )
 
     verify(initializationCompleteCallback).onInitializationSucceeded()
-    verify(unityAdsWrapper, never()).initialize(any(), any(), any())
+    verify(unityAdsWrapper, never()).initialize(any(), any())
   }
 
   @Test
@@ -451,23 +387,6 @@ class UnityMediationAdapterTest {
   }
 
   @Test
-  fun loadBannerAd_withNonActivityContext_failsWithAdError() {
-    mediationBannerAdConfiguration = initializeBannerAd(ApplicationProvider.getApplicationContext())
-
-    unityMediationAdapter.loadBannerAd(
-      mediationBannerAdConfiguration,
-      mediationBannerAdLoadCallback,
-    )
-
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationBannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(ERROR_CONTEXT_NOT_ACTIVITY)
-    assertThat(capturedError.message).isEqualTo(ERROR_MSG_NON_ACTIVITY)
-    assertThat(capturedError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
-  }
-
-  @Test
   fun loadBannerAd_withCorrectParameters_callsInitializeUnityAds() {
     mediationBannerAdConfiguration = initializeBannerAd()
     whenever(mediationUtils.findClosestSize(eq(activity), eq(AdSize.BANNER), any())) doReturn
@@ -478,25 +397,25 @@ class UnityMediationAdapterTest {
       mediationBannerAdLoadCallback,
     )
 
-    verify(unityInitializer).initializeUnityAds(any(), any(), any())
+    verify(unityInitializer).initializeUnityAds(any(), any())
   }
 
   @Test
   fun loadBannerAd_withCorrectParametersAndInitFailure_callsOnLoadFailed() {
+    val unityAdsError = mock<UnityAdsError>()
+    whenever(unityAdsError.code).doReturn(52000)
+    whenever(unityAdsError.message).doReturn(TEST_ERROR_MESSAGE)
     doAnswer { invocation ->
         val args = invocation.arguments
-        (args[2] as IUnityAdsInitializationListener).onInitializationFailed(
-          UnityAdsInitializationError.INTERNAL_ERROR,
-          TEST_ERROR_MESSAGE,
-        )
+        (args[1] as InitializationListener).onInitializationComplete(unityAdsError)
       }
       .whenever(unityInitializer)
-      .initializeUnityAds(any(), any(), any())
+      .initializeUnityAds(any(), any())
     mediationBannerAdConfiguration = initializeBannerAd()
     whenever(mediationUtils.findClosestSize(eq(activity), eq(AdSize.BANNER), any())) doReturn
       AdSize.BANNER
     val errorCaptor = argumentCaptor<AdError>()
-    val errorCode = getMediationErrorCode(UnityAdsInitializationError.INTERNAL_ERROR)
+    val errorCode = UnityAdsAdapterUtils.getMediationInitializationErrorCode(unityAdsError)
 
     unityMediationAdapter.loadBannerAd(
       mediationBannerAdConfiguration,
@@ -514,55 +433,41 @@ class UnityMediationAdapterTest {
   }
 
   @Test
-  fun loadBannerAd_withCorrectParametersAndInitSuccess_invokesBannerViewLoad() {
+  fun loadBannerAd_withCorrectParametersAndInitSuccess_invokesBannerLoad() {
     doAnswer { invocation ->
         val args = invocation.arguments
-        (args[2] as IUnityAdsInitializationListener).onInitializationComplete()
+        (args[1] as InitializationListener).onInitializationComplete(null)
       }
       .whenever(unityInitializer)
-      .initializeUnityAds(any(), any(), any())
+      .initializeUnityAds(any(), any())
     mediationBannerAdConfiguration = initializeBannerAd()
     whenever(mediationUtils.findClosestSize(eq(activity), eq(AdSize.BANNER), any())) doReturn
       AdSize.BANNER
-    val unityAdsLoadOptions: UnityAdsLoadOptions = mock()
-    whenever(unityAdsLoader.createUnityAdsLoadOptionsWithId(any())) doReturn unityAdsLoadOptions
 
     unityMediationAdapter.loadBannerAd(
       mediationBannerAdConfiguration,
       mediationBannerAdLoadCallback,
     )
 
-    verify(unityAdsLoader).createUnityAdsLoadOptionsWithId(any())
-    inOrder(unityBannerViewWrapper) {
-      verify(unityBannerViewWrapper).setListener(any())
-      verify(unityBannerViewWrapper).load(any())
-    }
+    verify(unityAdsLoader).loadBanner(any(), any(), any(), any(), any())
   }
 
   @Test
-  fun loadRtbBannerAd_withCorrectParametersAndInitSuccess_invokesBannerViewLoadWithBidResponse() {
+  fun loadRtbBannerAd_withCorrectParametersAndInitSuccess_invokesBannerLoadWithBidResponse() {
     doAnswer { invocation ->
         val args = invocation.arguments
-        (args[2] as IUnityAdsInitializationListener).onInitializationComplete()
+        (args[1] as InitializationListener).onInitializationComplete(null)
       }
       .whenever(unityInitializer)
-      .initializeUnityAds(any(), any(), any())
+      .initializeUnityAds(any(), any())
     mediationBannerAdConfiguration = initializeBannerAd(activity, "testBidResponse")
-    val unityAdsLoadOptions: UnityAdsLoadOptions = mock()
-    whenever(unityAdsLoader.createUnityAdsLoadOptionsWithId(any())) doReturn unityAdsLoadOptions
 
     unityMediationAdapter.loadRtbBannerAd(
       mediationBannerAdConfiguration,
       mediationBannerAdLoadCallback,
     )
 
-    verify(unityAdsLoader).createUnityAdsLoadOptionsWithId(any())
-    verify(unityAdsLoadOptions).set(UnityMediationAdapter.KEY_WATERMARK, "watermark")
-    verify(unityAdsLoadOptions).setAdMarkup("testBidResponse")
-    inOrder(unityBannerViewWrapper) {
-      verify(unityBannerViewWrapper).setListener(any())
-      verify(unityBannerViewWrapper).load(any())
-    }
+    verify(unityAdsLoader).loadBanner(any(), any(), eq("testBidResponse"), any(), any())
   }
 
   @Test
@@ -571,25 +476,18 @@ class UnityMediationAdapterTest {
     adSize = AdSize.MEDIUM_RECTANGLE
     doAnswer { invocation ->
         val args = invocation.arguments
-        (args[2] as IUnityAdsInitializationListener).onInitializationComplete()
+        (args[1] as InitializationListener).onInitializationComplete(null)
       }
       .whenever(unityInitializer)
-      .initializeUnityAds(any(), any(), any())
+      .initializeUnityAds(any(), any())
     mediationBannerAdConfiguration = initializeBannerAd(activity, "testBidResponse")
-    whenever(unityAdsLoader.createUnityAdsLoadOptionsWithId(any())) doReturn mock()
 
     unityMediationAdapter.loadRtbBannerAd(
       mediationBannerAdConfiguration,
       mediationBannerAdLoadCallback,
     )
 
-    val unityBannerSizeCaptor = argumentCaptor<UnityBannerSize>()
-    verify(unityBannerViewFactory)
-      .createBannerView(eq(activity), eq(TEST_PLACEMENT_ID), unityBannerSizeCaptor.capture())
-    val unityBannerSize = unityBannerSizeCaptor.firstValue
-    assertThat(unityBannerSize.width).isEqualTo(AdSize.MEDIUM_RECTANGLE.width)
-    assertThat(unityBannerSize.height).isEqualTo(AdSize.MEDIUM_RECTANGLE.height)
-    verify(unityBannerViewWrapper).load(any())
+    verify(unityAdsLoader).loadBanner(any(), any(), eq("testBidResponse"), any(), any())
   }
 
   private fun initializeBannerAd(context: Context, bidResponse: String) =
@@ -675,7 +573,7 @@ class UnityMediationAdapterTest {
       mediationInterstitialAdLoadCallback,
     )
 
-    verify(unityInitializer).initializeUnityAds(any(), any(), any())
+    verify(unityInitializer).initializeUnityAds(any(), any())
   }
 
   @Test
@@ -687,23 +585,23 @@ class UnityMediationAdapterTest {
       mediationInterstitialAdLoadCallback,
     )
 
-    verify(unityInitializer).initializeUnityAds(any(), any(), any())
+    verify(unityInitializer).initializeUnityAds(any(), any())
   }
 
   @Test
   fun loadInterstitialAd_withCorrectParametersAndInitFailure_callsOnLoadFailed() {
+    val unityAdsError = mock<UnityAdsError>()
+    whenever(unityAdsError.code).doReturn(52000)
+    whenever(unityAdsError.message).doReturn(TEST_ERROR_MESSAGE)
     doAnswer { invocation ->
         val args = invocation.arguments
-        (args[2] as IUnityAdsInitializationListener).onInitializationFailed(
-          UnityAdsInitializationError.INTERNAL_ERROR,
-          TEST_ERROR_MESSAGE,
-        )
+        (args[1] as InitializationListener).onInitializationComplete(unityAdsError)
       }
       .whenever(unityInitializer)
-      .initializeUnityAds(any(), any(), any())
+      .initializeUnityAds(any(), any())
     initializeInterstitialAd()
     val adErrorCaptor = argumentCaptor<AdError>()
-    val errorCode = getMediationErrorCode(UnityAdsInitializationError.INTERNAL_ERROR)
+    val errorCode = UnityAdsAdapterUtils.getMediationInitializationErrorCode(unityAdsError)
 
     unityMediationAdapter.loadInterstitialAd(
       mediationInterstitialAdConfiguration,
@@ -724,12 +622,10 @@ class UnityMediationAdapterTest {
   fun loadInterstitialAd_withCorrectParametersAndInitSuccess_invokesUnityAdsLoad() {
     doAnswer { invocation ->
         val args = invocation.arguments
-        (args[2] as IUnityAdsInitializationListener).onInitializationComplete()
+        (args[1] as InitializationListener).onInitializationComplete(null)
       }
       .whenever(unityInitializer)
-      .initializeUnityAds(any(), any(), any())
-    val unityAdsLoadOptions: UnityAdsLoadOptions = mock()
-    whenever(unityAdsLoader.createUnityAdsLoadOptionsWithId(any())) doReturn unityAdsLoadOptions
+      .initializeUnityAds(any(), any())
     initializeInterstitialAd()
 
     unityMediationAdapter.loadInterstitialAd(
@@ -737,21 +633,17 @@ class UnityMediationAdapterTest {
       mediationInterstitialAdLoadCallback,
     )
 
-    verify(unityAdsLoader).createUnityAdsLoadOptionsWithId(notNull())
-    verify(unityAdsLoadOptions).setAdMarkup(eq(""))
-    verify(unityAdsLoader).load(any(), any(), any())
+    verify(unityAdsLoader).loadInterstitial(any(), eq(""), any(), any())
   }
 
   @Test
   fun loadRtbInterstitialAd_withCorrectParametersAndInitSuccess_invokesUnityAdsLoad() {
     doAnswer { invocation ->
         val args = invocation.arguments
-        (args[2] as IUnityAdsInitializationListener).onInitializationComplete()
+        (args[1] as InitializationListener).onInitializationComplete(null)
       }
       .whenever(unityInitializer)
-      .initializeUnityAds(any(), any(), any())
-    val unityAdsLoadOptions: UnityAdsLoadOptions = mock()
-    whenever(unityAdsLoader.createUnityAdsLoadOptionsWithId(any())) doReturn unityAdsLoadOptions
+      .initializeUnityAds(any(), any())
     initializeInterstitialAd(activity, "testBidToken")
 
     unityMediationAdapter.loadRtbInterstitialAd(
@@ -759,9 +651,7 @@ class UnityMediationAdapterTest {
       mediationInterstitialAdLoadCallback,
     )
 
-    verify(unityAdsLoader).createUnityAdsLoadOptionsWithId(notNull())
-    verify(unityAdsLoadOptions).setAdMarkup("testBidToken")
-    verify(unityAdsLoader).load(any(), any(), any())
+    verify(unityAdsLoader).loadInterstitial(any(), eq("testBidToken"), any(), any())
   }
 
   private fun initializeInterstitialAd(context: Context, bidToken: String) {
@@ -852,7 +742,7 @@ class UnityMediationAdapterTest {
       mediationRewardedAdLoadCallback,
     )
 
-    verify(unityInitializer).initializeUnityAds(any(), any(), any())
+    verify(unityInitializer).initializeUnityAds(any(), any())
   }
 
   @Test
@@ -864,23 +754,23 @@ class UnityMediationAdapterTest {
       mediationRewardedAdLoadCallback,
     )
 
-    verify(unityInitializer).initializeUnityAds(any(), any(), any())
+    verify(unityInitializer).initializeUnityAds(any(), any())
   }
 
   @Test
   fun loadRewardedAd_withCorrectParametersAndInitFailure_callsOnLoadFailed() {
+    val unityAdsError = mock<UnityAdsError>()
+    whenever(unityAdsError.code).doReturn(52000)
+    whenever(unityAdsError.message).doReturn(TEST_ERROR_MESSAGE)
     doAnswer { invocation ->
         val args = invocation.arguments
-        (args[2] as IUnityAdsInitializationListener).onInitializationFailed(
-          UnityAdsInitializationError.INTERNAL_ERROR,
-          TEST_ERROR_MESSAGE,
-        )
+        (args[1] as InitializationListener).onInitializationComplete(unityAdsError)
       }
       .whenever(unityInitializer)
-      .initializeUnityAds(any(), any(), any())
+      .initializeUnityAds(any(), any())
     initializeRewardedAd()
     val adErrorCaptor = argumentCaptor<AdError>()
-    val errorCode = getMediationErrorCode(UnityAdsInitializationError.INTERNAL_ERROR)
+    val errorCode = UnityAdsAdapterUtils.getMediationInitializationErrorCode(unityAdsError)
 
     unityMediationAdapter.loadRewardedAd(
       mediationRewardedAdConfiguration,
@@ -901,12 +791,10 @@ class UnityMediationAdapterTest {
   fun loadRewardedAd_withCorrectParametersAndInitSuccess_invokesUnityAdsLoad() {
     doAnswer { invocation ->
         val args = invocation.arguments
-        (args[2] as IUnityAdsInitializationListener).onInitializationComplete()
+        (args[1] as InitializationListener).onInitializationComplete(null)
       }
       .whenever(unityInitializer)
-      .initializeUnityAds(any(), any(), any())
-    val unityAdsLoadOptions: UnityAdsLoadOptions = mock()
-    whenever(unityAdsLoader.createUnityAdsLoadOptionsWithId(any())) doReturn unityAdsLoadOptions
+      .initializeUnityAds(any(), any())
     initializeRewardedAd()
 
     unityMediationAdapter.loadRewardedAd(
@@ -914,21 +802,17 @@ class UnityMediationAdapterTest {
       mediationRewardedAdLoadCallback,
     )
 
-    verify(unityAdsLoader).createUnityAdsLoadOptionsWithId(notNull())
-    verify(unityAdsLoadOptions).setAdMarkup(eq(""))
-    verify(unityAdsLoader).load(any(), any(), any())
+    verify(unityAdsLoader).loadRewarded(any(), eq(""), any(), any())
   }
 
   @Test
   fun loadRtbRewardedAd_withCorrectParametersAndInitSuccess_invokesUnityAdsLoad() {
     doAnswer { invocation ->
         val args = invocation.arguments
-        (args[2] as IUnityAdsInitializationListener).onInitializationComplete()
+        (args[1] as InitializationListener).onInitializationComplete(null)
       }
       .whenever(unityInitializer)
-      .initializeUnityAds(any(), any(), any())
-    val unityAdsLoadOptions: UnityAdsLoadOptions = mock()
-    whenever(unityAdsLoader.createUnityAdsLoadOptionsWithId(any())) doReturn unityAdsLoadOptions
+      .initializeUnityAds(any(), any())
     initializeRewardedAd(activity, "testBidToken")
 
     unityMediationAdapter.loadRewardedAd(
@@ -936,9 +820,7 @@ class UnityMediationAdapterTest {
       mediationRewardedAdLoadCallback,
     )
 
-    verify(unityAdsLoader).createUnityAdsLoadOptionsWithId(notNull())
-    verify(unityAdsLoadOptions).setAdMarkup("testBidToken")
-    verify(unityAdsLoader).load(any(), any(), any())
+    verify(unityAdsLoader).loadRewarded(any(), eq("testBidToken"), any(), any())
   }
 
   private fun initializeRewardedAd(context: Context, bidToken: String) {
