@@ -1,5 +1,7 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Version 4.19.0.0 (In progress)
+
 #### Version 4.18.1.0
 - Removed old API implementation for interstitial ads. Adapter will start using
   the new API implementation.
