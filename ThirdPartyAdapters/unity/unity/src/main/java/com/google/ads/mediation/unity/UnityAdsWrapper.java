@@ -1,16 +1,23 @@
 package com.google.ads.mediation.unity;
 
-import android.content.Context;
-import com.unity3d.ads.IUnityAdsInitializationListener;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.getMediationInfo;
+
 import com.unity3d.ads.IUnityAdsTokenListener;
+import com.unity3d.ads.InitializationConfiguration;
+import com.unity3d.ads.InitializationListener;
 import com.unity3d.ads.TokenConfiguration;
 import com.unity3d.ads.UnityAds;
-import com.unity3d.ads.metadata.MediationMetaData;
 
 /** Wrapper class for {@link UnityAds} */
 class UnityAdsWrapper {
-  public void initialize(Context context, String gameId, IUnityAdsInitializationListener listener) {
-    UnityAds.initialize(context, gameId, false, listener);
+  public void initialize(String gameId, InitializationListener listener) {
+    // Build InitializationConfiguration with mediation info
+    InitializationConfiguration config = new InitializationConfiguration.Builder(gameId)
+        .withTestMode(false)
+        .withMediationInfo(getMediationInfo())
+        .build();
+
+    UnityAds.initialize(config, listener);
   }
 
   public boolean isInitialized() {
@@ -19,10 +26,6 @@ class UnityAdsWrapper {
 
   public String getVersion() {
     return UnityAds.getVersion();
-  }
-
-  public MediationMetaData getMediationMetaData(Context context) {
-    return new MediationMetaData(context);
   }
 
   public void getToken(IUnityAdsTokenListener tokenListener) {

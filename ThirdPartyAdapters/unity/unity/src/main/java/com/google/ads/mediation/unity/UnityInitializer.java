@@ -14,20 +14,14 @@
 
 package com.google.ads.mediation.unity;
 
-import android.content.Context;
 import androidx.annotation.VisibleForTesting;
-import com.unity3d.ads.IUnityAdsInitializationListener;
+import com.unity3d.ads.InitializationListener;
 import com.unity3d.ads.UnityAds;
-import com.unity3d.ads.metadata.MediationMetaData;
 
 /**
  * The {@link UnityInitializer} is used to initialize Unity ads
  */
 public class UnityInitializer {
-
-  static final String ADMOB = "AdMob";
-
-  static final String KEY_ADAPTER_VERSION = "adapter_version";
 
   /**
    * UnityInitializer instance.
@@ -62,26 +56,19 @@ public class UnityInitializer {
    * appropriate functions provided in the IUnityAdsInitializationListener after initialization is
    * complete.
    *
-   * @param context                The context.
    * @param gameId                 Unity Ads Game ID.
    * @param initializationListener Unity Ads Initialization listener.
    */
-  public void initializeUnityAds(Context context, String gameId, IUnityAdsInitializationListener
+  public void initializeUnityAds(String gameId, InitializationListener
       initializationListener) {
 
     if (unityAdsWrapper.isInitialized()) {
       // Unity Ads is already initialized.
-      initializationListener.onInitializationComplete();
+      initializationListener.onInitializationComplete(null);
       return;
     }
 
-    // Set mediation meta data before initializing.
-    MediationMetaData mediationMetaData = unityAdsWrapper.getMediationMetaData(context);
-    mediationMetaData.setName(ADMOB);
-    mediationMetaData.setVersion(unityAdsWrapper.getVersion());
-    mediationMetaData.set(KEY_ADAPTER_VERSION, BuildConfig.ADAPTER_VERSION);
-    mediationMetaData.commit();
-
-    unityAdsWrapper.initialize(context, gameId, initializationListener);
+    // UnityAdsWrapper now handles mediation info via InitializationConfiguration
+    unityAdsWrapper.initialize(gameId, initializationListener);
   }
 }

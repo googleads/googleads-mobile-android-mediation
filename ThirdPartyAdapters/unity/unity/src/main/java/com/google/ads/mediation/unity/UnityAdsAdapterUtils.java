@@ -24,21 +24,27 @@ import android.content.Context;
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdFormat;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.mediation.MediationConfiguration;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
+import com.unity3d.ads.BannerSize;
+import com.unity3d.ads.MediationInfo;
 import com.unity3d.ads.UnityAds;
-import com.unity3d.ads.UnityAds.UnityAdsInitializationError;
+import com.unity3d.ads.UnityAdsError;
 import com.unity3d.ads.metadata.MetaData;
-import com.unity3d.services.banners.BannerErrorInfo;
-import com.unity3d.services.banners.UnityBannerSize;
 import java.util.ArrayList;
 
 /** Utility class for the Unity adapter. */
 public class UnityAdsAdapterUtils {
+
+  static final String ADMOB = "AdMob";
+
+  static final String WATERMARK = "watermark";
 
   /** Enumeration of ad events that get forwarded to AdMob */
   public enum AdEvent {
@@ -57,43 +63,45 @@ public class UnityAdsAdapterUtils {
   private UnityAdsAdapterUtils() {}
 
   /**
-   * Creates an {@link AdError} object based on the specified {@link
-   * UnityAds.UnityAdsInitializationError}.
+   * Creates an {@link AdError} object based on the specified Initialization {@link
+   * UnityAdsError}.
    *
    * @param unityAdsError error object from Unity.
    * @param description the error message.
    * @return the {@link AdError} object.
    */
   @NonNull
-  static AdError createSDKError(
-      @NonNull UnityAds.UnityAdsInitializationError unityAdsError, @NonNull String description) {
-    return createAdError(getMediationErrorCode(unityAdsError), description);
+  static AdError createSDKInitializationError(
+          @NonNull UnityAdsError unityAdsError, @NonNull String description) {
+    return createAdError(getMediationInitializationErrorCode(unityAdsError), description);
   }
 
   /**
-   * Creates an {@link AdError} object based on the specified {@link UnityAds.UnityAdsLoadError}.
+   * Creates an {@link AdError} object based on the specified load {@link
+   * UnityAdsError}.
    *
    * @param unityAdsError error object from Unity.
    * @param description the error message.
    * @return the {@link AdError} object.
    */
   @NonNull
-  static AdError createSDKError(
-      @NonNull UnityAds.UnityAdsLoadError unityAdsError, @NonNull String description) {
-    return createAdError(getMediationErrorCode(unityAdsError), description);
+  static AdError createSDKLoadError(
+          @NonNull UnityAdsError unityAdsError, @NonNull String description) {
+    return createAdError(getMediationLoadErrorCode(unityAdsError), description);
   }
 
   /**
-   * Creates an {@link AdError} object based on the specified {@link UnityAds.UnityAdsShowError}.
+   * Creates an {@link AdError} object based on the specified show {@link
+   * UnityAdsError}.
    *
    * @param unityAdsError error object from Unity.
    * @param description the error message.
    * @return the {@link AdError} object.
    */
   @NonNull
-  static AdError createSDKError(
-      @NonNull UnityAds.UnityAdsShowError unityAdsError, @NonNull String description) {
-    return createAdError(getMediationErrorCode(unityAdsError), description);
+  static AdError createSDKShowError(
+          @NonNull UnityAdsError unityAdsError, @NonNull String description) {
+    return createAdError(getMediationShowErrorCode(unityAdsError), description);
   }
 
   /**
@@ -109,47 +117,26 @@ public class UnityAdsAdapterUtils {
   }
 
   /**
-   * Gets the mediation specific error code for the specified {@link BannerErrorInfo}.
-   *
-   * @param errorInfo error object from Unity.
-   * @return mediation specific banner error code.
-   */
-  static int getMediationErrorCode(@NonNull BannerErrorInfo errorInfo) {
-    int errorCode = 200;
-    switch (errorInfo.errorCode) {
-      case UNKNOWN:
-        errorCode = 201;
-        break;
-      case NATIVE_ERROR:
-        errorCode = 202;
-        break;
-      case WEBVIEW_ERROR:
-        errorCode = 203;
-        break;
-      case NO_FILL:
-        errorCode = 204;
-        break;
-    }
-    return errorCode;
-  }
-
-  /**
-   * Gets the mediation specific error code for the specified {@link
-   * UnityAds.UnityAdsInitializationError}.
+   * Gets the mediation specific error code for the specified {@link UnityAds.UnityAdsLoadError}.
    *
    * @param unityAdsError error object from Unity.
-   * @return mediation specific initialization error code.
+   * @return mediation specific load error code.
    */
-  static int getMediationErrorCode(@NonNull UnityAdsInitializationError unityAdsError) {
-    switch (unityAdsError) {
-      case INTERNAL_ERROR:
+  static int getMediationInitializationErrorCode(@NonNull UnityAdsError unityAdsError) {
+    switch (unityAdsError.getCode()) {
+      case 2:
+      case 52000:
+      case 52003:
+      case 52004:
+      case 52005:
+      case 52006: // Internal Error
         return 301;
-      case INVALID_ARGUMENT:
+      case 52001:
+      case 52002: // Invalid argument
         return 302;
-      case AD_BLOCKER_DETECTED:
-        return 303;
-        // Excluding default to allow for compile warnings if UnityAdsInitializationError is
-        // expanded in the future.
+
+      // Excluding default to allow for compile warnings if UnityAdsInitializationError is
+      // expanded in the future.
     }
     return 300;
   }
@@ -160,56 +147,53 @@ public class UnityAdsAdapterUtils {
    * @param unityAdsError error object from Unity.
    * @return mediation specific load error code.
    */
-  static int getMediationErrorCode(@NonNull UnityAds.UnityAdsLoadError unityAdsError) {
-    switch (unityAdsError) {
-      case INITIALIZE_FAILED:
+  static int getMediationLoadErrorCode(@NonNull UnityAdsError unityAdsError) {
+    switch (unityAdsError.getCode()) {
+      case 52101: // Not initialized
         return 401;
-      case INTERNAL_ERROR:
-        return 402;
-      case INVALID_ARGUMENT:
+      case 52102:
+      case 52104: // Invalid arguments
         return 403;
-      case NO_FILL:
+      case 52100: // No fill
         return 404;
-      case TIMEOUT:
+      case 2: // Time out
         return 405;
-        // Excluding default to allow for compile warnings if UnityAdsLoadError is expanded
-        // in the future.
+      case 52103:
+      case 52105:
+      case 52106:
+      case 52107:// Internal error
+        return 402;
+      // Excluding default to allow for compile warnings if UnityAdsLoadError is expanded
+      // in the future.
     }
+
     return 400;
   }
 
   /**
-   * Gets the mediation specific error code for the specified {@link UnityAds.UnityAdsShowError}.
+   * Gets the mediation specific error code for the specified {@link UnityAds.UnityAdsLoadError}.
    *
    * @param unityAdsError error object from Unity.
-   * @return mediation specific show error code.
+   * @return mediation specific load error code.
    */
-  static int getMediationErrorCode(@NonNull UnityAds.UnityAdsShowError unityAdsError) {
-    switch (unityAdsError) {
-      case NOT_INITIALIZED:
-        return 501;
-      case NOT_READY:
-        return 502;
-      case VIDEO_PLAYER_ERROR:
-        return 503;
-      case INVALID_ARGUMENT:
-        return 504;
-      case NO_CONNECTION:
-        return 505;
-      case ALREADY_SHOWING:
+  static int getMediationShowErrorCode(@NonNull UnityAdsError unityAdsError) {
+    switch (unityAdsError.getCode()) {
+      case 52201: // already showing
         return 506;
-      case INTERNAL_ERROR:
+      case 52200: // Expired
+      case 52202: // internal error:
         return 507;
-      case TIMEOUT:
+      case 2: // timeout:
         return 508;
-        // Excluding default to allow for compile warnings if UnityAdsShowError is expanded
-        // in the future.
+
+      // Excluding default to allow for compile warnings if UnityAdsShowError is expanded
+      // in the future.
     }
     return 500;
   }
 
   @Nullable
-  public static UnityBannerSize getUnityBannerSize(
+  public static BannerSize getUnityBannerSize(
       @NonNull Context context,
       @NonNull AdSize adSize,
       boolean isRtb,
@@ -220,11 +204,11 @@ public class UnityAdsAdapterUtils {
 
     AdSize closestSize = mediationUtils.findClosestSize(context, adSize, potentials);
     if (closestSize != null) {
-      return new UnityBannerSize(closestSize.getWidth(), closestSize.getHeight());
+      return new BannerSize(closestSize.getWidth(), closestSize.getHeight());
     }
 
     if (isRtb) {
-      return new UnityBannerSize(adSize.getWidth(), adSize.getHeight());
+      return new BannerSize(adSize.getWidth(), adSize.getHeight());
     } else {
       return null;
     }
@@ -235,21 +219,9 @@ public class UnityAdsAdapterUtils {
    *
    * @param requestConfiguration used to read the value that indicates whether the app should be
    *     treated as child-directed for purposes of the COPPA or under age consent.
-   * @param userMetaData used to save changes on configuration values in the Unity3D SDK.
    */
-  public static void setUnityAdsPrivacy(
-      RequestConfiguration requestConfiguration, MetaData userMetaData) {
-
-    if (shouldTreatAsAdult(requestConfiguration)) {
-      // If no signal is tagged as child and one signal indicates adult session is treated as an
-      // adult.
-      userMetaData.set("user.nonbehavioral", false);
-    } else {
-      // Otherwise, if any signal is child or signals are conflicting or both are UNSPECIFIED,
-      // session is treated as a child.
-      userMetaData.set("user.nonbehavioral", true);
-    }
-    userMetaData.commit();
+  public static void setUnityAdsPrivacy(RequestConfiguration requestConfiguration) {
+    UnityAds.setNonBehavioral(!shouldTreatAsAdult(requestConfiguration));
   }
 
   /**
@@ -287,5 +259,19 @@ public class UnityAdsAdapterUtils {
         && tagForUnderAgeOfConsent != TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
         && (tagForChildDirectedTreatment == TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
             || tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE);
+  }
+
+  /**
+   * Creates a MediationInfo object with Google mediation information.
+   * This duplicates the logic from UnityAdsWrapper for convenience.
+   *
+   * @return MediationInfo object with Google mediation details
+   */
+  public static MediationInfo getMediationInfo() {
+    return new MediationInfo(
+            ADMOB,                              // Mediation name
+            MobileAds.getVersion().toString(),  // Google mediation SDK version
+            BuildConfig.ADAPTER_VERSION         // Adapter version
+    );
   }
 }
