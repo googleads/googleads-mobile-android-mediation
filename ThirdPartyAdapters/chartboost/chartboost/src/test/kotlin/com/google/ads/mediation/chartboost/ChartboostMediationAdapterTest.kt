@@ -8,10 +8,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.chartboost.sdk.Chartboost
 import com.chartboost.sdk.Chartboost.getSDKVersion
 import com.chartboost.sdk.privacy.model.COPPA
+import com.chartboost.sdk.privacy.model.GDPR
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
 import com.google.ads.mediation.chartboost.ChartboostAdapterUtils.createChartboostParams
 import com.google.ads.mediation.chartboost.ChartboostAdapterUtils.getAdapterVersion
+import com.google.ads.mediation.chartboost.ChartboostConstants.AD_TECHNOLOGY_PROVIDER_ID
 import com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_INVALID_SERVER_PARAMETERS
 import com.google.ads.mediation.chartboost.ChartboostInitializer.getInstance
 import com.google.ads.mediation.chartboost.ChartboostMediationAdapter.ERROR_MESSAGE_INVALID_SERVER_PARAMETERS
@@ -30,7 +32,9 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -281,6 +285,7 @@ class ChartboostMediationAdapterTest {
     }
   }
 
+  // region Age-restriction initialization tests
   @Test
   fun initialize_withTFCDTrue_updatesCoppaTrue() {
     MobileAds.setRequestConfiguration(
@@ -378,4 +383,60 @@ class ChartboostMediationAdapterTest {
       assertThat(coppaCaptor.firstValue.consent).isTrue()
     }
   }
+
+  // endregion
+
+  // region Additional Consent initialization tests
+  @Test
+  fun initialize_withUnknownACConsent_doesNotAddDataUseConsent() {
+    ChartboostMediationAdapter.setAppParams("app_id", "app_signature")
+    mockStatic(ChartboostAdapterUtils::class.java).use {
+      whenever(ChartboostAdapterUtils.isValidChartboostParams(any())) doReturn true
+      whenever(ChartboostAdapterUtils.hasACConsent(any(), eq(AD_TECHNOLOGY_PROVIDER_ID))) doReturn
+        ChartboostAdapterUtils.ConsentResult.UNKNOWN
+
+      mockStatic(Chartboost::class.java).use { mockedChartboost ->
+        adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+
+        mockedChartboost.verify({ Chartboost.addDataUseConsent(any(), any()) }, never())
+      }
+    }
+  }
+
+  @Test
+  fun initialize_withTrueACConsent_addsBehavioralDataUseConsent() {
+    ChartboostMediationAdapter.setAppParams("app_id", "app_signature")
+    mockStatic(ChartboostAdapterUtils::class.java).use {
+      whenever(ChartboostAdapterUtils.isValidChartboostParams(any())) doReturn true
+      whenever(ChartboostAdapterUtils.hasACConsent(any(), eq(AD_TECHNOLOGY_PROVIDER_ID))) doReturn
+        ChartboostAdapterUtils.ConsentResult.TRUE
+
+      val gdprCaptor = argumentCaptor<GDPR>()
+      mockStatic(Chartboost::class.java).use { mockedChartboost ->
+        adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+
+        mockedChartboost.verify { Chartboost.addDataUseConsent(any(), gdprCaptor.capture()) }
+        assertThat(gdprCaptor.firstValue.consent).isEqualTo(GDPR.GDPR_CONSENT.BEHAVIORAL.value)
+      }
+    }
+  }
+
+  @Test
+  fun initialize_withFalseACConsent_addsNonBehavioralDataUseConsent() {
+    ChartboostMediationAdapter.setAppParams("app_id", "app_signature")
+    mockStatic(ChartboostAdapterUtils::class.java).use {
+      whenever(ChartboostAdapterUtils.isValidChartboostParams(any())) doReturn true
+      whenever(ChartboostAdapterUtils.hasACConsent(any(), eq(AD_TECHNOLOGY_PROVIDER_ID))) doReturn
+        ChartboostAdapterUtils.ConsentResult.FALSE
+
+      val gdprCaptor = argumentCaptor<GDPR>()
+      mockStatic(Chartboost::class.java).use { mockedChartboost ->
+        adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+
+        mockedChartboost.verify { Chartboost.addDataUseConsent(any(), gdprCaptor.capture()) }
+        assertThat(gdprCaptor.firstValue.consent).isEqualTo(GDPR.GDPR_CONSENT.NON_BEHAVIORAL.value)
+      }
+    }
+  }
+  // endregion
 }
