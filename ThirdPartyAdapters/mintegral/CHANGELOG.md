@@ -1,8 +1,13 @@
 ## Mintegral Android Mediation Adapter Changelog
 
-#### Version 17.1.61.1 (In progress)
+#### Version 17.1.61.1
 - Added support for automatically triggering Mintegral SDK to read GDPR consent during adapter initialization.
 - Maps `AgeRestrictedTreatment` to Mintegral's COPPA API.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.2.1.
+- Mintegral SDK version 17.1.61.
 
 #### Version 17.1.61.0
 - Verified compatibility with Mintegral SDK 17.1.61.
