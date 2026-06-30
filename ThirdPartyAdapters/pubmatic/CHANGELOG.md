@@ -1,7 +1,12 @@
 ## PubMatic Android Mediation Adapter Changelog
 
-#### Version 5.1.2.2 (In progress)
+#### Version 5.1.2.2
 - Maps `AgeRestrictedTreatment` to PubMatic's COPPA API.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.2.1.
+- Pubmatic SDK version 5.1.2
 
 #### Version 5.1.2.1
 - Added native ad video(VAST) support using PubMatic OpenWrapSDK MediaView API.
