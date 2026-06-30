@@ -26,6 +26,12 @@ import java.lang.annotation.RetentionPolicy;
 
 public class ChartboostConstants {
 
+  /**
+   * Chartboost ad technology provider ID from
+   * https://storage.googleapis.com/tcfac/additional-consent-providers.csv
+   */
+  public static final int AD_TECHNOLOGY_PROVIDER_ID = 2898;
+
   // Chartboost adapter error domain.
   static final String ERROR_DOMAIN = "com.google.ads.mediation.chartboost";
 
