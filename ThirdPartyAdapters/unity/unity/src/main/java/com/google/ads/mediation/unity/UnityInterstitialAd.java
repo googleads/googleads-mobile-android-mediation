@@ -173,6 +173,7 @@ public class UnityInterstitialAd
     final String adMarkup = adConfiguration.getBidResponse();
 
     unityInitializer.initializeUnityAds(
+        context,
         gameId,
         new InitializationListener() {
           @Override

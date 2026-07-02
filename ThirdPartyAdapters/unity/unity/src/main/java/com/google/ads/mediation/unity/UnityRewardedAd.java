@@ -142,7 +142,7 @@ public class UnityRewardedAd implements MediationRewardedAd {
     // The ad is loaded in the UnityAdsInitializationListener after initializing of the Unity Ads
     // SDK.
     unityInitializer.initializeUnityAds(
-        gameId, new UnityAdsInitializationListener(context, gameId, placementId, adMarkup));
+        context, gameId, new UnityAdsInitializationListener(context, gameId, placementId, adMarkup));
   }
 
   @Override

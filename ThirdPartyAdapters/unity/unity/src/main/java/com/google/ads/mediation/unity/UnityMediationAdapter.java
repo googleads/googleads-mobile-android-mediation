@@ -321,6 +321,7 @@ public class UnityMediationAdapter extends RtbAdapter {
     }
 
     unityInitializer.initializeUnityAds(
+        context,
         gameID,
         error -> {
              if(error == null){

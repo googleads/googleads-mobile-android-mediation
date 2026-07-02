@@ -185,6 +185,7 @@ public class UnityMediationBannerAd
     }
 
     unityInitializer.initializeUnityAds(
+        context,
         gameId,
         new InitializationListener() {
           @Override

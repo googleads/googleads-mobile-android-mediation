@@ -14,7 +14,13 @@
 
 package com.google.ads.mediation.unity;
 
+import static com.google.ads.mediation.unity.UnityMediationAdapter.AD_TECHNOLOGY_PROVIDER_ID;
+
+import android.content.Context;
+
 import androidx.annotation.VisibleForTesting;
+
+import com.google.ads.mediation.unity.UnityAdsAdapterUtils.ConsentResult;
 import com.unity3d.ads.InitializationListener;
 import com.unity3d.ads.UnityAds;
 
@@ -59,13 +65,19 @@ public class UnityInitializer {
    * @param gameId                 Unity Ads Game ID.
    * @param initializationListener Unity Ads Initialization listener.
    */
-  public void initializeUnityAds(String gameId, InitializationListener
+  public void initializeUnityAds(Context context, String gameId, InitializationListener
       initializationListener) {
 
     if (unityAdsWrapper.isInitialized()) {
       // Unity Ads is already initialized.
       initializationListener.onInitializationComplete(null);
       return;
+    }
+
+    ConsentResult consentResult =
+            UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID);
+    if (consentResult == ConsentResult.TRUE || consentResult == ConsentResult.FALSE) {
+      UnityAds.setUserConsent(consentResult == ConsentResult.TRUE);
     }
 
     // UnityAdsWrapper now handles mediation info via InitializationConfiguration
