@@ -17,11 +17,8 @@ package com.google.ads.mediation.pubmatic
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import android.util.TypedValue
-import android.util.TypedValue.COMPLEX_UNIT_DIP
 import android.view.View
 import android.widget.FrameLayout
-import android.widget.ImageView
 import androidx.core.net.toUri
 import com.bumptech.glide.Glide
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
@@ -57,10 +54,12 @@ import com.pubmatic.sdk.openwrap.core.signal.POBBiddingHost
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 
 /**
  * Used to load PubMatic native ads and mediate callbacks between Google Mobile Ads SDK and PubMatic
@@ -219,7 +218,16 @@ private constructor(
       body = pobNativeAdDescription
     }
 
-    loadImages()
+    loadIconImage()
+
+    // Call pobNativeAd?.mediaView API on Main Thread.
+    withContext(Dispatchers.Main) {
+      val mediaView = pobNativeAd?.mediaView
+      if (mediaView != null) {
+        setMediaView(mediaView)
+        setHasVideoContent(true)
+      }
+    }
 
     val pobNativeAdCallToAction = pobNativeAd?.callToAction?.value
     if (pobNativeAdCallToAction != null) {
@@ -245,48 +253,18 @@ private constructor(
       // Do nothing.
     }
 
-    setHasVideoContent(false)
     overrideClickHandling = true
     if (runtimeGmaSdkListensToAdapterReportedImpressions()) {
       overrideImpressionRecording = true
     }
   }
 
-  private suspend fun loadImages() = suspendCancellableCoroutine { continuation ->
+  private suspend fun loadIconImage() = suspendCancellableCoroutine { continuation ->
     val iconUrl = pobNativeAd?.icon?.imageURL
     if (iconUrl != null) {
       val iconDrawable = Glide.with(context).asDrawable().load(iconUrl).submit().get()
       icon = PubMaticNativeAdImage(iconUrl, iconDrawable)
     }
-
-    val mainImage = pobNativeAd?.mainImage
-    if (mainImage != null) {
-      val mediaView = FrameLayout(context)
-      val widthInPixels =
-        TypedValue.applyDimension(
-            COMPLEX_UNIT_DIP,
-            mainImage.width.toFloat(),
-            context.resources.displayMetrics,
-          )
-          .toInt()
-      val heightInPixels =
-        TypedValue.applyDimension(
-            COMPLEX_UNIT_DIP,
-            mainImage.height.toFloat(),
-            context.resources.displayMetrics,
-          )
-          .toInt()
-      val adViewLayoutParams: FrameLayout.LayoutParams =
-        FrameLayout.LayoutParams(widthInPixels, heightInPixels)
-      val imageViewForMedia = ImageView(context)
-      imageViewForMedia.layoutParams = adViewLayoutParams
-      mediaView.addView(imageViewForMedia)
-      setMediaView(mediaView)
-      val image = Glide.with(context).asDrawable().load(mainImage.imageURL).submit().get()
-      images = listOf(PubMaticNativeAdImage(mainImage.imageURL, image))
-      imageViewForMedia.setImageDrawable(image)
-    }
-
     continuation.resume(true)
   }
 

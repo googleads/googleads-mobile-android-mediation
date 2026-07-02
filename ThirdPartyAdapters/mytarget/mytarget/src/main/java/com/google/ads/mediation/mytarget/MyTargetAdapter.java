@@ -14,5 +14,10 @@
 
 package com.google.ads.mediation.mytarget;
 
-/** Mediation adapter for myTarget. */
+/**
+ * Mediation adapter for myTarget.
+ *
+ * <p>Do not delete this class though it's empty. GMA SDK references this class for loading myTarget
+ * waterfall banner and interstitial ads.
+ */
 public class MyTargetAdapter extends MyTargetMediationAdapter {}

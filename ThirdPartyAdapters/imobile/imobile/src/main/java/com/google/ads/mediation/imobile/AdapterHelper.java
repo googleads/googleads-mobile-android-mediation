@@ -19,6 +19,7 @@ import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRE
 import static com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE;
 
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AgeRestrictedTreatment;
 import com.google.android.gms.ads.MobileAds;
@@ -84,9 +85,11 @@ public final class AdapterHelper {
     RequestConfiguration requestConfiguration = MobileAds.getRequestConfiguration();
     int tagForChildDirectedTreatment = requestConfiguration.getTagForChildDirectedTreatment();
     int tagForUnderAgeOfConsent = requestConfiguration.getTagForUnderAgeOfConsent();
-    AgeRestrictedTreatment ageRestrictedTreatment = requestConfiguration.getAgeRestrictedTreatment();
+    boolean isAgeRestrictedTreatmentChild =
+        AgeRestrictedTreatmentUtils.runtimeGmaSdkSupportsChildAgeRestrictedTreatment()
+            && requestConfiguration.getAgeRestrictedTreatment() == AgeRestrictedTreatment.CHILD;
     return tagForChildDirectedTreatment == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
         || tagForUnderAgeOfConsent == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
-        || ageRestrictedTreatment == AgeRestrictedTreatment.CHILD;
+        || isAgeRestrictedTreatmentChild;
   }
 }

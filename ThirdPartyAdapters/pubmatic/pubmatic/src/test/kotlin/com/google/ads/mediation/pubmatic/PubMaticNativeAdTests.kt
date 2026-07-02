@@ -2,6 +2,7 @@ package com.google.ads.mediation.pubmatic
 
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.os.Looper
 import android.view.View
 import android.widget.FrameLayout
 import androidx.core.os.bundleOf
@@ -35,13 +36,16 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.MockedStatic
 import org.mockito.Mockito.mockStatic
+import org.mockito.Mockito.reset
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.atLeast
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
+import org.robolectric.Shadows.shadowOf
 
 /** Tests for PubMaticNativeAd. */
 @RunWith(AndroidJUnit4::class)
@@ -60,6 +64,8 @@ class PubMaticNativeAdTests {
     }
 
   private val pubMaticAdInfoIconView = View(context)
+
+  private val pubMaticMediaView = FrameLayout(context)
 
   private val pobNativeAd = mock<POBNativeAd>()
 
@@ -104,6 +110,15 @@ class PubMaticNativeAdTests {
   @After
   fun tearDown() {
     mockMobileAds.close()
+    reset(pobNativeAd)
+    shadowOf(Looper.getMainLooper()).idle()
+  }
+
+  /**
+   * Runs tasks scheduled on the main looper (e.g. [Dispatchers.Main] used in [PubMaticNativeAd]).
+   */
+  private fun flushMainLooper() {
+    shadowOf(Looper.getMainLooper()).idle()
   }
 
   @Test
@@ -129,9 +144,7 @@ class PubMaticNativeAdTests {
     val pobNativeAdRatingAsset =
       mock<POBNativeAdDataResponseAsset> { on { value } doReturn PUBMATIC_AD_RATING_STRING }
     whenever(pobNativeAd.rating) doReturn pobNativeAdRatingAsset
-    val pobNativeAdMainImageAsset =
-      mock<POBNativeAdImageResponseAsset> { on { imageURL } doReturn PUBMATIC_AD_MAIN_IMAGE_URL }
-    whenever(pobNativeAd.mainImage) doReturn pobNativeAdMainImageAsset
+    whenever(pobNativeAd.mediaView) doReturn pubMaticMediaView
     whenever(pobNativeAd.adInfoIcon) doReturn pubMaticAdInfoIconView
     val mockRequestManager: RequestManager = mock<RequestManager>()
     val mockRequestBuilder: RequestBuilder<Drawable?> = mock<RequestBuilder<Drawable?>>()
@@ -141,11 +154,11 @@ class PubMaticNativeAdTests {
       whenever(Glide.with(context)) doReturn mockRequestManager
       whenever(mockRequestManager.asDrawable()) doReturn mockRequestBuilder
       whenever(mockRequestBuilder.load(PUBMATIC_AD_ICON_URL)) doReturn mockRequestBuilder
-      whenever(mockRequestBuilder.load(PUBMATIC_AD_MAIN_IMAGE_URL)) doReturn mockRequestBuilder
       whenever(mockRequestBuilder.submit()) doReturn mockFutureTarget
       whenever(mockFutureTarget.get()) doReturn mockDrawable
 
       pubMaticNativeAd.onAdReceived(pobNativeAdLoader, pobNativeAd)
+      flushMainLooper()
     }
 
     assertThat(pubMaticNativeAd.headline).isEqualTo(PUBMATIC_NATIVE_AD_TITLE)
@@ -155,10 +168,10 @@ class PubMaticNativeAdTests {
     assertThat(pubMaticNativeAd.advertiser).isEqualTo(PUBMATIC_ADVERTISER)
     assertThat(pubMaticNativeAd.price).isEqualTo(PUBMATIC_AD_PRICE)
     assertThat(pubMaticNativeAd.starRating).isEqualTo(PUBMATIC_AD_RATING_STRING.toDouble())
-    assertThat(pubMaticNativeAd.images[0].uri.toString()).isEqualTo(PUBMATIC_AD_MAIN_IMAGE_URL)
     val adChoicesContentLayout = pubMaticNativeAd.adChoicesContent as FrameLayout
     assertThat(adChoicesContentLayout.getChildAt(0)).isEqualTo(pubMaticAdInfoIconView)
-    assertThat(pubMaticNativeAd.hasVideoContent()).isFalse()
+    assertThat(pubMaticNativeAd.hasVideoContent()).isTrue()
+    verify(pobNativeAd, atLeast(1)).mediaView
     assertThat(pubMaticNativeAd.overrideClickHandling).isTrue()
     assertThat(pubMaticNativeAd.overrideImpressionRecording).isTrue()
     verify(mediationAdLoadCallback).onSuccess(pubMaticNativeAd)
@@ -187,13 +200,11 @@ class PubMaticNativeAdTests {
     val pobNativeAdRatingAsset =
       mock<POBNativeAdDataResponseAsset> { on { value } doReturn PUBMATIC_AD_RATING_STRING }
     whenever(pobNativeAd.rating) doReturn pobNativeAdRatingAsset
-    val pobNativeAdMainImageAsset =
-      mock<POBNativeAdImageResponseAsset> { on { imageURL } doReturn PUBMATIC_AD_MAIN_IMAGE_URL }
-    whenever(pobNativeAd.mainImage) doReturn pobNativeAdMainImageAsset
     whenever(pobNativeAd.adInfoIcon) doReturn pubMaticAdInfoIconView
     whenever(MobileAds.getVersion()) doReturn VersionInfo(24, 3, 0)
 
     pubMaticNativeAd.onAdReceived(pobNativeAdLoader, pobNativeAd)
+    flushMainLooper()
 
     assertThat(pubMaticNativeAd.overrideImpressionRecording).isFalse()
   }
@@ -214,6 +225,7 @@ class PubMaticNativeAdTests {
   fun onNativeAdImpression_reportsAdImpression() {
     // Call onAdReceived() to set pubMaticNativeAd.mediationNativeAdCallback
     pubMaticNativeAd.onAdReceived(pobNativeAdLoader, pobNativeAd)
+    flushMainLooper()
 
     pubMaticNativeAd.onNativeAdImpression(pobNativeAd)
 
@@ -224,6 +236,7 @@ class PubMaticNativeAdTests {
   fun onNativeAdClicked_reportsAdClicked() {
     // Call onAdReceived() to set pubMaticNativeAd.mediationNativeAdCallback
     pubMaticNativeAd.onAdReceived(pobNativeAdLoader, pobNativeAd)
+    flushMainLooper()
 
     pubMaticNativeAd.onNativeAdClicked(pobNativeAd)
 
@@ -234,6 +247,7 @@ class PubMaticNativeAdTests {
   fun onNativeAdLeavingApplication_reportsAdLeftApplication() {
     // Call onAdReceived() to set pubMaticNativeAd.mediationNativeAdCallback
     pubMaticNativeAd.onAdReceived(pobNativeAdLoader, pobNativeAd)
+    flushMainLooper()
 
     pubMaticNativeAd.onNativeAdLeavingApplication(pobNativeAd)
 
@@ -244,6 +258,7 @@ class PubMaticNativeAdTests {
   fun onNativeAdOpened_reportsAdOpened() {
     // Call onAdReceived() to set pubMaticNativeAd.mediationNativeAdCallback
     pubMaticNativeAd.onAdReceived(pobNativeAdLoader, pobNativeAd)
+    flushMainLooper()
 
     pubMaticNativeAd.onNativeAdOpened(pobNativeAd)
 
@@ -254,6 +269,7 @@ class PubMaticNativeAdTests {
   fun onNativeAdClosed_reportsAdClosed() {
     // Call onAdReceived() to set pubMaticNativeAd.mediationNativeAdCallback
     pubMaticNativeAd.onAdReceived(pobNativeAdLoader, pobNativeAd)
+    flushMainLooper()
 
     pubMaticNativeAd.onNativeAdClosed(pobNativeAd)
 
@@ -279,6 +295,7 @@ class PubMaticNativeAdTests {
     val clickableAssetView2 = View(context)
     // Call onAdReceived() to set pubMaticNativeAd.pobNativeAd
     pubMaticNativeAd.onAdReceived(pobNativeAdLoader, pobNativeAd)
+    flushMainLooper()
 
     pubMaticNativeAd.trackViews(
       containerView,
@@ -306,6 +323,5 @@ class PubMaticNativeAdTests {
     const val PUBMATIC_ADVERTISER = "PubMatic advertiser"
     const val PUBMATIC_AD_PRICE = "$2"
     const val PUBMATIC_AD_RATING_STRING = "4.0"
-    const val PUBMATIC_AD_MAIN_IMAGE_URL = "http://pubmatic.com/main-image"
   }
 }

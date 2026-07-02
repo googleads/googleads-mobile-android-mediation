@@ -36,9 +36,6 @@ import com.google.android.gms.ads.AdFormat;
 import com.google.android.gms.ads.VersionInfo;
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
-import com.google.android.gms.ads.mediation.MediationAppOpenAd;
-import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback;
-import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration;
@@ -326,20 +323,6 @@ public class AppLovinMediationAdapter extends RtbAdapter {
 
     Log.i(TAG, "Generated bid token: " + bidToken);
     signalCallbacks.onSuccess(bidToken);
-  }
-
-  @Override
-  public void loadAppOpenAd(
-      @NonNull MediationAppOpenAdConfiguration mediationAppOpenAdConfiguration,
-      @NonNull MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> callback) {
-    if (isChildUser()) {
-      callback.onFailure(getChildUserError());
-      return;
-    }
-
-    AppLovinWaterfallAppOpenAd appOpenAd =
-        new AppLovinWaterfallAppOpenAd(callback, appLovinInitializer, appLovinAdFactory);
-    appOpenAd.loadAd(mediationAppOpenAdConfiguration);
   }
 
   @Override

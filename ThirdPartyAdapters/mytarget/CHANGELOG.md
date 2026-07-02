@@ -1,7 +1,13 @@
 ## myTarget Android Mediation Adapter Changelog
 
-#### Next Version
-- Updated interstitial ad implementation to use updated mediation adapter APIs.
+#### Version 5.47.1.1
+- Maps `AgeRestrictedTreatment` to myTarget's age restriction settings.
+- Updated interstitial and native ad implementation to use updated mediation adapter APIs.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.2.1.
+- MyTarget SDK version 5.47.1.
 
 #### Version 5.47.1.0
 - Added property to build the adapter with GMA Next-Gen SDK dependency.

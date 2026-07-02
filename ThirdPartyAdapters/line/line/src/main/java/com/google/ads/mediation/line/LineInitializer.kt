@@ -18,6 +18,7 @@ import android.content.Context
 import androidx.annotation.VisibleForTesting
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.NeedChildDirectedTreatment
+import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils
 import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
@@ -46,12 +47,15 @@ object LineInitializer {
       // If the COPPA or underage consent value is unspecified in GMA SDK, we don't default it to
       // either one since the value could have been updated before.
       val requestConfiguration = MobileAds.getRequestConfiguration()
+      val isAgeRestrictedTreatmentChild =
+        AgeRestrictedTreatmentUtils.runtimeGmaSdkSupportsChildAgeRestrictedTreatment() &&
+          requestConfiguration.ageRestrictedTreatment == AgeRestrictedTreatment.CHILD
       if (
         requestConfiguration.tagForChildDirectedTreatment ==
           RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
           requestConfiguration.tagForUnderAgeOfConsent ==
             RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE ||
-          requestConfiguration.ageRestrictedTreatment == AgeRestrictedTreatment.CHILD
+          isAgeRestrictedTreatmentChild
       ) {
         fiveAdConfig?.needChildDirectedTreatment = NeedChildDirectedTreatment.TRUE
       } else if (

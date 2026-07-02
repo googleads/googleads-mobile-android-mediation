@@ -1,9 +1,19 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
-#### Version 4.18.1.0 (In progress)
+#### Next Version
+- Adapter now automatically forwards GDPR consent found inside `IABTCF_AddtlConsent` to the Unity Ads SDK if GDPR applies.
 
+#### Version 4.19.0.0 (In progress)
+
+#### Version 4.18.1.0
 - Removed old API implementation for interstitial ads. Adapter will start using
   the new API implementation.
+- Verified compatibility with Unity Ads SDK 4.18.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.3.0.
+- Google Mobile Ads Next-Gen SDK version 1.2.1.
+- Unity Ads SDK version 4.18.1.
 
 #### Version 4.18.0.0
 - Added property to build the adapter with GMA Next-Gen SDK dependency.
@@ -22,7 +32,7 @@ Built and tested with:
 - Unity Ads SDK version 4.17.0.
 
 #### Version 4.16.6.0
-- Added support for forwarding the tagForUnderAgeOfConsent Google Mobile Ads SDK parameter to the Unity Ads SDK.
+- Added support for forwarding the `tagForUnderAgeOfConsent` Google Mobile Ads SDK parameter to the Unity Ads SDK.
 - Verified compatibility with Unity Ads SDK 4.16.6.
 
 Built and tested with:

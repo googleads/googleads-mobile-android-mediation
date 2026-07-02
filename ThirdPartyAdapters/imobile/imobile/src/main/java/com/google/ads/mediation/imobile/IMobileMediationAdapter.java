@@ -15,7 +15,6 @@
 package com.google.ads.mediation.imobile;
 
 import android.content.Context;
-import android.os.RemoteException;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
@@ -199,8 +198,7 @@ public class IMobileMediationAdapter extends Adapter {
       @NonNull MediationNativeAdConfiguration mediationNativeAdConfiguration,
       @NonNull
           MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>
-              mediationAdLoadCallback)
-      throws RemoteException {
+              mediationAdLoadCallback) {
     if (AdapterHelper.isUserUnderAge()) {
       AdError adError =
           new AdError(ERROR_USER_IS_AGE_RESTRICTED, ERROR_USER_IS_AGE_RESTRICTED_MSG, ERROR_DOMAIN);

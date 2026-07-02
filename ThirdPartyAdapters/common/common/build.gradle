@@ -11,7 +11,7 @@ ext {
   // String property to store the proper name of the library.
   libraryName = "common"
   // String property to store version name.
-  stringVersion = "1.0.0"
+  stringVersion = "1.1.0"
   // String property to store group id.
   stringGroupId = "com.google.ads.mediation"
 }

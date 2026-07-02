@@ -18,6 +18,7 @@ import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.google.ads.mediation.bidmachine.BidMachineBannerAd.Companion.mapAdSizeToBidMachineBannerAdSize
+import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
@@ -304,11 +305,13 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
   private fun configureBidMachinePrivacy() {
     val tagForChildDirected = getRequestConfiguration().tagForChildDirectedTreatment
     val tagForUnderAgeOfConsent = getRequestConfiguration().tagForUnderAgeOfConsent
-    val ageRestrictedTreatment = getRequestConfiguration().ageRestrictedTreatment
+    val isAgeRestrictedTreatmentChild =
+      AgeRestrictedTreatmentUtils.runtimeGmaSdkSupportsChildAgeRestrictedTreatment() &&
+        getRequestConfiguration().ageRestrictedTreatment == AgeRestrictedTreatment.CHILD
     if (
       tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
         tagForUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE ||
-        ageRestrictedTreatment == AgeRestrictedTreatment.CHILD
+        isAgeRestrictedTreatmentChild
     ) {
       BidMachine.setCoppa(true)
     } else if (

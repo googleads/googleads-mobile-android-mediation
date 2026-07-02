@@ -13,6 +13,8 @@
 
 package com.google.ads.mediation.mytarget
 
+import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.RequestConfiguration
 import com.my.target.common.MyTargetPrivacy
 
@@ -25,10 +27,15 @@ object MyTargetAdapterUtils {
   fun configureMyTargetPrivacy(requestConfiguration: RequestConfiguration) {
     val isChildDirected = requestConfiguration.tagForChildDirectedTreatment
     val isUnderAgeOfConsent = requestConfiguration.tagForUnderAgeOfConsent
+    val isAgeRestrictedTreatmentRestricted =
+      AgeRestrictedTreatmentUtils.runtimeGmaSdkSupportsChildAgeRestrictedTreatment() &&
+        (requestConfiguration.ageRestrictedTreatment == AgeRestrictedTreatment.CHILD ||
+          requestConfiguration.ageRestrictedTreatment == AgeRestrictedTreatment.TEEN)
 
     if (
       isChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
-        isUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+        isUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE ||
+        isAgeRestrictedTreatmentRestricted
     ) {
       MyTargetPrivacy.setUserAgeRestricted(true)
     } else if (

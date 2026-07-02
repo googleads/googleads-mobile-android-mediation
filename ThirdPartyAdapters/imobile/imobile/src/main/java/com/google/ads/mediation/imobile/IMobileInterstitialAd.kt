@@ -114,7 +114,7 @@ class IMobileInterstitialAd(
 
   override fun onFailed(reason: FailNotificationReason) {
     val error = AdapterHelper.getAdError(reason)
-    Log.w(IMobileAdapter.TAG, error.getMessage())
+    Log.w(IMobileAdapter.TAG, error.message)
     adLoadCallback.onFailure(error)
   }
   // endregion

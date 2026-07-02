@@ -14,11 +14,15 @@
 
 package com.google.ads.mediation.unity;
 
+import static com.google.ads.mediation.unity.UnityMediationAdapter.AD_TECHNOLOGY_PROVIDER_ID;
+
 import android.content.Context;
 import androidx.annotation.VisibleForTesting;
+import com.google.ads.mediation.unity.UnityAdsAdapterUtils.ConsentResult;
 import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.metadata.MediationMetaData;
+import com.unity3d.ads.metadata.MetaData;
 
 /**
  * The {@link UnityInitializer} is used to initialize Unity ads
@@ -73,6 +77,18 @@ public class UnityInitializer {
       // Unity Ads is already initialized.
       initializationListener.onInitializationComplete();
       return;
+    }
+
+    ConsentResult consentResult =
+        UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID);
+    if (consentResult == ConsentResult.TRUE) {
+      MetaData privacyMetaData = new MetaData(context);
+      privacyMetaData.set("gdpr.consent", true);
+      privacyMetaData.commit();
+    } else if (consentResult == ConsentResult.FALSE) {
+      MetaData privacyMetaData = new MetaData(context);
+      privacyMetaData.set("gdpr.consent", false);
+      privacyMetaData.commit();
     }
 
     // Set mediation meta data before initializing.

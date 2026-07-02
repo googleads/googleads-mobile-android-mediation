@@ -16,7 +16,9 @@ package com.google.ads.mediation.vungle;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AgeRestrictedTreatment;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.vungle.ads.InitializationListener;
@@ -88,10 +90,14 @@ public class VungleInitializer implements InitializationListener {
     // values. If you haven't specified how you would like your content treated with
     // respect to COPPA in ad requests, you must indicate in the Liftoff Monetize Publisher
     // Dashboard whether your app is directed toward children under age 13.
+    boolean isAgeRestrictedTreatmentChild =
+        AgeRestrictedTreatmentUtils.runtimeGmaSdkSupportsChildAgeRestrictedTreatment()
+            && configuration.getAgeRestrictedTreatment() == AgeRestrictedTreatment.CHILD;
     if (configuration.getTagForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
         || configuration.getTagForUnderAgeOfConsent()
-            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE) {
+            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+        || isAgeRestrictedTreatmentChild) {
       VunglePrivacySettings.setCOPPAStatus(true);
     } else if (configuration.getTagForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE

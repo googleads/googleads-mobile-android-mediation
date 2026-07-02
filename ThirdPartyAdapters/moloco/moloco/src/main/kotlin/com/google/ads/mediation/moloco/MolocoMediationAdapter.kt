@@ -16,7 +16,9 @@ package com.google.ads.mediation.moloco
 
 import android.content.Context
 import android.util.Log
+import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils
 import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.VersionInfo
@@ -83,11 +85,16 @@ class MolocoMediationAdapter : RtbAdapter() {
   }
 
   private fun configurePrivacy() {
+    val isAgeRestrictedTreatmentChild =
+      AgeRestrictedTreatmentUtils.runtimeGmaSdkSupportsChildAgeRestrictedTreatment() &&
+        MobileAds.getRequestConfiguration().ageRestrictedTreatment == AgeRestrictedTreatment.CHILD
     val isAgeRestricted =
       MobileAds.getRequestConfiguration().tagForChildDirectedTreatment ==
         RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
         MobileAds.getRequestConfiguration().tagForUnderAgeOfConsent ==
-          RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+          RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE ||
+        isAgeRestrictedTreatmentChild
+    // TODO (b/527524168): Update the default TFCD and TFUA behavior and get 3p review
     MolocoAdapterUtils.setMolocoIsAgeRestricted(isAgeRestricted)
   }
 

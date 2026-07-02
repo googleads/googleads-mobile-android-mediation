@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC
+// Copyright 2026 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,23 +14,24 @@
 
 package com.google.ads.mediation.common
 
+import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.VersionInfo
 
 /** Contains util functions for comparing two instances of [VersionInfo]. */
-object VersionInfoCompareUtils {
-
-  /** Returns true iff version1 is greater than or equal to version2. */
+object AgeRestrictedTreatmentUtils {
+  /**
+   * Checks whether the runtime GMA SDK supports checking
+   * [com.google.android.gms.ads.RequestConfiguration.getAgeRestrictedTreatment] ==
+   * [com.google.android.gms.ads.AgeRestrictedTreatment.CHILD].
+   *
+   * Classic GMA SDK (play-services-ads) supports it regardless of version. NextGen GMA SDK
+   * (ads-mobile-sdk) supports it for versions >= 1.2.0.
+   */
   @JvmStatic
-  fun isVersionGreaterThanOrEqualTo(version1: VersionInfo, version2: VersionInfo): Boolean {
-    if (version1.majorVersion > version2.majorVersion) {
-      return true
-    } else if (version1.majorVersion == version2.majorVersion) {
-      if (version1.minorVersion > version2.minorVersion) {
-        return true
-      } else if (version1.minorVersion == version2.minorVersion) {
-        return version1.microVersion >= version2.microVersion
-      }
-    }
-    return false
+  @JvmOverloads
+  fun runtimeGmaSdkSupportsChildAgeRestrictedTreatment(
+    gmaVersion: VersionInfo = MobileAds.getVersion()
+  ): Boolean {
+    return VersionInfoCompareUtils.isVersionGreaterThanOrEqualTo(gmaVersion, VersionInfo(1, 2, 0))
   }
 }

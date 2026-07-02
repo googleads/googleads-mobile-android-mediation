@@ -26,6 +26,7 @@ import com.fyber.inneractive.sdk.external.BidTokenProvider;
 import com.fyber.inneractive.sdk.external.InneractiveAdManager;
 import com.fyber.inneractive.sdk.external.InneractiveMediationName;
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener;
+import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AgeRestrictedTreatment;
 import com.google.android.gms.ads.MobileAds;
@@ -299,12 +300,15 @@ public class FyberMediationAdapter extends RtbAdapter {
 
   private void configureDTExchangePrivacy() {
     RequestConfiguration requestConfiguration = MobileAds.getRequestConfiguration();
+    boolean isAgeRestrictedTreatmentChild =
+        AgeRestrictedTreatmentUtils.runtimeGmaSdkSupportsChildAgeRestrictedTreatment()
+            && requestConfiguration.getAgeRestrictedTreatment() == AgeRestrictedTreatment.CHILD;
     boolean isChildUser =
         (requestConfiguration.getTagForChildDirectedTreatment()
                 == TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
             || requestConfiguration.getTagForUnderAgeOfConsent()
                 == TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
-            || requestConfiguration.getAgeRestrictedTreatment() == AgeRestrictedTreatment.CHILD;
+            || isAgeRestrictedTreatmentChild;
     if (isChildUser) {
       InneractiveAdManager.currentAudienceAppliesToCoppa();
     }

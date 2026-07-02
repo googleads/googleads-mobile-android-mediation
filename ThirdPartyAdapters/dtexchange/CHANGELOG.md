@@ -1,11 +1,16 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 8.4.5.1
 - Maps `AgeRestrictedTreatment` to DT Exchange's COPPA API.
 - Removed the old API implementations for the following waterfall ad formats:
   Banner, Interstitial.
 - Updated the adapter to use `loadBannerAd` for Waterfall Banner ads and
   `loadInterstitialAd` for Waterfall Interstitial ads.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.2.1.
+- DT Exchange SDK version 8.4.5.
 
 #### Version 8.4.5.0
 - Added watermark on bidding ads.
