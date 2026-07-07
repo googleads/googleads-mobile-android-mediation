@@ -14,10 +14,9 @@
 
 package com.google.ads.mediation.unity;
 
-import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
+import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKInitializationError;
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.getAdFormat;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -43,9 +42,9 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration;
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter;
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData;
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks;
-import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.TokenConfiguration;
 import com.unity3d.ads.UnityAds;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
@@ -87,7 +86,8 @@ public class UnityMediationAdapter extends RtbAdapter {
           ERROR_UNITY_ADS_NOT_SUPPORTED,
           ERROR_FINISH,
           ERROR_BANNER_SIZE_MISMATCH,
-          ERROR_INITIALIZATION_FAILURE
+          ERROR_INITIALIZATION_FAILURE,
+          ERROR_TOKEN_FAILURE
       })
   @interface AdapterError {
 
@@ -141,6 +141,11 @@ public class UnityMediationAdapter extends RtbAdapter {
    */
   static final int ERROR_INITIALIZATION_FAILURE = 111;
 
+  /**
+   * UnityAds failed to return a bidding token.
+   */
+  static final int ERROR_TOKEN_FAILURE = 112;
+
   static final String ERROR_MSG_MISSING_PARAMETERS = "Missing or invalid server parameters.";
 
   static final String ERROR_MSG_NON_ACTIVITY =
@@ -168,36 +173,13 @@ public class UnityMediationAdapter extends RtbAdapter {
 
   private final UnityInitializer unityInitializer;
 
-  private final UnityBannerViewFactory unityBannerViewFactory;
-
   private final UnityAdsLoader unityAdsLoader;
 
-  /** UnityMediationBannerAd instance. */
-  private UnityMediationBannerAd bannerAd;
-
-  /** UnityMediationBannerAd instance. */
-  private UnityMediationBannerAd bannerRtbAd;
-
-  /** UnityInterstitialAd instance. */
-  private UnityInterstitialAd interstitialAd;
-
-  /** UnityInterstitialAd instance used for RTB. */
-  private UnityInterstitialAd interstitialRtbAd;
-
-  /**
-   * UnityRewardedAd instance.
-   */
-  private UnityRewardedAd rewardedAd;
-
-  /** UnityRewardedAd instance used for RTB. */
-  private UnityRewardedAd rewardedRtbAd;
-
-  private MediationUtilsWrapper mediationUtils;
+  private final MediationUtilsWrapper mediationUtils;
 
   public UnityMediationAdapter() {
     unityInitializer = UnityInitializer.getInstance();
     unityAdsWrapper = new UnityAdsWrapper();
-    unityBannerViewFactory = new UnityBannerViewFactory();
     this.unityAdsLoader = new UnityAdsLoader();
     mediationUtils = new MediationUtilsWrapper();
   }
@@ -207,18 +189,6 @@ public class UnityMediationAdapter extends RtbAdapter {
       @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
     AdFormat adFormat = getAdFormat(rtbSignalData);
     com.unity3d.ads.AdFormat unityAdFormat = null;
-
-    // For banner ad format, Unity Ads SDK requires an activity context to load the banner ad. So,
-    // fail here so that Unity bidder will not bid if the ad request was made with a non-activity
-    // context.
-    if (adFormat == AdFormat.BANNER && !(rtbSignalData.getContext() instanceof Activity)) {
-      signalCallbacks.onFailure(
-          new AdError(
-              ERROR_CONTEXT_NOT_ACTIVITY,
-              "Unity Ads RTB Banner ads require activity context",
-              ADAPTER_ERROR_DOMAIN));
-      return;
-    }
 
     if (adFormat == AdFormat.BANNER) {
       unityAdFormat = com.unity3d.ads.AdFormat.BANNER;
@@ -235,16 +205,28 @@ public class UnityMediationAdapter extends RtbAdapter {
       unityAdsWrapper.getToken(
           tokenConfiguration,
           token -> {
-            if (token == null) {
-              token = "";
+            if (token == null || token.isEmpty()) {
+              AdError error =
+                  new AdError(
+                      ERROR_TOKEN_FAILURE,
+                      "Unity Ads failed to get a bidding token.",
+                      ADAPTER_ERROR_DOMAIN);
+              signalCallbacks.onFailure(error);
+              return;
             }
             signalCallbacks.onSuccess(token);
           });
     } else {
       unityAdsWrapper.getToken(
           token -> {
-            if (token == null) {
-              token = "";
+            if (token == null || token.isEmpty()) {
+              AdError error =
+                  new AdError(
+                      ERROR_TOKEN_FAILURE,
+                      "Unity Ads failed to get a bidding token.",
+                      ADAPTER_ERROR_DOMAIN);
+              signalCallbacks.onFailure(error);
+              return;
             }
             signalCallbacks.onSuccess(token);
           });
@@ -255,12 +237,10 @@ public class UnityMediationAdapter extends RtbAdapter {
   UnityMediationAdapter(
       UnityInitializer unityInitializer,
       UnityAdsWrapper unityAdsWrapper,
-      UnityBannerViewFactory unityBannerViewFactory,
       UnityAdsLoader unityAdsLoader,
       MediationUtilsWrapper mediationUtilsWrapper) {
     this.unityInitializer = unityInitializer;
     this.unityAdsWrapper = unityAdsWrapper;
-    this.unityBannerViewFactory = unityBannerViewFactory;
     this.unityAdsLoader = unityAdsLoader;
     mediationUtils = mediationUtilsWrapper;
   }
@@ -343,28 +323,24 @@ public class UnityMediationAdapter extends RtbAdapter {
     unityInitializer.initializeUnityAds(
         context,
         gameID,
-        new IUnityAdsInitializationListener() {
-          @Override
-          public void onInitializationComplete() {
-            Log.d(TAG, "Unity Ads initialized successfully.");
-            initializationCompleteCallback.onInitializationSucceeded();
-          }
+        error -> {
+             if(error == null){
+               Log.d(TAG, "Unity Ads initialized successfully.");
+               initializationCompleteCallback.onInitializationSucceeded();
 
-          @Override
-          public void onInitializationFailed(
-              UnityAds.UnityAdsInitializationError unityAdsInitializationError,
-              String errorMessage) {
-            AdError adError =
-                createSDKError(
-                    unityAdsInitializationError,
-                    String.format(
-                        ERROR_MSG_INITIALIZATION_FAILURE,
-                        unityAdsInitializationError,
-                        errorMessage));
-            Log.d(TAG, adError.toString());
-            initializationCompleteCallback.onInitializationFailed(adError.toString());
-          }
-        });
+               return;
+             }
+
+              AdError adError =
+                  createSDKInitializationError(
+                      error,
+                      String.format(
+                          ERROR_MSG_INITIALIZATION_FAILURE,
+                              error,
+                              error.getMessage()));
+              Log.d(TAG, adError.toString());
+              initializationCompleteCallback.onInitializationFailed(adError.toString());
+            });
   }
 
   @Override
@@ -372,7 +348,7 @@ public class UnityMediationAdapter extends RtbAdapter {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    rewardedAd =
+    UnityRewardedAd rewardedAd =
         new UnityRewardedAd(
             mediationRewardedAdConfiguration,
             mediationAdLoadCallback,
@@ -385,18 +361,18 @@ public class UnityMediationAdapter extends RtbAdapter {
   public void loadBannerAd(
       @NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    bannerAd =
+    UnityMediationBannerAd bannerAd =
         new UnityMediationBannerAd(
-            callback, unityInitializer, unityBannerViewFactory, unityAdsLoader);
+            callback, unityInitializer, unityAdsLoader);
     bannerAd.loadAd(mediationBannerAdConfiguration, mediationUtils);
   }
 
   @Override
   public void loadRtbBannerAd(@NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    bannerRtbAd =
+    UnityMediationBannerAd bannerRtbAd =
         new UnityMediationBannerAd(
-            callback, unityInitializer, unityBannerViewFactory, unityAdsLoader);
+            callback, unityInitializer, unityAdsLoader);
     bannerRtbAd.loadAd(adConfiguration, mediationUtils);
   }
 
@@ -404,7 +380,7 @@ public class UnityMediationAdapter extends RtbAdapter {
   public void loadInterstitialAd(
       MediationInterstitialAdConfiguration adConfiguration,
       MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> callback) {
-    interstitialAd =
+    UnityInterstitialAd interstitialAd =
         new UnityInterstitialAd(adConfiguration, callback, unityInitializer, unityAdsLoader);
     interstitialAd.loadAd(adConfiguration);
   }
@@ -415,7 +391,7 @@ public class UnityMediationAdapter extends RtbAdapter {
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               callback) {
-    interstitialRtbAd =
+    UnityInterstitialAd interstitialRtbAd =
         new UnityInterstitialAd(adConfiguration, callback, unityInitializer, unityAdsLoader);
     interstitialRtbAd.loadAd(adConfiguration);
   }
@@ -424,7 +400,7 @@ public class UnityMediationAdapter extends RtbAdapter {
   public void loadRtbRewardedAd(
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    rewardedRtbAd =
+    UnityRewardedAd rewardedRtbAd =
         new UnityRewardedAd(adConfiguration, callback, unityInitializer, unityAdsLoader);
     rewardedRtbAd.loadAd(adConfiguration);
   }
