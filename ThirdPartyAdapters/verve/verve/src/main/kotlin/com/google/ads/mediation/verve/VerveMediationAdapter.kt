@@ -127,7 +127,7 @@ class VerveMediationAdapter : RtbAdapter() {
     }
     if (appTokens.size > 1) {
       val message =
-        "Multiple $APP_TOKEN_KEY entries found: ${appTokens}. Using '${appTokenForInit}' to initialize the BidMachine SDK"
+        "Multiple $APP_TOKEN_KEY entries found: ${appTokens}. Using '${appTokenForInit}' to initialize the Verve SDK"
       Log.w(TAG, message)
     }
     HyBid.setTestMode(VerveExtras.isTestMode)

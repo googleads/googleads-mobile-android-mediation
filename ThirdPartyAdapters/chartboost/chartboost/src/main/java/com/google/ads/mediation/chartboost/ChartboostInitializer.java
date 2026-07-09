@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.chartboost;
 
+import static com.google.ads.mediation.chartboost.ChartboostConstants.AD_TECHNOLOGY_PROVIDER_ID;
 import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG;
 
 import android.content.Context;
@@ -24,6 +25,10 @@ import androidx.annotation.VisibleForTesting;
 import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.callbacks.StartCallback;
 import com.chartboost.sdk.events.StartError;
+import com.chartboost.sdk.privacy.model.DataUseConsent;
+import com.chartboost.sdk.privacy.model.GDPR;
+import com.chartboost.sdk.privacy.model.GDPR.GDPR_CONSENT;
+import com.google.ads.mediation.chartboost.ChartboostAdapterUtils.ConsentResult;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.MobileAds;
 import java.util.ArrayList;
@@ -60,6 +65,16 @@ public class ChartboostInitializer {
 
     isInitializing = true;
     initListeners.add(listener);
+
+    ConsentResult consentResult =
+        ChartboostAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID);
+    if (consentResult == ChartboostAdapterUtils.ConsentResult.TRUE) {
+      DataUseConsent dataUseConsent = new GDPR(GDPR_CONSENT.BEHAVIORAL);
+      Chartboost.addDataUseConsent(context, dataUseConsent);
+    } else if (consentResult == ChartboostAdapterUtils.ConsentResult.FALSE) {
+      DataUseConsent dataUseConsent = new GDPR(GDPR_CONSENT.NON_BEHAVIORAL);
+      Chartboost.addDataUseConsent(context, dataUseConsent);
+    }
 
     ChartboostAdapterUtils.updateCoppaStatus(context, MobileAds.getRequestConfiguration());
     Chartboost.startWithAppId(context, chartboostParams.getAppId(),

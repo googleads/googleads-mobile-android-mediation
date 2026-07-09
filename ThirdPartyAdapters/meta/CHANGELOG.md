@@ -1,8 +1,13 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
-#### Version 6.21.0.4 (In progress)
+#### Version 6.21.0.4
 - Maps `AgeRestrictedTreatment` to Meta Audience Network's mixed audience settings.
 - Fixed a memory leak issue with interstitial ads.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.2.1.
+- Meta Audience Network SDK version 6.21.0.
 
 #### Version 6.21.0.3
 - Updated native ad implementation to use the updated `NativeAdMapper` API.
