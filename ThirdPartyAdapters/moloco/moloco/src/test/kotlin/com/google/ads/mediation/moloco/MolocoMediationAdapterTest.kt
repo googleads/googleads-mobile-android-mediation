@@ -60,8 +60,7 @@ import com.moloco.sdk.publisher.Initialization
 import com.moloco.sdk.publisher.InterstitialAd
 import com.moloco.sdk.publisher.MediationInfo
 import com.moloco.sdk.publisher.Moloco
-import com.moloco.sdk.publisher.Moloco.createBanner
-import com.moloco.sdk.publisher.Moloco.createBannerTablet
+import com.moloco.sdk.publisher.Moloco.createMolocoBanner
 import com.moloco.sdk.publisher.Moloco.createInterstitial
 import com.moloco.sdk.publisher.Moloco.createMREC
 import com.moloco.sdk.publisher.Moloco.createNativeAd
@@ -704,9 +703,10 @@ class MolocoMediationAdapterTest {
 
       val mediationInfoCaptor = argumentCaptor<MediationInfo>()
       mockedMoloco.verify {
-        createBanner(
+        createMolocoBanner(
           mediationInfoCaptor.capture(),
           eq(TEST_AD_UNIT),
+          eq(BannerAdSize.Standard),
           eq(TEST_WATERMARK),
           createBannerCaptor.capture(),
         )
@@ -728,7 +728,7 @@ class MolocoMediationAdapterTest {
 
       adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
       mockedMoloco.verify {
-        createBanner(any(), eq(TEST_AD_UNIT), eq(TEST_WATERMARK), createBannerCaptor.capture())
+        createMolocoBanner(any(), eq(TEST_AD_UNIT), eq(TEST_WATERMARK), createBannerCaptor.capture())
       }
       val capturedCallback = createBannerCaptor.firstValue
       // An example Moloco ad creation error.
@@ -756,7 +756,12 @@ class MolocoMediationAdapterTest {
       adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
 
       mockedMoloco.verify {
-        createBanner(any(), eq(TEST_AD_UNIT), eq(TEST_WATERMARK), createBannerCaptor.capture())
+        createMolocoBanner(
+          any(),
+          eq(TEST_AD_UNIT),
+          eq(BannerAdSize.Standard),
+          eq(TEST_WATERMARK),
+          createBannerCaptor.capture())
       }
       val capturedCallback = createBannerCaptor.firstValue
       capturedCallback.invoke(/* banner= */ null, /* error= */ null)
@@ -786,9 +791,10 @@ class MolocoMediationAdapterTest {
 
       val mediationInfoCaptor = argumentCaptor<MediationInfo>()
       mockedMoloco.verify {
-        createMREC(
+        createMolocoBanner(
           mediationInfoCaptor.capture(),
           eq(TEST_AD_UNIT),
+          eq(BannerAdSize.MREC),
           eq(TEST_WATERMARK),
           createBannerCaptor.capture(),
         )
@@ -816,9 +822,10 @@ class MolocoMediationAdapterTest {
 
       val mediationInfoCaptor = argumentCaptor<MediationInfo>()
       mockedMoloco.verify {
-        createBannerTablet(
+        createMolocoBanner(
           mediationInfoCaptor.capture(),
           eq(TEST_AD_UNIT),
+          eq(BannerAdSize.Tablet),
           eq(TEST_WATERMARK),
           createBannerCaptor.capture(),
         )
@@ -844,9 +851,10 @@ class MolocoMediationAdapterTest {
 
       adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
       mockedMoloco.verify {
-        createBannerTablet(
+        createMolocoBanner(
           any(),
           eq(TEST_AD_UNIT),
+          eq(BannerAdSize.Tablet),
           eq(TEST_WATERMARK),
           createBannerCaptor.capture(),
         )
@@ -880,9 +888,10 @@ class MolocoMediationAdapterTest {
 
       adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
       mockedMoloco.verify {
-        createBannerTablet(
+        createMolocoBanner(
           any(),
           eq(TEST_AD_UNIT),
+          eq(BannerAdSize.Tablet),
           eq(TEST_WATERMARK),
           createBannerCaptor.capture(),
         )
