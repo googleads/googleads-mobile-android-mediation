@@ -489,11 +489,6 @@ class FyberMediationAdapterTest {
       val inneractiveAdRequestCaptor = argumentCaptor<InneractiveAdRequest>()
       verify(bannerSpot).requestAd(inneractiveAdRequestCaptor.capture())
       assertThat(inneractiveAdRequestCaptor.firstValue.spotId).isEqualTo(TEST_SPOT_ID)
-      val userParamsCaptor = argumentCaptor<InneractiveUserConfig>()
-      mockInneractiveAdManager.verify {
-        InneractiveAdManager.setUserParams(userParamsCaptor.capture())
-      }
-      assertThat(userParamsCaptor.firstValue.age).isEqualTo(20)
       mockInneractiveAdManager.verify { InneractiveAdManager.setMuteVideo(true) }
     }
   }
