@@ -18,8 +18,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.fyber.inneractive.sdk.external.InneractiveAdManager;
-import com.fyber.inneractive.sdk.external.InneractiveMediationDefs;
-import com.fyber.inneractive.sdk.external.InneractiveUserConfig;
 
 /** Utility class for the DT Exchange adapter. */
 class FyberAdapterUtils {
@@ -46,13 +44,6 @@ class FyberAdapterUtils {
     if (mediationExtras == null) {
       return;
     }
-
-    InneractiveUserConfig userParams = new InneractiveUserConfig();
-    if (mediationExtras.containsKey(InneractiveMediationDefs.KEY_AGE)) {
-      int age = mediationExtras.getInt(InneractiveMediationDefs.KEY_AGE, 0);
-      userParams.setAge(age);
-    }
-    InneractiveAdManager.setUserParams(userParams);
 
     if (mediationExtras.containsKey(FyberMediationAdapter.KEY_MUTE_VIDEO)) {
       boolean muteState = mediationExtras.getBoolean(FyberMediationAdapter.KEY_MUTE_VIDEO, false);

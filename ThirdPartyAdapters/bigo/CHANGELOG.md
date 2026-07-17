@@ -1,6 +1,12 @@
 ## Bigo Android Mediation Adapter Changelog
 
-#### Version 5.10.1.0 (In progress)
+#### Version 5.10.1.0
+- Verified compatibility with Bigo Ads SDK 5.10.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.2.1.
+- Bigo Ads SDK version 5.10.1.
 
 #### Version 5.9.0.1
 - Maps `AgeRestrictedTreatment` to Bigo's COPPA API.
