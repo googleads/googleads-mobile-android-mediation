@@ -52,6 +52,7 @@ import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
 import com.moloco.sdk.BuildConfig
 import com.moloco.sdk.publisher.Banner
+import com.moloco.sdk.publisher.BannerAdSize
 import com.moloco.sdk.publisher.CreateBannerCallback
 import com.moloco.sdk.publisher.CreateInterstitialAdCallback
 import com.moloco.sdk.publisher.CreateNativeAdCallback
@@ -728,7 +729,13 @@ class MolocoMediationAdapterTest {
 
       adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
       mockedMoloco.verify {
-        createMolocoBanner(any(), eq(TEST_AD_UNIT), eq(TEST_WATERMARK), createBannerCaptor.capture())
+        createMolocoBanner(
+          any(),
+          eq(TEST_AD_UNIT),
+          eq(BannerAdSize.Standard),
+          eq(TEST_WATERMARK),
+          createBannerCaptor.capture()
+        )
       }
       val capturedCallback = createBannerCaptor.firstValue
       // An example Moloco ad creation error.
