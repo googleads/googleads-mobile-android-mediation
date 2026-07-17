@@ -187,6 +187,11 @@ public class InMobiUnifiedNativeAdMapper extends UnifiedNativeAdMapper {
   }
 
   @Override
+  public void destroy() {
+    inMobiNativeWrapper.destroy();
+  }
+
+  @Override
   public void trackViews(View containerView, Map<String, View> clickableAssetViews,
       Map<String, View> nonclickableAssetViews) {
     setOverrideClickHandling(true);

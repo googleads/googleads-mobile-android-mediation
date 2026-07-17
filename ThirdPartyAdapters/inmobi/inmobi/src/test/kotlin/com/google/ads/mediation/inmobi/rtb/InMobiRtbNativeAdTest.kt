@@ -158,6 +158,15 @@ class InMobiRtbNativeAdTest {
     verify(wrappedNativeAd).unTrackViews()
   }
 
+  @Test
+  fun destroy_invokesDestroy() {
+    rtbNativeAd.onAdLoadSucceeded(inMobiNativeWrapper.inMobiNative, adMetaInfo)
+
+    rtbNativeAd.inMobiUnifiedNativeAdMapper.destroy()
+
+    verify(wrappedNativeAd).destroy()
+  }
+
   private fun setupWrappedInMobiNativeAd(): Unit {
     whenever(wrappedNativeAd.adCtaText).thenReturn("SomeCtaText")
     whenever(wrappedNativeAd.adDescription).thenReturn("AdDescription")

@@ -159,6 +159,15 @@ class InMobiWaterfallNativeAdTest {
     verify(wrappedNativeAd).unTrackViews()
   }
 
+  @Test
+  fun destroy_invokesDestroy() {
+    waterfallNativeAd.onAdLoadSucceeded(inMobiNativeWrapper.inMobiNative, adMetaInfo)
+
+    waterfallNativeAd.inMobiUnifiedNativeAdMapper.destroy()
+
+    verify(wrappedNativeAd).destroy()
+  }
+
   private fun setupWrappedInMobiNativeAd(): Unit {
     whenever(wrappedNativeAd.adCtaText).thenReturn("SomeCtaText")
     whenever(wrappedNativeAd.adDescription).thenReturn("AdDescription")

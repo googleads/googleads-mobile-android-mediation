@@ -1,6 +1,7 @@
 ## InMobi Android Mediation Adapter Changelog
 
 #### Version 11.4.0.0 (In progress)
+- Override `UnifiedNativeAdMapper.destroy()` to call `InMobiNative.destroy()` when GMA invokes full native ad teardown (`zzdqm.zzd()`). Refresh/swap still uses `untrackView` only; `untrackView` continues to call `unTrackViews()` for re-tracking support.
 
 #### Version 11.3.0.1
 - Maps `AgeRestrictedTreatment` to InMobi's COPPA API.
