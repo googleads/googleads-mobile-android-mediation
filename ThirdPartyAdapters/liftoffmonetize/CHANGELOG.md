@@ -1,5 +1,7 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Version 7.7.6.0 (In progress)
+
 #### Version 7.7.5.0 (In progress)
 
 #### Version 7.7.4.2
