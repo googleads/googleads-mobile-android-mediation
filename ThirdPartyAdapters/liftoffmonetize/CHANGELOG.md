@@ -2,8 +2,6 @@
 
 #### Version 7.7.6.0 (In progress)
 
-#### Version 7.7.5.0 (In progress)
-
 #### Version 7.7.4.2
 - Maps `AgeRestrictedTreatment` to Liftoff Monetize's COPPA API.
 - Removed the old API implementations for the following waterfall ad formats:
