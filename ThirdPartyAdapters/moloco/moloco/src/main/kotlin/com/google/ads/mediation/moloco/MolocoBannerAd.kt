@@ -43,7 +43,6 @@ class MolocoBannerAd
 private constructor(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
-  private val context: Context,
   private val adSize: AdSize,
   private val adUnitId: String,
   private val bidResponse: String,
@@ -52,7 +51,7 @@ private constructor(
   private lateinit var molocoAd: Banner
   private var bannerAdCallback: MediationBannerAdCallback? = null
 
-  fun loadAd() {
+  fun loadAd(context: Context) {
     val createBannerCallback =
       object : CreateBannerCallback {
         override fun invoke(banner: Banner?, molocoError: AdCreateError?) {
@@ -155,7 +154,7 @@ private constructor(
       val watermark = mediationBannerAdConfiguration.watermark
 
       return Result.success(
-        MolocoBannerAd(mediationAdLoadCallback, mediationBannerAdConfiguration.context, adSize, adUnitId, bidResponse, watermark)
+        MolocoBannerAd(mediationAdLoadCallback, adSize, adUnitId, bidResponse, watermark)
       )
     }
 
@@ -178,17 +177,23 @@ private constructor(
       adSize == AdSize.MEDIUM_RECTANGLE -> BannerAdSize.MREC
       adSize == AdSize.LEADERBOARD -> BannerAdSize.Tablet
       // 3. Anchored adaptive — positive height that matches the anchored API for this width.
-      else -> {
-        if (adSize.height == AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, adSize.width).height ||
-          adSize.height == AdSize.getPortraitAnchoredAdaptiveBannerAdSize(context, adSize.width).height ||
-          adSize.height == AdSize.getLandscapeAnchoredAdaptiveBannerAdSize(context, adSize.width).height
-        ) {
-          BannerAdSize.AnchoredAdaptive(availableWidth = adSize.width)
-        } else {
-          // 4. Fallback — custom or non-standard size; treat as inline.
-          BannerAdSize.InlineAdaptive(availableWidth = adSize.width)
-        }
-      }
+      isAnchoredAdaptiveSize(context, adSize) -> BannerAdSize.AnchoredAdaptive(availableWidth = adSize.width)
+      // 4. Fallback — custom or non-standard size; treat as inline.
+      else -> BannerAdSize.InlineAdaptive(availableWidth = adSize.width)
     }
+
+    /**
+     * Wraps the calls into Google's [AdSize] adaptive-size APIs so that if they throw (e.g. due
+     * to an unusual [Context] state), we degrade to [BannerAdSize.InlineAdaptive] instead of
+     * crashing the ad load.
+     */
+    private fun isAnchoredAdaptiveSize(context: Context, adSize: AdSize): Boolean =
+      try {
+        adSize.height == AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, adSize.width).height ||
+                adSize.height == AdSize.getPortraitAnchoredAdaptiveBannerAdSize(context, adSize.width).height ||
+                adSize.height == AdSize.getLandscapeAnchoredAdaptiveBannerAdSize(context, adSize.width).height
+      } catch (e: Exception) {
+        false
+      }
   }
 }

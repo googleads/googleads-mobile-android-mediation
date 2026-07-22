@@ -158,7 +158,7 @@ class MolocoMediationAdapter : RtbAdapter() {
   ) {
     MolocoBannerAd.newInstance(mediationBannerAdConfiguration, callback).onSuccess {
       bannerAd = it
-      bannerAd.loadAd()
+      bannerAd.loadAd(mediationBannerAdConfiguration.context)
     }
   }
 
