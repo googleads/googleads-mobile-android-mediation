@@ -1,11 +1,13 @@
 package com.google.ads.mediation.unity;
 
 import android.content.Context;
+import androidx.annotation.NonNull;
 import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.IUnityAdsTokenListener;
 import com.unity3d.ads.TokenConfiguration;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.metadata.MediationMetaData;
+import com.unity3d.ads.metadata.MetaData;
 
 /** Wrapper class for {@link UnityAds} */
 class UnityAdsWrapper {
@@ -19,6 +21,10 @@ class UnityAdsWrapper {
 
   public String getVersion() {
     return UnityAds.getVersion();
+  }
+
+  public MetaData getMetaData(@NonNull Context context) {
+    return new MetaData(context);
   }
 
   public MediationMetaData getMediationMetaData(Context context) {

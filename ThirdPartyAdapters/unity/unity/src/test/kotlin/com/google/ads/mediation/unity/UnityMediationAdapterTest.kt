@@ -11,6 +11,7 @@ import com.google.ads.mediation.unity.UnityInitializer.ADMOB
 import com.google.ads.mediation.unity.UnityInitializer.KEY_ADAPTER_VERSION
 import com.google.ads.mediation.unity.UnityInterstitialAd.ERROR_MSG_INTERSTITIAL_INITIALIZATION_FAILED
 import com.google.ads.mediation.unity.UnityMediationAdapter.ADAPTER_ERROR_DOMAIN
+import com.google.ads.mediation.unity.UnityMediationAdapter.AD_TECHNOLOGY_PROVIDER_ID
 import com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_BANNER_SIZE_MISMATCH
 import com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY
 import com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS
@@ -45,11 +46,13 @@ import com.unity3d.ads.TokenConfiguration
 import com.unity3d.ads.UnityAds.UnityAdsInitializationError
 import com.unity3d.ads.UnityAdsLoadOptions
 import com.unity3d.ads.metadata.MediationMetaData
+import com.unity3d.ads.metadata.MetaData
 import com.unity3d.services.banners.UnityBannerSize
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
@@ -94,6 +97,7 @@ class UnityMediationAdapterTest {
   private val unityAdsWrapper: UnityAdsWrapper = mock()
   private val unityInitializer: UnityInitializer = spy(UnityInitializer(unityAdsWrapper))
   private val unityAdsLoader: UnityAdsLoader = mock()
+  private val unityMetaData: MetaData = mock()
   private val mediationMetadata: MediationMetaData = mock()
   private val unityBannerViewWrapper: UnityBannerViewWrapper = mock()
   private val unityBannerViewFactory: UnityBannerViewFactory = mock()
@@ -121,6 +125,7 @@ class UnityMediationAdapterTest {
 
     whenever(unityBannerViewFactory.createBannerView(any(), eq(TEST_PLACEMENT_ID), any())) doReturn
       unityBannerViewWrapper
+    whenever(unityAdsWrapper.getMetaData(any())) doReturn unityMetaData
     whenever(unityAdsWrapper.getMediationMetaData(any())) doReturn mediationMetadata
   }
 
@@ -216,6 +221,73 @@ class UnityMediationAdapterTest {
       verify(unityAdsWrapper).initialize(any(), any(), any())
     }
   }
+
+  // region Additional Consent initialization tests
+  @Test
+  fun initialize_withUnknownACConsent_doesNotCommitGdprConsentMetaData() {
+    mediationConfigurations = listOf(MediationConfiguration(AdFormat.BANNER, serverParameters))
+
+    mockStatic(UnityAdsAdapterUtils::class.java).use {
+      whenever(UnityAdsAdapterUtils.hasACConsent(any(), eq(AD_TECHNOLOGY_PROVIDER_ID))) doReturn
+        UnityAdsAdapterUtils.ConsentResult.UNKNOWN
+
+      unityMediationAdapter.initialize(
+        activity,
+        initializationCompleteCallback,
+        mediationConfigurations,
+      )
+
+      verify(unityMetaData, never()).set(eq("gdpr.consent"), any())
+      verify(unityMetaData, never()).commit()
+      verifyNoMoreInteractions(unityMetaData)
+    }
+  }
+
+  @Test
+  fun initialize_withTrueACConsent_commitsTrueGdprConsentMetaData() {
+    mediationConfigurations = listOf(MediationConfiguration(AdFormat.BANNER, serverParameters))
+
+    mockStatic(UnityAdsAdapterUtils::class.java).use {
+      whenever(UnityAdsAdapterUtils.hasACConsent(any(), eq(AD_TECHNOLOGY_PROVIDER_ID))) doReturn
+        UnityAdsAdapterUtils.ConsentResult.TRUE
+
+      unityMediationAdapter.initialize(
+        activity,
+        initializationCompleteCallback,
+        mediationConfigurations,
+      )
+
+      inOrder(unityMetaData) {
+        verify(unityMetaData).set(eq("gdpr.consent"), eq(true))
+        verify(unityMetaData).commit()
+      }
+      verifyNoMoreInteractions(unityMetaData)
+    }
+  }
+
+  @Test
+  fun initialize_withFalseACConsent_commitsFalseGdprConsentMetaData() {
+    mediationConfigurations = listOf(MediationConfiguration(AdFormat.BANNER, serverParameters))
+
+    mockStatic(UnityAdsAdapterUtils::class.java).use {
+      whenever(UnityAdsAdapterUtils.hasACConsent(any(), eq(AD_TECHNOLOGY_PROVIDER_ID))) doReturn
+        UnityAdsAdapterUtils.ConsentResult.FALSE
+
+      unityMediationAdapter.initialize(
+        activity,
+        initializationCompleteCallback,
+        mediationConfigurations,
+      )
+
+      inOrder(unityMetaData) {
+        verify(unityMetaData).set(eq("gdpr.consent"), eq(false))
+        verify(unityMetaData).commit()
+      }
+      verifyNoMoreInteractions(unityMetaData)
+    }
+  }
+
+  // endregion
 
   @Test
   fun collectSignals_forBannerFormatAndNonActivityContext_fails() {
