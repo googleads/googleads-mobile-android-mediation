@@ -1,5 +1,10 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Version 7.7.6.1 (In progress)
+- Removed the `canPlayAd()` check before showing app open ads so the Liftoff SDK handles the not-ready case and fires its own failure callback.
+- Made the app open and interstitial ad objects nullable and added null checks before `play()`.
+- Added logging using `VungleMediationLogger` when the app open, interstitial, or rewarded (waterfall and bidding) ad instance is null at show time.
+
 #### Version 7.7.6.0 (In progress)
 
 #### Version 7.7.4.2
