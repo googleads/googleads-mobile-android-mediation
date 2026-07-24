@@ -94,6 +94,7 @@ public class AppLovinWaterfallRewardedRenderer extends AppLovinRewardedRenderer
           public void onInitializeSuccess() {
             zoneId = AppLovinUtils.retrieveZoneId(serverParameters);
             appLovinSdk = appLovinInitializer.retrieveSdk(context);
+            appLovinSdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(networkExtras));
 
             String logMessage = String.format("Requesting rewarded video for zone '%s'", zoneId);
             Log.d(TAG, logMessage);
@@ -132,8 +133,6 @@ public class AppLovinWaterfallRewardedRenderer extends AppLovinRewardedRenderer
 
   @Override
   public void showAd(@NonNull Context context) {
-    appLovinSdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(networkExtras));
-
     if (zoneId != null) {
       String logMessage = String.format("Showing rewarded video for zone '%s'", zoneId);
       Log.d(TAG, logMessage);

@@ -88,10 +88,8 @@ class AppLovinRtbInterstitialRendererTest {
   }
 
   @Test
-  fun showAd_setsSdkMuteSettings() {
-    loadAndReceiveAd()
-
-    appLovinMediationInterstitialAd.showAd(context)
+  fun loadAd_setsSdkMuteSettings() {
+    appLovinMediationInterstitialAd.loadAd(interstitialAdConfiguration)
 
     verify(appLovinSdkSettings).setMuted(true)
   }

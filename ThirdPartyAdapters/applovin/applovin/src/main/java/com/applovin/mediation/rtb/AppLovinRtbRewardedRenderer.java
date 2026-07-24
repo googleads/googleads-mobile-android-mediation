@@ -54,6 +54,7 @@ public final class AppLovinRtbRewardedRenderer extends AppLovinRewardedRenderer 
     incentivizedInterstitial = appLovinAdFactory.createIncentivizedInterstitial(appLovinSdk);
     incentivizedInterstitial.setExtraInfo(KEY_WATERMARK, adConfiguration.getWatermark());
     networkExtras = adConfiguration.getMediationExtras();
+    appLovinSdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(networkExtras));
 
     // Load ad.
     appLovinSdk.getAdService().loadNextAdForAdToken(adConfiguration.getBidResponse(), this);
@@ -61,9 +62,6 @@ public final class AppLovinRtbRewardedRenderer extends AppLovinRewardedRenderer 
 
   @Override
   public void showAd(@NonNull Context context) {
-    appLovinSdk.getSettings()
-        .setMuted(AppLovinUtils.shouldMuteAudio(networkExtras));
-
     incentivizedInterstitial.show(appLovinAd, context, this, this, this, this);
   }
 

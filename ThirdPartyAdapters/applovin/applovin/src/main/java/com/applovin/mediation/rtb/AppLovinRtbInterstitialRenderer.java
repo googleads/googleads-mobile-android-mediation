@@ -58,6 +58,7 @@ public final class AppLovinRtbInterstitialRenderer extends AppLovinInterstitialR
     interstitialAd.setAdVideoPlaybackListener(this);
     interstitialAd.setExtraInfo(KEY_WATERMARK, interstitialAdConfiguration.getWatermark());
     networkExtras = interstitialAdConfiguration.getMediationExtras();
+    sdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(networkExtras));
 
     // Load ad!
     sdk.getAdService().loadNextAdForAdToken(interstitialAdConfiguration.getBidResponse(), this);
@@ -65,10 +66,6 @@ public final class AppLovinRtbInterstitialRenderer extends AppLovinInterstitialR
 
   @Override
   public void showAd(@NonNull Context context) {
-    // Update mute state
-    boolean muted = AppLovinUtils.shouldMuteAudio(networkExtras);
-    sdk.getSettings().setMuted(muted);
-
     interstitialAd.showAndRender(appLovinInterstitialAd);
   }
 }
