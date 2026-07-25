@@ -5,7 +5,13 @@
 - Made the app open and interstitial ad objects nullable and added null checks before `play()`.
 - Added logging using `VungleMediationLogger` when the app open, interstitial, or rewarded (waterfall and bidding) ad instance is null at show time.
 
-#### Version 7.7.6.0 (In progress)
+#### Version 7.7.6.0
+- Verified compatibility with Vungle SDK 7.7.6.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.3.0.
+- Vungle SDK version 7.7.6.
 
 #### Version 7.7.4.2
 - Maps `AgeRestrictedTreatment` to Liftoff Monetize's COPPA API.
