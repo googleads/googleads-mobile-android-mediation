@@ -1,5 +1,7 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Version 7.7.7.0 (In progress)
+
 #### Version 7.7.6.1 (In progress)
 - Removed the `canPlayAd()` check before showing app open ads so the Liftoff SDK handles the not-ready case and fires its own failure callback.
 - Made the app open and interstitial ad objects nullable and added null checks before `play()`.
