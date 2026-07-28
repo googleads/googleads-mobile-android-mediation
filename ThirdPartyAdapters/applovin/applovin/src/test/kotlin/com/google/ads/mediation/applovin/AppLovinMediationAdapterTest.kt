@@ -13,6 +13,7 @@ import com.applovin.mediation.AppLovinUtils.ERROR_MSG_CHILD_USER
 import com.applovin.sdk.AppLovinAdService
 import com.applovin.sdk.AppLovinAdSize
 import com.applovin.sdk.AppLovinSdk
+import com.applovin.sdk.AppLovinSdkSettings
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.applovin.AppLovinInitializer.OnInitializeSuccessListener
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.APPLOVIN_SDK_ERROR_DOMAIN
@@ -92,7 +93,11 @@ class AppLovinMediationAdapterTest {
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
     mock()
   private val appLovinAdService: AppLovinAdService = mock()
-  private val appLovinSdk: AppLovinSdk = mock { on { getAdService() } doReturn appLovinAdService }
+  private val appLovinSdkSettings: AppLovinSdkSettings = mock()
+  private val appLovinSdk: AppLovinSdk = mock {
+    on { getAdService() } doReturn appLovinAdService
+    on { getSettings() } doReturn appLovinSdkSettings
+  }
   private val appLovinSdkWrapper: AppLovinSdkWrapper = mock {
     on { getInstance(any()) } doReturn appLovinSdk
   }
