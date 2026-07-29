@@ -2,7 +2,10 @@ plugins {
     id 'com.android.library'
     id 'jacoco'
     id 'maven-publish'
-    id 'org.jetbrains.kotlin.android'
+}
+
+if (!com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION.startsWith("9.")) {
+    apply plugin: 'org.jetbrains.kotlin.android'
 }
 
 /**
@@ -41,10 +44,12 @@ android {
         targetCompatibility JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
-        languageVersion = "1.9"
-        apiVersion = "1.9"
+    if (!com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION.startsWith("9.")) {
+        kotlinOptions {
+            jvmTarget = JavaVersion.VERSION_11.toString()
+            languageVersion = "1.9"
+            apiVersion = "1.9"
+        }
     }
 
     buildFeatures {
@@ -74,6 +79,16 @@ android {
         unitTests {
             includeAndroidResources = true
             unitTests.returnDefaultValues = true
+        }
+    }
+}
+
+if (com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION.startsWith("9.")) {
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+            languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9)
+            apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9)
         }
     }
 }
