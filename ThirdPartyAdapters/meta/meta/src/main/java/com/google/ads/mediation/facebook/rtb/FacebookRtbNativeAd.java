@@ -100,6 +100,7 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
       AdError error = new AdError(ERROR_CREATE_NATIVE_AD_FROM_BID_PAYLOAD,
           "Failed to create native ad from bid payload: " + ex.getMessage(), ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
+      destroyMetaAdAssets();
       FacebookRtbNativeAd.this.callback.onFailure(error);
       return;
     }
@@ -150,6 +151,7 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
         AdError error = new AdError(ERROR_WRONG_NATIVE_TYPE, "Ad Loaded is not a Native Ad.",
             ERROR_DOMAIN);
         Log.e(TAG, error.getMessage());
+        destroyMetaAdAssets();
         FacebookRtbNativeAd.this.callback.onFailure(error);
         return;
       }
@@ -164,6 +166,7 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
             @Override
             public void onMappingFailed(AdError error) {
               Log.w(TAG, error.getMessage());
+              destroyMetaAdAssets();
               callback.onFailure(error);
             }
           });
@@ -173,6 +176,7 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
     public void onError(Ad ad, com.facebook.ads.AdError adError) {
       AdError error = getAdError(adError);
       Log.w(TAG, error.getMessage());
+      destroyMetaAdAssets();
       callback.onFailure(error);
     }
 
@@ -292,6 +296,9 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
    * otherwise.
    */
   private boolean containsRequiredFieldsForUnifiedNativeAd(NativeAdBase nativeAd) {
+    if (nativeAd == null) {
+      return false;
+    }
     boolean hasNativeBannerAdAssets = (nativeAd.getAdHeadline() != null)
         && (nativeAd.getAdBodyText() != null) && (nativeAd.getAdIcon() != null)
         && (nativeAd.getAdCallToAction() != null);
@@ -382,18 +389,32 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
     }
   }
 
+  private void destroyMetaAdAssets() {
+    // Create local copies and immediately clear instance fields to prevent re-entrant
+    // calls or race conditions during ad asset cleanup.
+    NativeAdBase nativeAdBaseCopy = nativeAdBase;
+    if (nativeAdBaseCopy != null) {
+      nativeAdBase = null;
+      nativeAdBaseCopy.unregisterView();
+      nativeAdBaseCopy.destroy();
+    }
+    MediaView mediaViewCopy = mediaView;
+    if (mediaViewCopy != null) {
+      mediaView = null;
+      mediaViewCopy.destroy();
+    }
+  }
+
   @Override
   public void untrackView(@NonNull View view) {
-    if (nativeAdBase != null) {
-      nativeAdBase.unregisterView();
-      nativeAdBase.destroy();
-      nativeAdBase = null;
-    }
-    if (mediaView != null) {
-      mediaView.destroy();
-      mediaView = null;
-    }
+    destroyMetaAdAssets();
     super.untrackView(view);
+  }
+
+  @Override
+  public void destroy() {
+    destroyMetaAdAssets();
+    super.destroy();
   }
 
   private static class FacebookAdapterNativeAdImage extends Image {
