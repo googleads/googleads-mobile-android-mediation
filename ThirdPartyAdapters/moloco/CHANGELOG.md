@@ -1,6 +1,6 @@
 ## Moloco Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 4.10.1.1 (In progress)
 - Adds adaptive banner support to the Moloco mediation adapter.
 
 #### Version 4.10.1.0
