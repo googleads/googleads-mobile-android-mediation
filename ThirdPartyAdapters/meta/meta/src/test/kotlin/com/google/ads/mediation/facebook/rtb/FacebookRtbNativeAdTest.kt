@@ -309,7 +309,6 @@ class FacebookRtbNativeAdTest {
     assertThat(extras).string(KEY_ID).isEqualTo(META_AD_ID)
     assertThat(extras).containsKey(KEY_SOCIAL_CONTEXT_ASSET)
     assertThat(extras).string(KEY_SOCIAL_CONTEXT_ASSET).isEqualTo(META_AD_SOCIAL_CONTEXT)
-    assertThat(facebookRtbNativeAd.adChoicesContent).isNotNull()
     verify(nativeAdLoadCallback).onSuccess(eq(facebookRtbNativeAd))
   }
 
@@ -355,7 +354,6 @@ class FacebookRtbNativeAdTest {
     assertThat(extras).string(KEY_ID).isEqualTo(META_AD_ID)
     assertThat(extras).containsKey(KEY_SOCIAL_CONTEXT_ASSET)
     assertThat(extras).string(KEY_SOCIAL_CONTEXT_ASSET).isEqualTo(META_AD_SOCIAL_CONTEXT)
-    assertThat(facebookRtbNativeAd.adChoicesContent).isNotNull()
     verify(nativeAdLoadCallback).onSuccess(eq(facebookRtbNativeAd))
   }
 

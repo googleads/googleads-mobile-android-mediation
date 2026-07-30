@@ -1,5 +1,7 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
+#### Version 6.22.0.0 (In progress)
+
 #### Version 6.21.0.4
 - Maps `AgeRestrictedTreatment` to Meta Audience Network's mixed audience settings.
 - Fixed a memory leak issue with interstitial ads.
