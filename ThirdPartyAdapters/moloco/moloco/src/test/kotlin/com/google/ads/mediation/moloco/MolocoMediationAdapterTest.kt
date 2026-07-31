@@ -89,6 +89,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -244,7 +245,7 @@ class MolocoMediationAdapterTest {
   }
 
   @Test
-  fun initialize_initializationSuccess_invokesOnInitializationSucceededAndConfiguresTFUABit() {
+  fun initialize_withChildDirectedTreatmentTrue_initializeSucceedsAndConfiguresPrivacyTrue() {
     mockStatic(MolocoAdapterUtils::class.java).use { mockedMolocoUtils ->
       val serverParameters = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
       val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
@@ -268,14 +269,16 @@ class MolocoMediationAdapterTest {
   }
 
   @Test
-  fun initialize_withTagForUnderAgeOfConsentTrue_configuresPrivacyTrue() {
+  fun initialize_withChildDirectedTreatmentFalse_initializeSucceedsAndConfiguresPrivacyFalse() {
     mockStatic(MolocoAdapterUtils::class.java).use { mockedMolocoUtils ->
       val serverParameters = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
       val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
       val molocoCallbackCaptor = argumentCaptor<MolocoInitializationListener>()
       val requestConfig =
         RequestConfiguration.Builder()
-          .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+          .setTagForChildDirectedTreatment(
+            RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+          )
           .build()
       MobileAds.setRequestConfiguration(requestConfig)
 
@@ -284,13 +287,13 @@ class MolocoMediationAdapterTest {
       mockMoloco.verify({ initialize(any(), molocoCallbackCaptor.capture()) }, times(1))
       val molocoCallback = molocoCallbackCaptor.firstValue
       molocoCallback.onMolocoInitializationStatus(MolocoInitStatus(Initialization.SUCCESS, "Test"))
-      mockedMolocoUtils.verify { setMolocoIsAgeRestricted(true) }
+      mockedMolocoUtils.verify { setMolocoIsAgeRestricted(false) }
       assertThat(initializationCompleteCallback).hasSucceeded()
     }
   }
 
   @Test
-  fun initialize_withAgeRestrictedTreatmentChild_configuresPrivacyTrue() {
+  fun initialize_withAgeRestrictedTreatmentChild_initializeSucceedsAndConfiguresPrivacyTrue() {
     mockStatic(MolocoAdapterUtils::class.java).use { mockedMolocoUtils ->
       val serverParameters = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
       val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
@@ -312,18 +315,36 @@ class MolocoMediationAdapterTest {
   }
 
   @Test
-  fun initialize_withUnspecifiedPrivacy_configuresPrivacyFalse() {
+  fun initialize_withUnderAgeOfConsentTrue_configuresPrivacyTrue() {
     mockStatic(MolocoAdapterUtils::class.java).use { mockedMolocoUtils ->
       val serverParameters = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
       val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
       val molocoCallbackCaptor = argumentCaptor<MolocoInitializationListener>()
       val requestConfig =
         RequestConfiguration.Builder()
-          .setTagForChildDirectedTreatment(
-            RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
-          )
-          .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
-          .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
+          .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+          .build()
+      MobileAds.setRequestConfiguration(requestConfig)
+
+      adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+
+      mockMoloco.verify({ initialize(any(), molocoCallbackCaptor.capture()) }, times(1))
+      val molocoCallback = molocoCallbackCaptor.firstValue
+      molocoCallback.onMolocoInitializationStatus(MolocoInitStatus(Initialization.SUCCESS, "Test"))
+      mockedMolocoUtils.verify { setMolocoIsAgeRestricted(true) }
+      assertThat(initializationCompleteCallback).hasSucceeded()
+    }
+  }
+
+  @Test
+  fun initialize_withUnderAgeOfConsentFalse_configuresPrivacyFalse() {
+    mockStatic(MolocoAdapterUtils::class.java).use { mockedMolocoUtils ->
+      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
+      val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+      val molocoCallbackCaptor = argumentCaptor<MolocoInitializationListener>()
+      val requestConfig =
+        RequestConfiguration.Builder()
+          .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE)
           .build()
       MobileAds.setRequestConfiguration(requestConfig)
 
@@ -333,6 +354,71 @@ class MolocoMediationAdapterTest {
       val molocoCallback = molocoCallbackCaptor.firstValue
       molocoCallback.onMolocoInitializationStatus(MolocoInitStatus(Initialization.SUCCESS, "Test"))
       mockedMolocoUtils.verify { setMolocoIsAgeRestricted(false) }
+      assertThat(initializationCompleteCallback).hasSucceeded()
+    }
+  }
+
+  @Test
+  fun initialize_withChildDirectedTreatmentUnspecified_initializeSucceedsAndDoesNotConfigurePrivacy() {
+    mockStatic(MolocoAdapterUtils::class.java).use { mockedMolocoUtils ->
+      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
+      val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+      val molocoCallbackCaptor = argumentCaptor<MolocoInitializationListener>()
+      val requestConfig =
+        RequestConfiguration.Builder()
+          .setTagForChildDirectedTreatment(
+            RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+          )
+          .build()
+      MobileAds.setRequestConfiguration(requestConfig)
+
+      adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+
+      mockMoloco.verify({ initialize(any(), molocoCallbackCaptor.capture()) }, times(1))
+      val molocoCallback = molocoCallbackCaptor.firstValue
+      molocoCallback.onMolocoInitializationStatus(MolocoInitStatus(Initialization.SUCCESS, "Test"))
+      mockedMolocoUtils.verify({ setMolocoIsAgeRestricted(any()) }, never())
+      assertThat(initializationCompleteCallback).hasSucceeded()
+    }
+  }
+
+  @Test
+  fun initialize_withUnderAgeOfConsentUnspecified_initializeSucceedsAndDoesNotConfigurePrivacy() {
+    mockStatic(MolocoAdapterUtils::class.java).use { mockedMolocoUtils ->
+      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
+      val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+      val molocoCallbackCaptor = argumentCaptor<MolocoInitializationListener>()
+      val requestConfig =
+        RequestConfiguration.Builder()
+          .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+          .build()
+      MobileAds.setRequestConfiguration(requestConfig)
+
+      adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+
+      mockMoloco.verify({ initialize(any(), molocoCallbackCaptor.capture()) }, times(1))
+      val molocoCallback = molocoCallbackCaptor.firstValue
+      molocoCallback.onMolocoInitializationStatus(MolocoInitStatus(Initialization.SUCCESS, "Test"))
+      mockedMolocoUtils.verify({ setMolocoIsAgeRestricted(any()) }, never())
+      assertThat(initializationCompleteCallback).hasSucceeded()
+    }
+  }
+
+  @Test
+  fun initialize_withUnknownAgePrivacyFlag_doesNotConfigurePrivacy() {
+    mockStatic(MolocoAdapterUtils::class.java).use { mockedMolocoUtils ->
+      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
+      val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+      val molocoCallbackCaptor = argumentCaptor<MolocoInitializationListener>()
+      val requestConfig = RequestConfiguration.Builder().build()
+      MobileAds.setRequestConfiguration(requestConfig)
+
+      adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+
+      mockMoloco.verify({ initialize(any(), molocoCallbackCaptor.capture()) }, times(1))
+      val molocoCallback = molocoCallbackCaptor.firstValue
+      molocoCallback.onMolocoInitializationStatus(MolocoInitStatus(Initialization.SUCCESS, "Test"))
+      mockedMolocoUtils.verify({ setMolocoIsAgeRestricted(any()) }, never())
       assertThat(initializationCompleteCallback).hasSucceeded()
     }
   }
