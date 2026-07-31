@@ -88,14 +88,23 @@ class MolocoMediationAdapter : RtbAdapter() {
     val isAgeRestrictedTreatmentChild =
       AgeRestrictedTreatmentUtils.runtimeGmaSdkSupportsChildAgeRestrictedTreatment() &&
         MobileAds.getRequestConfiguration().ageRestrictedTreatment == AgeRestrictedTreatment.CHILD
-    val isAgeRestricted =
+
+    if (
       MobileAds.getRequestConfiguration().tagForChildDirectedTreatment ==
         RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
         MobileAds.getRequestConfiguration().tagForUnderAgeOfConsent ==
           RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE ||
         isAgeRestrictedTreatmentChild
-    // TODO (b/527524168): Update the default TFCD and TFUA behavior and get 3p review
-    MolocoAdapterUtils.setMolocoIsAgeRestricted(isAgeRestricted)
+    ) {
+      MolocoAdapterUtils.setMolocoIsAgeRestricted(true)
+    } else if (
+      MobileAds.getRequestConfiguration().tagForChildDirectedTreatment ==
+        RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE ||
+        MobileAds.getRequestConfiguration().tagForUnderAgeOfConsent ==
+          RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE
+    ) {
+      MolocoAdapterUtils.setMolocoIsAgeRestricted(false)
+    }
   }
 
   override fun initialize(
