@@ -225,19 +225,19 @@ class IronSourceRtbInterstitialAdTest {
   }
 
   @Test
-  fun testShowAd_NullAd() {
+  fun showAd_whenAdNotLoaded_neverShowsAd() {
     // given
-    ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
+    val activity = Robolectric.buildActivity(Activity::class.java).get()
 
     // when
-    ironSourceRtbInterstitialAd.showAd(context)
+    ironSourceRtbInterstitialAd.showAd(activity)
 
     // then
     verify(mockInterstitialAd, never()).show(any())
   }
 
   @Test
-  fun testShowAd_NonActivityContext() {
+  fun showAd_nonActivityContext_neverShowsAd() {
     // given
     ironSourceRtbInterstitialAd.onInterstitialAdLoaded(mockInterstitialAd)
 
