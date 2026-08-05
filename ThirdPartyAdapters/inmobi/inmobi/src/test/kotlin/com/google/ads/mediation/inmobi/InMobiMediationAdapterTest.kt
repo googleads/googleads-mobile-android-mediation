@@ -243,6 +243,30 @@ class InMobiMediationAdapterTest {
   }
 
   @Test
+  fun initialize_withMultipleAccountIds_invokesInitWithOneAccountId() {
+    whenever(inMobiSdkWrapper.isSDKInitialized).thenReturn(false)
+    val config1 = mock<MediationConfiguration>()
+    val bundle1 = Bundle().apply { putString(InMobiAdapterUtils.KEY_ACCOUNT_ID, "12345") }
+    whenever(config1.serverParameters).thenReturn(bundle1)
+
+    val config2 = mock<MediationConfiguration>()
+    val bundle2 = Bundle().apply { putString(InMobiAdapterUtils.KEY_ACCOUNT_ID, "67890") }
+    whenever(config2.serverParameters).thenReturn(bundle2)
+
+    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
+      val listener = it.arguments[2] as Listener
+      listener.onInitializeSuccess()
+    }
+
+    adapter.initialize(context, initializationCompleteCallback, listOf(config1, config2))
+
+    val accountIdCaptor = argumentCaptor<String>()
+    verify(inMobiInitializer).init(eq(context), accountIdCaptor.capture(), any())
+    assertThat(accountIdCaptor.firstValue).isIn(listOf("12345", "67890"))
+    verify(initializationCompleteCallback).onInitializationSucceeded()
+  }
+
+  @Test
   fun collectSignals_invokesOnSuccessCallbackWithBiddingToken() {
     val biddingToken = "inMobiToken"
     whenever(inMobiSdkWrapper.getToken(any(), any())).thenReturn(biddingToken)
@@ -552,6 +576,96 @@ class InMobiMediationAdapterTest {
     whenever(rewardedAdConfiguration.bidResponse).thenReturn(biddingToken)
 
     adapter.loadRtbRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
+
+    verify(inMobiInterstitialWrapper).setWatermarkData(any())
+    val extrasCaptor = argumentCaptor<Map<String, String>>()
+    verify(inMobiInterstitialWrapper).setExtras(extrasCaptor.capture())
+    assertThat(extrasCaptor.firstValue["tp"]).isEqualTo(InMobiAdapterUtils.PROTOCOL_RTB)
+    verify(inMobiInterstitialWrapper).setKeywords(anyString())
+    val tokenCaptor = argumentCaptor<ByteArray>()
+    verify(inMobiInterstitialWrapper).load(tokenCaptor.capture())
+    assertThat(tokenCaptor.firstValue).isEqualTo(biddingToken.toByteArray())
+  }
+
+  @Test
+  fun loadRewardedInterstitialAd_withoutAccountId_invokesFailureCallback() {
+    serverParameters.remove(InMobiAdapterUtils.KEY_ACCOUNT_ID)
+
+    adapter.loadRewardedInterstitialAd(rewardedAdConfiguration, rewardedAdLoadCallback)
+
+    assertFailureCallbackAdError(
+      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
+      rewardedAdLoadCallback,
+    )
+  }
+
+  @Test
+  fun loadRewardedInterstitialAd_withoutPlacementId_invokesFailureCallback() {
+    serverParameters.remove(InMobiAdapterUtils.KEY_PLACEMENT_ID)
+
+    adapter.loadRewardedInterstitialAd(rewardedAdConfiguration, rewardedAdLoadCallback)
+
+    assertFailureCallbackAdError(
+      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
+      rewardedAdLoadCallback,
+    )
+  }
+
+  @Test
+  fun loadRewardedInterstitialAd_invalidPlacementId_invokesFailureCallback() {
+    serverParameters.putString(InMobiAdapterUtils.KEY_PLACEMENT_ID, "-12345")
+
+    adapter.loadRewardedInterstitialAd(rewardedAdConfiguration, rewardedAdLoadCallback)
+
+    assertFailureCallbackAdError(
+      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
+      rewardedAdLoadCallback,
+    )
+  }
+
+  @Test
+  fun loadRewardedInterstitialAd_InMobiSDKInitializationFailed_invokesFailureCallback() {
+    val error =
+      InMobiConstants.createAdapterError(
+        InMobiConstants.ERROR_INMOBI_FAILED_INITIALIZATION,
+        "InMobi SDK initialization failed",
+      )
+
+    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
+      val listener = it.arguments[2] as Listener
+      listener.onInitializeError(error)
+    }
+
+    adapter.loadRewardedInterstitialAd(rewardedAdConfiguration, rewardedAdLoadCallback)
+
+    verify(rewardedAdLoadCallback).onFailure(error)
+  }
+
+  @Test
+  fun loadRewardedInterstitialAd_ifInMobiSDKInitialized_loadsRewardedInterstitialAd() {
+    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
+      val listener = it.arguments[2] as Listener
+      listener.onInitializeSuccess()
+    }
+
+    adapter.loadRewardedInterstitialAd(rewardedAdConfiguration, rewardedAdLoadCallback)
+
+    val extrasCaptor = argumentCaptor<Map<String, String>>()
+    verify(inMobiInterstitialWrapper).setExtras(extrasCaptor.capture())
+    assertThat(extrasCaptor.firstValue["tp"]).isEqualTo(InMobiAdapterUtils.PROTOCOL_WATERFALL)
+    verify(inMobiInterstitialWrapper).setKeywords(anyString())
+    verify(inMobiInterstitialWrapper).load()
+  }
+
+  @Test
+  fun loadRtbRewardedInterstitialAd_ifInMobiSDKInitialized_loadsRewardedInterstitialAd() {
+    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
+      val listener = it.arguments[2] as Listener
+      listener.onInitializeSuccess()
+    }
+    whenever(rewardedAdConfiguration.bidResponse).thenReturn(biddingToken)
+
+    adapter.loadRtbRewardedInterstitialAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
     verify(inMobiInterstitialWrapper).setWatermarkData(any())
     val extrasCaptor = argumentCaptor<Map<String, String>>()
