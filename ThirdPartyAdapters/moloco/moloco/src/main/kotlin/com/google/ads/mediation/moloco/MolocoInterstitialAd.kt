@@ -16,7 +16,6 @@ package com.google.ads.mediation.moloco
 
 import android.content.Context
 import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.MEDIATION_PLATFORM_NAME
-import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
@@ -26,7 +25,6 @@ import com.moloco.sdk.publisher.AdLoad
 import com.moloco.sdk.publisher.InterstitialAd
 import com.moloco.sdk.publisher.InterstitialAdShowListener
 import com.moloco.sdk.publisher.MediationInfo
-import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.MolocoAd
 import com.moloco.sdk.publisher.MolocoAdError
 
@@ -48,13 +46,13 @@ private constructor(
 
   fun loadAd() {
     val mediationInfo = MediationInfo(MEDIATION_PLATFORM_NAME)
-    Moloco.createInterstitial(
+    MolocoSdkFactory.delegate.createInterstitial(
       mediationInfo = mediationInfo,
       adUnitId = adUnitId,
-      watermarkString = watermark,
+      watermark = watermark,
     ) { returnedAd, molocoError ->
       if (molocoError != null) {
-        val adError = AdError(molocoError.errorCode, molocoError.description, SDK_ERROR_DOMAIN)
+        val adError = MolocoAdapterUtils.getAdError(molocoError)
         mediationAdLoadCallback.onFailure(adError)
         return@createInterstitial
       }
@@ -79,12 +77,7 @@ private constructor(
   }
 
   override fun onAdLoadFailed(molocoAdError: MolocoAdError) {
-    val adError =
-      AdError(
-        molocoAdError.errorType.errorCode,
-        molocoAdError.errorType.description,
-        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
-      )
+    val adError = MolocoAdapterUtils.getAdError(molocoAdError)
     mediationAdLoadCallback.onFailure(adError)
   }
 
@@ -101,12 +94,7 @@ private constructor(
   }
 
   override fun onAdShowFailed(molocoAdError: MolocoAdError) {
-    val adError =
-      AdError(
-        molocoAdError.errorType.errorCode,
-        molocoAdError.errorType.description,
-        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
-      )
+    val adError = MolocoAdapterUtils.getAdError(molocoAdError)
     interstitialAdCallback?.onAdFailedToShow(adError)
   }
 

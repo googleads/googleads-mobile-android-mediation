@@ -26,7 +26,6 @@ import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.moloco.sdk.publisher.AdLoad
 import com.moloco.sdk.publisher.MediationInfo
-import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.MolocoAd
 import com.moloco.sdk.publisher.MolocoAdError
 import com.moloco.sdk.publisher.NativeAd
@@ -47,19 +46,15 @@ private constructor(
 
   fun loadAd() {
     val mediationInfo = MediationInfo(MEDIATION_PLATFORM_NAME)
-    Moloco.createNativeAd(
+    MolocoSdkFactory.delegate.createNativeAd(
       mediationInfo = mediationInfo,
       adUnitId = adUnitId,
-      watermarkString = watermark,
+      watermark = watermark,
     ) { returnedAd, adCreateError ->
       if (returnedAd == null) {
         val adError =
           if (adCreateError != null) {
-            AdError(
-              adCreateError.errorCode,
-              adCreateError.description,
-              MolocoMediationAdapter.SDK_ERROR_DOMAIN,
-            )
+            MolocoAdapterUtils.getAdError(adCreateError)
           } else {
             AdError(
               MolocoMediationAdapter.ERROR_CODE_AD_IS_NULL,
@@ -111,12 +106,7 @@ private constructor(
   }
 
   override fun onAdLoadFailed(molocoAdError: MolocoAdError) {
-    val adError =
-      AdError(
-        molocoAdError.errorType.errorCode,
-        molocoAdError.errorType.description,
-        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
-      )
+    val adError = MolocoAdapterUtils.getAdError(molocoAdError)
     mediationNativeAdLoadCallback.onFailure(adError)
   }
 

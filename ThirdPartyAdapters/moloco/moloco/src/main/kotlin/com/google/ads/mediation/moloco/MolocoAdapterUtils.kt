@@ -14,7 +14,9 @@
 
 package com.google.ads.mediation.moloco
 
-import com.moloco.sdk.publisher.privacy.MolocoPrivacy
+import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.SDK_ERROR_DOMAIN
+import com.google.android.gms.ads.AdError
+import com.moloco.sdk.publisher.MolocoAdError
 
 object MolocoAdapterUtils {
   @JvmStatic
@@ -23,12 +25,17 @@ object MolocoAdapterUtils {
 
   @JvmStatic
   fun setMolocoIsAgeRestricted(isAgeRestricted: Boolean) {
-    MolocoPrivacy.setPrivacy(
-      MolocoPrivacy.PrivacySettings(
-        isAgeRestrictedUser = isAgeRestricted,
-        isDoNotSell = MolocoPrivacy.privacySettings.isDoNotSell,
-        isUserConsent = MolocoPrivacy.privacySettings.isUserConsent,
-      )
-    )
+    MolocoSdkWrapper.delegate.setAgeRestricted(isAgeRestricted)
   }
+
+  @JvmStatic
+  fun getAdError(molocoAdError: MolocoAdError): AdError = getAdError(molocoAdError.errorType)
+
+  @JvmStatic
+  fun getAdError(errorType: MolocoAdError.ErrorType): AdError =
+    AdError(errorType.errorCode, errorType.description, SDK_ERROR_DOMAIN)
+
+  @JvmStatic
+  fun getAdError(adCreateError: MolocoAdError.AdCreateError): AdError =
+    AdError(adCreateError.errorCode, adCreateError.description, SDK_ERROR_DOMAIN)
 }
