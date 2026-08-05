@@ -14,6 +14,7 @@ import com.facebook.ads.NativeAd
 import com.facebook.ads.NativeAdBase
 import com.facebook.ads.NativeAdBase.Image
 import com.facebook.ads.NativeAdListener
+import com.facebook.ads.NativeAdOptionsViewPosition
 import com.facebook.ads.NativeBannerAd
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
@@ -28,6 +29,11 @@ import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames.ASSET_ICON
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.NativeAdMapper
+import com.google.android.gms.ads.nativead.NativeAdOptions
+import com.google.android.gms.ads.nativead.NativeAdOptions.ADCHOICES_BOTTOM_LEFT
+import com.google.android.gms.ads.nativead.NativeAdOptions.ADCHOICES_BOTTOM_RIGHT
+import com.google.android.gms.ads.nativead.NativeAdOptions.ADCHOICES_TOP_LEFT
+import com.google.android.gms.ads.nativead.NativeAdOptions.ADCHOICES_TOP_RIGHT
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -547,6 +553,68 @@ class FacebookRtbNativeAdTest {
   }
 
   @Test
+  fun trackViews_nativeBannerAdWithTopLeftAdChoicesPlacement_setsTopLeftPosition() {
+    verifyNativeBannerAdAdChoicesPlacement(ADCHOICES_TOP_LEFT, NativeAdOptionsViewPosition.TOP_LEFT)
+  }
+
+  @Test
+  fun trackViews_nativeBannerAdWithTopRightAdChoicesPlacement_setsTopRightPosition() {
+    verifyNativeBannerAdAdChoicesPlacement(
+      ADCHOICES_TOP_RIGHT,
+      NativeAdOptionsViewPosition.TOP_RIGHT,
+    )
+  }
+
+  @Test
+  fun trackViews_nativeBannerAdWithBottomRightAdChoicesPlacement_setsBottomRightPosition() {
+    verifyNativeBannerAdAdChoicesPlacement(
+      ADCHOICES_BOTTOM_RIGHT,
+      NativeAdOptionsViewPosition.BOTTOM_RIGHT,
+    )
+  }
+
+  @Test
+  fun trackViews_nativeBannerAdWithBottomLeftAdChoicesPlacement_setsBottomLeftPosition() {
+    verifyNativeBannerAdAdChoicesPlacement(
+      ADCHOICES_BOTTOM_LEFT,
+      NativeAdOptionsViewPosition.BOTTOM_LEFT,
+    )
+  }
+
+  @Test
+  fun trackViews_nativeBannerAdWithNullNativeAdOptions_doesNotSetPreferredAdOptionsViewPosition() {
+    verifyNativeBannerAdAdChoicesPlacement(adChoicesPlacement = null, expectedPosition = null)
+  }
+
+  @Test
+  fun trackViews_nativeAdWithTopLeftAdChoicesPlacement_setsTopLeftPosition() {
+    verifyNativeAdAdChoicesPlacement(ADCHOICES_TOP_LEFT, NativeAdOptionsViewPosition.TOP_LEFT)
+  }
+
+  @Test
+  fun trackViews_nativeAdWithTopRightAdChoicesPlacement_setsTopRightPosition() {
+    verifyNativeAdAdChoicesPlacement(ADCHOICES_TOP_RIGHT, NativeAdOptionsViewPosition.TOP_RIGHT)
+  }
+
+  @Test
+  fun trackViews_nativeAdWithBottomRightAdChoicesPlacement_setsBottomRightPosition() {
+    verifyNativeAdAdChoicesPlacement(
+      ADCHOICES_BOTTOM_RIGHT,
+      NativeAdOptionsViewPosition.BOTTOM_RIGHT,
+    )
+  }
+
+  @Test
+  fun trackViews_nativeAdWithBottomLeftAdChoicesPlacement_setsBottomLeftPosition() {
+    verifyNativeAdAdChoicesPlacement(ADCHOICES_BOTTOM_LEFT, NativeAdOptionsViewPosition.BOTTOM_LEFT)
+  }
+
+  @Test
+  fun trackViews_nativeAdWithNullNativeAdOptions_doesNotSetPreferredAdOptionsViewPosition() {
+    verifyNativeAdAdChoicesPlacement(adChoicesPlacement = null, expectedPosition = null)
+  }
+
+  @Test
   fun unTrackView_unRegistersView() {
     Mockito.mockStatic(NativeAdBase::class.java).use {
       whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
@@ -579,6 +647,60 @@ class FacebookRtbNativeAdTest {
     verify(metaNativeAd).unregisterView()
     verify(metaNativeAd).destroy()
     verify(metaMediaView).destroy()
+  }
+
+  private fun verifyNativeBannerAdAdChoicesPlacement(
+    adChoicesPlacement: Int?,
+    expectedPosition: NativeAdOptionsViewPosition?,
+  ) {
+    val nativeAdOptions =
+      if (adChoicesPlacement != null) {
+        NativeAdOptions.Builder().setAdChoicesPlacement(adChoicesPlacement).build()
+      } else {
+        null
+      }
+    doReturn(nativeAdOptions).whenever(mediationNativeAdConfiguration).nativeAdOptions
+    Mockito.mockStatic(NativeAdBase::class.java).use {
+      whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeBannerAd
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
+    }
+    val iconView = mock<ImageView>()
+    val clickableAssets = mapOf(ASSET_ICON to iconView)
+
+    facebookRtbNativeAd.trackViews(gmaContainerView, clickableAssets, emptyMap())
+
+    if (expectedPosition != null) {
+      verify(metaNativeBannerAd).setPreferredAdOptionsViewPosition(expectedPosition)
+    } else {
+      verify(metaNativeBannerAd, times(0)).setPreferredAdOptionsViewPosition(any())
+    }
+  }
+
+  private fun verifyNativeAdAdChoicesPlacement(
+    adChoicesPlacement: Int?,
+    expectedPosition: NativeAdOptionsViewPosition?,
+  ) {
+    val nativeAdOptions =
+      if (adChoicesPlacement != null) {
+        NativeAdOptions.Builder().setAdChoicesPlacement(adChoicesPlacement).build()
+      } else {
+        null
+      }
+    doReturn(nativeAdOptions).whenever(mediationNativeAdConfiguration).nativeAdOptions
+    Mockito.mockStatic(NativeAdBase::class.java).use {
+      whenever(NativeAdBase.fromBidPayload(any(), any(), any())) doReturn metaNativeAd
+      facebookRtbNativeAd.render(mediationNativeAdConfiguration)
+    }
+    val iconView = mock<ImageView>()
+    val clickableAssets = mapOf(ASSET_ICON to iconView)
+
+    facebookRtbNativeAd.trackViews(gmaContainerView, clickableAssets, emptyMap())
+
+    if (expectedPosition != null) {
+      verify(metaNativeAd).setPreferredAdOptionsViewPosition(expectedPosition)
+    } else {
+      verify(metaNativeAd, times(0)).setPreferredAdOptionsViewPosition(any())
+    }
   }
 
   private companion object {
