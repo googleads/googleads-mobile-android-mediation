@@ -12,6 +12,8 @@ import com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID
 import com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION
 import com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID
 import com.google.ads.mediation.vungle.VungleConstants.KEY_USER_ID
+import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_CANNOT_PLAY_AD
+import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
@@ -115,6 +117,23 @@ class VungleRewardedAdTest {
     adapter.showAd(context)
 
     verify(vungleRewardedAd).play(context)
+  }
+
+  @Test
+  fun showAd_whenRewardedAdIsNull_invokesOnAdFailedToShow() {
+    adapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
+    adapter.onAdLoaded(vungleRewardedAd)
+
+    adapter.showAd(context)
+
+    val expectedError =
+      AdError(
+        ERROR_CANNOT_PLAY_AD,
+        "Failed to show waterfall rewarded ad from Liftoff Monetize.",
+        ERROR_DOMAIN,
+      )
+    verify(rewardedAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedError)))
+    verifyNoMoreInteractions(rewardedAdCallback)
   }
 
   private fun renderAdAndMockLoadSuccess() {
