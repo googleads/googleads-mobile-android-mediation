@@ -28,13 +28,11 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.moloco.sdk.publisher.CreateRewardedInterstitialAdCallback
-import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.MolocoAdError
 import com.moloco.sdk.publisher.RewardedInterstitialAd
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
@@ -52,6 +50,7 @@ class MolocoRewardedAdTest {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val mockRewardedAd = mock<RewardedInterstitialAd>()
+  private val mockSdkFactory = mock<SdkFactory>()
   private val mockMediationAdLoadCallback:
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
     mock()
@@ -59,6 +58,8 @@ class MolocoRewardedAdTest {
 
   @Before
   fun setUp() {
+    MolocoSdkFactory.delegate = mockSdkFactory
+
     // Properly initialize molocoRewardedAd
     mediationAdConfiguration = createMediationRewardedAdConfiguration()
     MolocoRewardedAd.newInstance(mediationAdConfiguration, mockMediationAdLoadCallback).onSuccess {
@@ -173,20 +174,12 @@ class MolocoRewardedAdTest {
   }
 
   private fun loadRewardedAd() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      molocoRewardedAd.loadAd()
-      val createRewardedCaptor = argumentCaptor<CreateRewardedInterstitialAdCallback>()
-      mockedMoloco.verify {
-        Moloco.createRewardedInterstitial(
-          any(),
-          eq(TEST_AD_UNIT),
-          eq(TEST_WATERMARK),
-          createRewardedCaptor.capture(),
-        )
-      }
-      val capturedCallback = createRewardedCaptor.firstValue
-      capturedCallback.invoke(mockRewardedAd, /* error= */ null)
-    }
+    molocoRewardedAd.loadAd()
+    val createRewardedCaptor = argumentCaptor<CreateRewardedInterstitialAdCallback>()
+    verify(mockSdkFactory)
+      .createRewarded(any(), eq(TEST_AD_UNIT), eq(TEST_WATERMARK), createRewardedCaptor.capture())
+    val capturedCallback = createRewardedCaptor.firstValue
+    capturedCallback.invoke(mockRewardedAd, /* error= */ null)
   }
 
   private fun createMediationRewardedAdConfiguration(): MediationRewardedAdConfiguration {

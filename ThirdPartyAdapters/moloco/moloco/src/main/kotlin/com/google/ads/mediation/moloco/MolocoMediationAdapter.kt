@@ -16,8 +16,8 @@ package com.google.ads.mediation.moloco
 
 import android.content.Context
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils
-import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
@@ -42,7 +42,6 @@ import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.moloco.sdk.publisher.Initialization
 import com.moloco.sdk.publisher.MediationInfo
-import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.MolocoAdError
 import com.moloco.sdk.publisher.init.MolocoInitParams
 
@@ -58,16 +57,30 @@ class MolocoMediationAdapter : RtbAdapter() {
   private lateinit var nativeAd: MolocoNativeAd
 
   override fun getSDKVersionInfo(): VersionInfo {
-    return VersionInfo(
-      com.moloco.sdk.BuildConfig.SDK_VERSION_MAJOR,
-      com.moloco.sdk.BuildConfig.SDK_VERSION_MINOR,
-      com.moloco.sdk.BuildConfig.SDK_VERSION_MICRO,
-    )
+    val sdkVersion = MolocoSdkWrapper.delegate.getSdkVersion()
+    val splits = sdkVersion.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+    if (splits.size >= 3) {
+      val major = splits[0].toInt()
+      val minor = splits[1].toInt()
+      val micro = splits[2].toInt()
+      return VersionInfo(major, minor, micro)
+    }
+
+    val logMessage =
+      String.format(
+        "Unexpected SDK version format: %s. Returning 0.0.0 for SDK version.",
+        sdkVersion,
+      )
+    Log.w(TAG, logMessage)
+    return VersionInfo(0, 0, 0)
   }
 
-  override fun getVersionInfo(): VersionInfo {
-    val adapterVersion = MolocoAdapterUtils.adapterVersion
-    val splits = adapterVersion.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+  override fun getVersionInfo(): VersionInfo =
+    adapterVersionDelegate?.let { getVersionInfo(it) }
+      ?: getVersionInfo(MolocoAdapterUtils.adapterVersion)
+
+  private fun getVersionInfo(versionString: String): VersionInfo {
+    val splits = versionString.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
     if (splits.size >= 4) {
       val major = splits[0].toInt()
       val minor = splits[1].toInt()
@@ -78,7 +91,7 @@ class MolocoMediationAdapter : RtbAdapter() {
     val logMessage =
       String.format(
         "Unexpected adapter version format: %s. Returning 0.0.0 for adapter version.",
-        adapterVersion,
+        versionString,
       )
     Log.w(TAG, logMessage)
     return VersionInfo(0, 0, 0)
@@ -126,7 +139,7 @@ class MolocoMediationAdapter : RtbAdapter() {
 
     val mediationInfo = MediationInfo(MEDIATION_PLATFORM_NAME)
     val initParams = MolocoInitParams(context.applicationContext, appKeyForInit, mediationInfo)
-    Moloco.initialize(initParams) { status ->
+    MolocoSdkWrapper.delegate.initialize(initParams) { status ->
       if (status.initialization == Initialization.SUCCESS) {
         configurePrivacy()
         initializationCompleteCallback.onInitializationSucceeded()
@@ -140,11 +153,12 @@ class MolocoMediationAdapter : RtbAdapter() {
 
   override fun collectSignals(signalData: RtbSignalData, callback: SignalCallbacks) {
     val mediationInfo = MediationInfo(MEDIATION_PLATFORM_NAME)
-    Moloco.getBidToken(mediationInfo = mediationInfo, context = signalData.context) {
-      bidToken: String,
-      errorType: MolocoAdError.ErrorType? ->
+    MolocoSdkFactory.delegate.getBidToken(
+      mediationInfo = mediationInfo,
+      context = signalData.context,
+    ) { bidToken: String, errorType: MolocoAdError.ErrorType? ->
       if (errorType != null) {
-        val adError = AdError(errorType.errorCode, errorType.description, SDK_ERROR_DOMAIN)
+        val adError = MolocoAdapterUtils.getAdError(errorType)
         callback.onFailure(adError)
         return@getBidToken
       }
@@ -194,6 +208,7 @@ class MolocoMediationAdapter : RtbAdapter() {
 
   companion object {
     private val TAG = MolocoMediationAdapter::class.simpleName
+    @VisibleForTesting var adapterVersionDelegate: String? = null
     const val MEDIATION_PLATFORM_NAME = "AdMob"
     const val KEY_APP_KEY = "app_key"
     const val KEY_AD_UNIT_ID = "ad_unit_id"

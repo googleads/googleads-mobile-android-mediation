@@ -16,7 +16,6 @@ package com.google.ads.mediation.moloco
 
 import android.content.Context
 import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.MEDIATION_PLATFORM_NAME
-import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
@@ -24,7 +23,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.moloco.sdk.publisher.AdLoad
 import com.moloco.sdk.publisher.MediationInfo
-import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.MolocoAd
 import com.moloco.sdk.publisher.MolocoAdError
 import com.moloco.sdk.publisher.RewardedInterstitialAd
@@ -48,15 +46,15 @@ private constructor(
 
   fun loadAd() {
     val mediationInfo = MediationInfo(MEDIATION_PLATFORM_NAME)
-    Moloco.createRewardedInterstitial(
+    MolocoSdkFactory.delegate.createRewarded(
       mediationInfo = mediationInfo,
       adUnitId = adUnitId,
-      watermarkString = watermark,
+      watermark = watermark,
     ) { returnedAd, molocoError ->
       if (molocoError != null) {
-        val adError = AdError(molocoError.errorCode, molocoError.description, SDK_ERROR_DOMAIN)
+        val adError = MolocoAdapterUtils.getAdError(molocoError)
         mediationAdLoadCallback.onFailure(adError)
-        return@createRewardedInterstitial
+        return@createRewarded
       }
       // Gracefully handle the scenario where ad object is null even if no error is reported.
       if (returnedAd == null) {
@@ -67,7 +65,7 @@ private constructor(
             MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
           )
         mediationAdLoadCallback.onFailure(adError)
-        return@createRewardedInterstitial
+        return@createRewarded
       }
       molocoAd = returnedAd
       molocoAd.load(bidResponse, this)
@@ -79,12 +77,7 @@ private constructor(
   }
 
   override fun onAdLoadFailed(molocoAdError: MolocoAdError) {
-    val adError =
-      AdError(
-        molocoAdError.errorType.errorCode,
-        molocoAdError.errorType.description,
-        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
-      )
+    val adError = MolocoAdapterUtils.getAdError(molocoAdError)
     mediationAdLoadCallback.onFailure(adError)
   }
 
@@ -101,12 +94,7 @@ private constructor(
   }
 
   override fun onAdShowFailed(molocoAdError: MolocoAdError) {
-    val adError =
-      AdError(
-        molocoAdError.errorType.errorCode,
-        molocoAdError.errorType.description,
-        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
-      )
+    val adError = MolocoAdapterUtils.getAdError(molocoAdError)
     rewardedAdCallback?.onAdFailedToShow(adError)
   }
 

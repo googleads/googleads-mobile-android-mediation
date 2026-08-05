@@ -29,12 +29,10 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.moloco.sdk.publisher.CreateInterstitialAdCallback
 import com.moloco.sdk.publisher.InterstitialAd
-import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.MolocoAdError
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
@@ -52,6 +50,7 @@ class MolocoInterstitialAdTest {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val mockInterstitialAd = mock<InterstitialAd>()
+  private val mockSdkFactory = mock<SdkFactory>()
   private val mockMediationAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
     mock()
@@ -59,6 +58,8 @@ class MolocoInterstitialAdTest {
 
   @Before
   fun setUp() {
+    MolocoSdkFactory.delegate = mockSdkFactory
+
     // Properly initialize molocoInterstitialAd
     mediationAdConfiguration = createMediationInterstitialAdConfiguration()
     MolocoInterstitialAd.newInstance(mediationAdConfiguration, mockMediationAdLoadCallback)
@@ -145,20 +146,17 @@ class MolocoInterstitialAdTest {
   }
 
   private fun loadInterstitialAd() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      molocoInterstitialAd.loadAd()
-      val createInterstitialCaptor = argumentCaptor<CreateInterstitialAdCallback>()
-      mockedMoloco.verify {
-        Moloco.createInterstitial(
-          any(),
-          eq(TEST_AD_UNIT),
-          eq(TEST_WATERMARK),
-          createInterstitialCaptor.capture(),
-        )
-      }
-      val capturedCallback = createInterstitialCaptor.firstValue
-      capturedCallback.invoke(mockInterstitialAd, /* error= */ null)
-    }
+    molocoInterstitialAd.loadAd()
+    val createInterstitialCaptor = argumentCaptor<CreateInterstitialAdCallback>()
+    verify(mockSdkFactory)
+      .createInterstitial(
+        any(),
+        eq(TEST_AD_UNIT),
+        eq(TEST_WATERMARK),
+        createInterstitialCaptor.capture(),
+      )
+    val capturedCallback = createInterstitialCaptor.firstValue
+    capturedCallback.invoke(mockInterstitialAd, /* error= */ null)
   }
 
   private fun createMediationInterstitialAdConfiguration(): MediationInterstitialAdConfiguration {
