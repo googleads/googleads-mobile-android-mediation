@@ -16,7 +16,7 @@
 
 package com.google.ads.mediation.snippets.java;
 
-import com.unity3d.mediation.LevelPlay;
+import com.unity3d.ironsourceads.IronSourceAds;
 
 /**
  * Java code snippets for https://developers.google.com/admob/android/mediation/ironsource and
@@ -26,7 +26,7 @@ public class IronSourceMediationSnippets {
 
   private void setUserConsent() {
     // [START set_user_consent]
-    LevelPlay.setMetaData("do_not_sell", "true");
+    IronSourceAds.setMetaData("do_not_sell", "true");
     // [END set_user_consent]
   }
 
