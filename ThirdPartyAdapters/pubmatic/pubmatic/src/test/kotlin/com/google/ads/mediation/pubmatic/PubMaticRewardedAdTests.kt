@@ -18,13 +18,15 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_AD_NOT_READY
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
@@ -37,7 +39,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -51,16 +52,14 @@ class PubMaticRewardedAdTests {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
 
-  private val mediationRewardedAdCallback = mock<MediationRewardedAdCallback>()
+  private val rewardedAdCallback = FakeMediationRewardedAdCallback()
 
-  private val mediationAdLoadCallback =
-    mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>> {
-      on { onSuccess(any()) } doReturn mediationRewardedAdCallback
-    }
+  private val rewardedAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      rewardedAdCallback
+    )
 
   private val pobRewardedAd = mock<POBRewardedAd>()
-
-  private val adErrorCaptor = argumentCaptor<AdError>()
 
   private val pubMaticAdFactory =
     mock<PubMaticAdFactory> { on { createPOBRewardedAd(any()) } doReturn pobRewardedAd }
@@ -83,7 +82,7 @@ class PubMaticRewardedAdTests {
   fun setUp() {
     PubMaticRewardedAd.newInstance(
         mediationRewardedAdConfiguration,
-        mediationAdLoadCallback,
+        rewardedAdLoadCallback,
         pubMaticAdFactory,
         isRtb = true,
       )
@@ -94,7 +93,7 @@ class PubMaticRewardedAdTests {
   fun onAdReceived_invokesLoadSuccessCallback() {
     pubMaticRewardedAd.onAdReceived(pobRewardedAd)
 
-    verify(mediationAdLoadCallback).onSuccess(pubMaticRewardedAd)
+    assertThat(rewardedAdLoadCallback).hasSucceededWith(pubMaticRewardedAd)
   }
 
   @Test
@@ -103,10 +102,8 @@ class PubMaticRewardedAdTests {
 
     pubMaticRewardedAd.onAdFailedToLoad(pobRewardedAd, pobError)
 
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_PUBMATIC_AD_LOAD_FAILURE)
-    assertThat(adError.domain).isEqualTo(SDK_ERROR_DOMAIN)
+    val expectedError = AdError(pobError.errorCode, pobError.errorMessage, SDK_ERROR_DOMAIN)
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -126,10 +123,9 @@ class PubMaticRewardedAdTests {
 
     pubMaticRewardedAd.showAd(context)
 
-    verify(mediationRewardedAdCallback).onAdFailedToShow(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_AD_NOT_READY)
-    assertThat(adError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+    val expectedError = AdError(ERROR_AD_NOT_READY, "Ad not ready", ADAPTER_ERROR_DOMAIN)
+    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
+    assertThat(rewardedAdCallback.error).isEqualTo(expectedError)
   }
 
   @Test
@@ -140,10 +136,9 @@ class PubMaticRewardedAdTests {
 
     pubMaticRewardedAd.onAdFailedToShow(pobRewardedAd, pobError)
 
-    verify(mediationRewardedAdCallback).onAdFailedToShow(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_PUBMATIC_AD_SHOW_FAILURE)
-    assertThat(adError.domain).isEqualTo(SDK_ERROR_DOMAIN)
+    val expectedError = AdError(pobError.errorCode, pobError.errorMessage, SDK_ERROR_DOMAIN)
+    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
+    assertThat(rewardedAdCallback.error).isEqualTo(expectedError)
   }
 
   @Test
@@ -153,7 +148,7 @@ class PubMaticRewardedAdTests {
 
     pubMaticRewardedAd.onAdImpression(pobRewardedAd)
 
-    verify(mediationRewardedAdCallback).reportAdImpression()
+    assertThat(rewardedAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -163,7 +158,7 @@ class PubMaticRewardedAdTests {
 
     pubMaticRewardedAd.onAdClicked(pobRewardedAd)
 
-    verify(mediationRewardedAdCallback).reportAdClicked()
+    assertThat(rewardedAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -173,7 +168,7 @@ class PubMaticRewardedAdTests {
 
     pubMaticRewardedAd.onAdOpened(pobRewardedAd)
 
-    verify(mediationRewardedAdCallback).onAdOpened()
+    assertThat(rewardedAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -183,7 +178,7 @@ class PubMaticRewardedAdTests {
 
     pubMaticRewardedAd.onAdClosed(pobRewardedAd)
 
-    verify(mediationRewardedAdCallback).onAdClosed()
+    assertThat(rewardedAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -193,7 +188,7 @@ class PubMaticRewardedAdTests {
 
     pubMaticRewardedAd.onReceiveReward(pobRewardedAd, POBReward("USD", 1))
 
-    verify(mediationRewardedAdCallback).onUserEarnedReward()
+    assertThat(rewardedAdCallback.isUserEarnedReward).isTrue()
   }
 
   private companion object {
