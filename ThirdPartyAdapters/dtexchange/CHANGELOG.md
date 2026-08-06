@@ -1,6 +1,12 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
-#### Version 8.4.7.0 (In progress)
+#### Version 8.4.7.0
+- Verified compatibility with DT Exchange SDK 8.4.7.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.3.1.
+- DT Exchange SDK version 8.4.7.
 
 #### Version 8.4.6.0
 - Verified compatibility with DT Exchange SDK 8.4.6.
