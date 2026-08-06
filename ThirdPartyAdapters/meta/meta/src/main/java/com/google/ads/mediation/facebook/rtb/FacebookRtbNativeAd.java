@@ -94,7 +94,7 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
 
     try {
       nativeAdBase =
-          NativeAdBase.fromBidPayload(
+          metaFactory.createNativeAdFromBidPayload(
               adConfiguration.getContext(), placementID, adConfiguration.getBidResponse());
     } catch (Exception ex) {
       AdError error = new AdError(ERROR_CREATE_NATIVE_AD_FROM_BID_PAYLOAD,

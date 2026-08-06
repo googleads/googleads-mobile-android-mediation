@@ -14,7 +14,6 @@ import com.facebook.ads.BidderTokenProvider.getBidderToken
 import com.facebook.ads.ExtraHints
 import com.facebook.ads.InterstitialAd
 import com.facebook.ads.NativeAdBase
-import com.facebook.ads.NativeAdBase.fromBidPayload
 import com.facebook.ads.NativeAdListener
 import com.facebook.ads.RewardedVideoAd
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
@@ -773,15 +772,13 @@ class FacebookMediationAdapterTest {
         "Failed to create native ad from bid payload: " + exception.message,
         ERROR_DOMAIN,
       )
-    mockStatic(NativeAdBase::class.java).use {
-      whenever(fromBidPayload(any(), any(), any())) doThrow exception
+    whenever(metaFactory.createNativeAdFromBidPayload(any(), any(), any())) doThrow exception
 
-      facebookMediationAdapter.loadRtbNativeAdMapperWithFailure(
-        mediationNativeAdConfiguration,
-        mockNativeAdLoadCallback,
-        expectedAdError,
-      )
-    }
+    facebookMediationAdapter.loadRtbNativeAdMapperWithFailure(
+      mediationNativeAdConfiguration,
+      mockNativeAdLoadCallback,
+      expectedAdError,
+    )
   }
 
   @Test
@@ -797,29 +794,27 @@ class FacebookMediationAdapterTest {
         watermark = WATERMARK,
         bidResponse = AdapterTestKitConstants.TEST_BID_RESPONSE,
       )
-    mockStatic(NativeAdBase::class.java).use {
-      whenever(fromBidPayload(any(), any(), any())) doReturn metaNativeAd
+    whenever(metaFactory.createNativeAdFromBidPayload(any(), any(), any())) doReturn metaNativeAd
 
-      facebookMediationAdapter.loadRtbNativeAdMapper(
-        mediationNativeAdConfiguration,
-        mockNativeAdLoadCallback,
+    facebookMediationAdapter.loadRtbNativeAdMapper(
+      mediationNativeAdConfiguration,
+      mockNativeAdLoadCallback,
+    )
+
+    val extraHintsCaptor = argumentCaptor<ExtraHints>()
+    verify(metaNativeAd).setExtraHints(extraHintsCaptor.capture())
+    assertThat(extraHintsCaptor.firstValue.mediationData).isEqualTo(WATERMARK)
+    assertThat(AdSettings.isMixedAudience()).isTrue()
+    verify(metaNativeAdLoadConfigBuilder).apply {
+      withAdListener(any(NativeAdListener::class.java))
+      withBid(mediationAdConfiguration.bidResponse)
+      withMediaCacheFlag(NativeAdBase.MediaCacheFlag.ALL)
+      withPreloadedIconView(
+        NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE,
+        NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE,
       )
-
-      val extraHintsCaptor = argumentCaptor<ExtraHints>()
-      verify(metaNativeAd).setExtraHints(extraHintsCaptor.capture())
-      assertThat(extraHintsCaptor.firstValue.mediationData).isEqualTo(WATERMARK)
-      assertThat(AdSettings.isMixedAudience()).isTrue()
-      verify(metaNativeAdLoadConfigBuilder).apply {
-        withAdListener(any(NativeAdListener::class.java))
-        withBid(mediationAdConfiguration.bidResponse)
-        withMediaCacheFlag(NativeAdBase.MediaCacheFlag.ALL)
-        withPreloadedIconView(
-          NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE,
-          NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE,
-        )
-      }
-      verify(metaNativeAd).loadAd(metaNativeAdLoadConfig)
     }
+    verify(metaNativeAd).loadAd(metaNativeAdLoadConfig)
   }
 
   // endregion
