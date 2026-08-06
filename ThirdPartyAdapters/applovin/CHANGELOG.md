@@ -1,5 +1,11 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Next version
+
+- Removed the old API implementation for loading Waterfall Banner ads. Adapter
+  will now use the new API implementation in `AppLovinMediationAdapter` for
+  loading Waterfall Banner ads.
+
 #### Version 13.6.3.0
 - Filter age-restricted requests for AppLovin SDK when new `AgeRestrictedTreatment` is set to `CHILD`.
 - Verified compatibility with AppLovin SDK 13.6.3.
