@@ -18,10 +18,17 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.FakeInitializationCompleteCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationNativeAdCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
+import com.google.ads.mediation.adaptertestkit.FakeSignalCallbacks
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.APP_TOKEN_KEY
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_CODE_CHILD_USER
@@ -38,8 +45,6 @@ import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TR
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
-import com.google.android.gms.ads.mediation.InitializationCompleteCallback
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
@@ -54,21 +59,19 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
-import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
+import com.google.common.truth.Truth.assertThat
 import net.pubnative.lite.sdk.HyBid
 import net.pubnative.lite.sdk.views.HyBidBannerAdView
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.mock
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.verify
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
@@ -77,7 +80,29 @@ class VerveMediationAdapterTest {
   private lateinit var adapter: VerveMediationAdapter
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val mockInitializationCallback: InitializationCompleteCallback = mock()
+  private val initializationCompleteCallback = FakeInitializationCompleteCallback()
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
+  private val bannerAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
+  private val interstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
+  private val rewardedAdCallback = FakeMediationRewardedAdCallback()
+  private val rewardedAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      rewardedAdCallback
+    )
+  private val rewardedInterstitialAdCallback = FakeMediationRewardedAdCallback()
+  private val rewardedInterstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      rewardedInterstitialAdCallback
+    )
+  private val nativeAdCallback = FakeMediationNativeAdCallback()
+  private val nativeAdLoadCallback =
+    FakeMediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>(nativeAdCallback)
+  private val signalCallbacks = FakeSignalCallbacks()
   private val mockHyBidBannerAd: HyBidBannerAdView = mock()
 
   @Before
@@ -142,9 +167,9 @@ class VerveMediationAdapterTest {
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
         .build()
     )
-    adapter.initialize(context, mockInitializationCallback, mediationConfigurations = listOf())
+    adapter.initialize(context, initializationCompleteCallback, mediationConfigurations = listOf())
 
-    verify(mockInitializationCallback).onInitializationFailed(eq(ERROR_MSG_CHILD_USER))
+    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_CHILD_USER)
   }
 
   @Test
@@ -154,9 +179,9 @@ class VerveMediationAdapterTest {
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
         .build()
     )
-    adapter.initialize(context, mockInitializationCallback, mediationConfigurations = listOf())
+    adapter.initialize(context, initializationCompleteCallback, mediationConfigurations = listOf())
 
-    verify(mockInitializationCallback).onInitializationFailed(eq(ERROR_MSG_CHILD_USER))
+    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_CHILD_USER)
   }
 
   @Test
@@ -164,16 +189,16 @@ class VerveMediationAdapterTest {
     MobileAds.setRequestConfiguration(
       RequestConfiguration.Builder().setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD).build()
     )
-    adapter.initialize(context, mockInitializationCallback, mediationConfigurations = listOf())
+    adapter.initialize(context, initializationCompleteCallback, mediationConfigurations = listOf())
 
-    verify(mockInitializationCallback).onInitializationFailed(eq(ERROR_MSG_CHILD_USER))
+    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_CHILD_USER)
   }
 
   @Test
   fun initialize_withEmptyConfiguration_invokesOnInitializationFailed() {
-    adapter.initialize(context, mockInitializationCallback, mediationConfigurations = listOf())
+    adapter.initialize(context, initializationCompleteCallback, mediationConfigurations = listOf())
 
-    verify(mockInitializationCallback).onInitializationFailed(eq(ERROR_MSG_MISSING_APP_TOKEN))
+    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_MISSING_APP_TOKEN)
   }
 
   @Test
@@ -181,9 +206,9 @@ class VerveMediationAdapterTest {
     val mediationConfiguration =
       MediationConfiguration(AdFormat.BANNER, /* serverParameters= */ bundleOf())
 
-    adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
+    adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    verify(mockInitializationCallback).onInitializationFailed(eq(ERROR_MSG_MISSING_APP_TOKEN))
+    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_MISSING_APP_TOKEN)
   }
 
   @Test
@@ -191,9 +216,9 @@ class VerveMediationAdapterTest {
     val mediationConfiguration =
       MediationConfiguration(AdFormat.BANNER, /* serverParameters= */ bundleOf(APP_TOKEN_KEY to ""))
 
-    adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
+    adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    verify(mockInitializationCallback).onInitializationFailed(eq(ERROR_MSG_MISSING_APP_TOKEN))
+    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_MISSING_APP_TOKEN)
   }
 
   @Test
@@ -207,12 +232,12 @@ class VerveMediationAdapterTest {
         )
       val listenerCaptor = argumentCaptor<HyBid.InitialisationListener>()
 
-      adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
+      adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
       mockedHyBid.verify { HyBid.initialize(eq(TEST_APP_TOKEN), any(), listenerCaptor.capture()) }
       mockedHyBid.verify { HyBid.setTestMode(eq(true)) }
       listenerCaptor.firstValue.onInitialisationFinished(/* success= */ true)
-      verify(mockInitializationCallback).onInitializationSucceeded()
+      assertThat(initializationCompleteCallback).hasSucceeded()
     }
     // Resetting HyBid TestMode
     VerveExtras.isTestMode = false
@@ -228,14 +253,13 @@ class VerveMediationAdapterTest {
         )
       val listenerCaptor = argumentCaptor<HyBid.InitialisationListener>()
 
-      adapter.initialize(context, mockInitializationCallback, listOf(mediationConfiguration))
+      adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
       mockedHyBid.verify { HyBid.initialize(eq(TEST_APP_TOKEN), any(), listenerCaptor.capture()) }
       // Default testMode value = false
       mockedHyBid.verify { HyBid.setTestMode(eq(false)) }
       listenerCaptor.firstValue.onInitialisationFinished(/* success= */ false)
-      verify(mockInitializationCallback)
-        .onInitializationFailed(eq(ERROR_MSG_ERROR_INITIALIZE_VERVE_SDK))
+      assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_ERROR_INITIALIZE_VERVE_SDK)
     }
   }
 
@@ -253,11 +277,10 @@ class VerveMediationAdapterTest {
           /* networkExtras = */ bundleOf(),
           /* adSize = */ null,
         )
-      val mockSignalCallbacks = mock<SignalCallbacks>()
 
-      adapter.collectSignals(signalData, mockSignalCallbacks)
+      adapter.collectSignals(signalData, signalCallbacks)
 
-      verify(mockSignalCallbacks).onSuccess(TEST_BID_RESPONSE)
+      assertThat(signalCallbacks).hasSucceededWith(TEST_BID_RESPONSE)
     }
   }
 
@@ -272,11 +295,10 @@ class VerveMediationAdapterTest {
           /* networkExtras = */ bundleOf(),
           AdSize.BANNER,
         )
-      val mockSignalCallbacks = mock<SignalCallbacks>()
 
-      adapter.collectSignals(signalData, mockSignalCallbacks)
+      adapter.collectSignals(signalData, signalCallbacks)
 
-      verify(mockSignalCallbacks).onSuccess(TEST_BID_RESPONSE)
+      assertThat(signalCallbacks).hasSucceededWith(TEST_BID_RESPONSE)
     }
   }
 
@@ -310,12 +332,11 @@ class VerveMediationAdapterTest {
           /* networkExtras = */ bundleOf(),
           /* adSize = */ null,
         )
-      val mockSignalCallbacks = mock<SignalCallbacks>()
 
-      adapter.collectSignals(signalData, mockSignalCallbacks)
+      adapter.collectSignals(signalData, signalCallbacks)
 
       val expectedError = AdError(ERROR_CODE_CHILD_USER, ERROR_MSG_CHILD_USER, ADAPTER_ERROR_DOMAIN)
-      verify(mockSignalCallbacks).onFailure(argThat(AdErrorMatcher(expectedError)))
+      assertThat(signalCallbacks).hasFailedWith(expectedError)
     }
   }
 
@@ -326,13 +347,11 @@ class VerveMediationAdapterTest {
   fun loadRtbBannerAd_whenChildUser_invokesOnFailure() {
     runTestWithChildConfigurations {
       val mockAdConfiguration = mock<MediationBannerAdConfiguration>()
-      val mockCallback =
-        mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
 
-      adapter.loadRtbBannerAd(mockAdConfiguration, mockCallback)
+      adapter.loadRtbBannerAd(mockAdConfiguration, bannerAdLoadCallback)
 
       val expectedError = AdError(ERROR_CODE_CHILD_USER, ERROR_MSG_CHILD_USER, ADAPTER_ERROR_DOMAIN)
-      verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+      assertThat(bannerAdLoadCallback).hasFailedWith(expectedError)
     }
   }
 
@@ -340,13 +359,11 @@ class VerveMediationAdapterTest {
   fun loadRtbInterstitialAd_whenChildUser_invokesOnFailure() {
     runTestWithChildConfigurations {
       val mockAdConfiguration = mock<MediationInterstitialAdConfiguration>()
-      val mockCallback =
-        mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
 
-      adapter.loadRtbInterstitialAd(mockAdConfiguration, mockCallback)
+      adapter.loadRtbInterstitialAd(mockAdConfiguration, interstitialAdLoadCallback)
 
       val expectedError = AdError(ERROR_CODE_CHILD_USER, ERROR_MSG_CHILD_USER, ADAPTER_ERROR_DOMAIN)
-      verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+      assertThat(interstitialAdLoadCallback).hasFailedWith(expectedError)
     }
   }
 
@@ -354,13 +371,11 @@ class VerveMediationAdapterTest {
   fun loadRtbRewardedAd_whenChildUser_invokesOnFailure() {
     runTestWithChildConfigurations {
       val mockAdConfiguration = mock<MediationRewardedAdConfiguration>()
-      val mockCallback =
-        mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
 
-      adapter.loadRtbRewardedAd(mockAdConfiguration, mockCallback)
+      adapter.loadRtbRewardedAd(mockAdConfiguration, rewardedAdLoadCallback)
 
       val expectedError = AdError(ERROR_CODE_CHILD_USER, ERROR_MSG_CHILD_USER, ADAPTER_ERROR_DOMAIN)
-      verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+      assertThat(rewardedAdLoadCallback).hasFailedWith(expectedError)
     }
   }
 
@@ -368,13 +383,11 @@ class VerveMediationAdapterTest {
   fun loadRtbRewardedInterstitialAd_whenChildUser_invokesOnFailure() {
     runTestWithChildConfigurations {
       val mockAdConfiguration = mock<MediationRewardedAdConfiguration>()
-      val mockCallback =
-        mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
 
-      adapter.loadRtbRewardedInterstitialAd(mockAdConfiguration, mockCallback)
+      adapter.loadRtbRewardedInterstitialAd(mockAdConfiguration, rewardedInterstitialAdLoadCallback)
 
       val expectedError = AdError(ERROR_CODE_CHILD_USER, ERROR_MSG_CHILD_USER, ADAPTER_ERROR_DOMAIN)
-      verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+      assertThat(rewardedInterstitialAdLoadCallback).hasFailedWith(expectedError)
     }
   }
 
@@ -382,12 +395,11 @@ class VerveMediationAdapterTest {
   fun loadRtbNativeAdMapper_whenChildUser_invokesOnFailure() {
     runTestWithChildConfigurations {
       val mockAdConfiguration = mock<MediationNativeAdConfiguration>()
-      val mockCallback = mock<MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>>()
 
-      adapter.loadRtbNativeAdMapper(mockAdConfiguration, mockCallback)
+      adapter.loadRtbNativeAdMapper(mockAdConfiguration, nativeAdLoadCallback)
 
       val expectedError = AdError(ERROR_CODE_CHILD_USER, ERROR_MSG_CHILD_USER, ADAPTER_ERROR_DOMAIN)
-      verify(mockCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+      assertThat(nativeAdLoadCallback).hasFailedWith(expectedError)
     }
   }
 

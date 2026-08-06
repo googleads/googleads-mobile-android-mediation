@@ -3,8 +3,10 @@ package com.google.ads.mediation.verve
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_CODE_AD_LOAD_FAILED_TO_LOAD
@@ -12,15 +14,13 @@ import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_CODE
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_FULLSCREEN_AD_IS_NULL
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
+import com.google.common.truth.Truth.assertThat
 import net.pubnative.lite.sdk.rewarded.HyBidRewardedAd
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -34,18 +34,17 @@ class VerveRewardedAdTest {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val mockHyBidRewardedAd = mock<HyBidRewardedAd>()
-  private val mockRewardedAdCallback: MediationRewardedAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockRewardedAdCallback
-    }
+  private val rewardedAdCallback = FakeMediationRewardedAdCallback()
+  private val rewardedAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      rewardedAdCallback
+    )
 
   @Before
   fun setUp() {
     val adConfiguration =
       createMediationRewardedAdConfiguration(context = context, bidResponse = TEST_BID_RESPONSE)
-    VerveRewardedAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess {
+    VerveRewardedAd.newInstance(adConfiguration, rewardedAdLoadCallback).onSuccess {
       verveRewardedAd = it
     }
     VerveSdkFactory.delegate = mock {
@@ -81,7 +80,8 @@ class VerveRewardedAdTest {
 
     verveRewardedAd.showAd(context)
 
-    verify(mockRewardedAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
+    assertThat(rewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
     verify(mockHyBidRewardedAd, never()).show()
   }
 
@@ -89,7 +89,7 @@ class VerveRewardedAdTest {
   fun onRewardedLoaded_invokesOnSuccess() {
     verveRewardedAd.onRewardedLoaded()
 
-    verify(mockAdLoadCallback).onSuccess(eq(verveRewardedAd))
+    assertThat(rewardedAdLoadCallback).hasSucceededWith(verveRewardedAd)
   }
 
   @Test
@@ -104,7 +104,7 @@ class VerveRewardedAdTest {
 
     verveRewardedAd.onRewardedLoadFailed(testError)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -113,7 +113,7 @@ class VerveRewardedAdTest {
 
     verveRewardedAd.onRewardedClosed()
 
-    verify(mockRewardedAdCallback).onAdClosed()
+    assertThat(rewardedAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -122,8 +122,8 @@ class VerveRewardedAdTest {
 
     verveRewardedAd.onRewardedOpened()
 
-    verify(mockRewardedAdCallback).onAdOpened()
-    verify(mockRewardedAdCallback).reportAdImpression()
+    assertThat(rewardedAdCallback.isOpened).isTrue()
+    assertThat(rewardedAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -132,7 +132,7 @@ class VerveRewardedAdTest {
 
     verveRewardedAd.onRewardedClick()
 
-    verify(mockRewardedAdCallback).reportAdClicked()
+    assertThat(rewardedAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -141,6 +141,6 @@ class VerveRewardedAdTest {
 
     verveRewardedAd.onReward()
 
-    verify(mockRewardedAdCallback).onUserEarnedReward()
+    assertThat(rewardedAdCallback.isUserEarnedReward).isTrue()
   }
 }
