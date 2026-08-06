@@ -23,9 +23,12 @@ import com.five_corp.ad.BidData
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdErrorCode
 import com.five_corp.ad.FiveAdInterstitial
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.RequestConfiguration
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
@@ -53,15 +56,16 @@ class LineInterstitialAdTest {
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
   private val mockFiveAdConfig = mock<FiveAdConfig>()
   private val mockFiveAdInterstitial = mock<FiveAdInterstitial>()
-  private val mockMediationAdCallback = mock<MediationInterstitialAdCallback>()
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
   private val sdkFactory =
     mock<SdkFactory> {
       on { createFiveAdConfig(any()) } doReturn mockFiveAdConfig
       on { createFiveAdInterstitial(activity, TEST_SLOT_ID) } doReturn mockFiveAdInterstitial
     }
-  private val mediationAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock()
+  private val mediationAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
 
   @Before
   fun setup() {
@@ -72,7 +76,6 @@ class LineInterstitialAdTest {
     LineInterstitialAd.newInstance(mediationAdConfiguration, mediationAdLoadCallback).onSuccess {
       lineInterstitialAd = it
     }
-    whenever(mediationAdLoadCallback.onSuccess(lineInterstitialAd)) doReturn mockMediationAdCallback
   }
 
   // region newInstance Tests
@@ -89,16 +92,17 @@ class LineInterstitialAdTest {
   fun newInstance_withMissingAppId_invokesOnFailureAndReturnsFailure() {
     val serverParameters = bundleOf(LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID)
     val config = createMediationInterstitialAdConfiguration(serverParameters = serverParameters)
-    val adErrorCaptor = argumentCaptor<AdError>()
 
     val result = LineInterstitialAd.newInstance(config, mediationAdLoadCallback)
 
+    val expectedError =
+      AdError(
+        LineMediationAdapter.ERROR_CODE_MISSING_APP_ID,
+        LineMediationAdapter.ERROR_MSG_MISSING_APP_ID,
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
     assertThat(result.isFailure).isTrue()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_APP_ID)
-    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_APP_ID)
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -109,16 +113,17 @@ class LineInterstitialAdTest {
         LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID,
       )
     val config = createMediationInterstitialAdConfiguration(serverParameters = serverParameters)
-    val adErrorCaptor = argumentCaptor<AdError>()
 
     val result = LineInterstitialAd.newInstance(config, mediationAdLoadCallback)
 
+    val expectedError =
+      AdError(
+        LineMediationAdapter.ERROR_CODE_MISSING_APP_ID,
+        LineMediationAdapter.ERROR_MSG_MISSING_APP_ID,
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
     assertThat(result.isFailure).isTrue()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_APP_ID)
-    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_APP_ID)
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   // endregion
@@ -128,17 +133,18 @@ class LineInterstitialAdTest {
   fun loadAd_withNullSlotId_invokesOnFailure() {
     val serverParameters = bundleOf(LineMediationAdapter.KEY_APP_ID to TEST_APP_ID)
     val config = createMediationInterstitialAdConfiguration(serverParameters = serverParameters)
-    val adErrorCaptor = argumentCaptor<AdError>()
     var ad: LineInterstitialAd? = null
     LineInterstitialAd.newInstance(config, mediationAdLoadCallback).onSuccess { ad = it }
 
     ad?.loadAd(activity)
 
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID)
-    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID)
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+    val expectedError =
+      AdError(
+        LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
+        LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -149,17 +155,18 @@ class LineInterstitialAdTest {
         LineMediationAdapter.KEY_SLOT_ID to "",
       )
     val config = createMediationInterstitialAdConfiguration(serverParameters = serverParameters)
-    val adErrorCaptor = argumentCaptor<AdError>()
     var ad: LineInterstitialAd? = null
     LineInterstitialAd.newInstance(config, mediationAdLoadCallback).onSuccess { ad = it }
 
     ad?.loadAd(activity)
 
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID)
-    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID)
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+    val expectedError =
+      AdError(
+        LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
+        LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -204,7 +211,7 @@ class LineInterstitialAdTest {
       verify(mockAdLoader).loadInterstitialAd(any<BidData>(), callbackCaptor.capture())
       callbackCaptor.firstValue.onLoad(mockFiveAdInterstitial)
       verify(mockFiveAdInterstitial).setEventListener(rtbAd!!)
-      verify(mediationAdLoadCallback).onSuccess(rtbAd!!)
+      assertThat(mediationAdLoadCallback).hasSucceededWith(rtbAd!!)
     }
   }
 
@@ -222,12 +229,13 @@ class LineInterstitialAdTest {
       val callbackCaptor = argumentCaptor<AdLoader.LoadInterstitialAdCallback>()
       verify(mockAdLoader).loadInterstitialAd(any<BidData>(), callbackCaptor.capture())
       callbackCaptor.firstValue.onError(FiveAdErrorCode.INTERNAL_ERROR)
-      val adErrorCaptor = argumentCaptor<AdError>()
-      verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-      val capturedError = adErrorCaptor.firstValue
-      assertThat(capturedError.code).isEqualTo(FiveAdErrorCode.INTERNAL_ERROR.value)
-      assertThat(capturedError.message).isEqualTo(FiveAdErrorCode.INTERNAL_ERROR.name)
-      assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.SDK_ERROR_DOMAIN)
+      val expectedError =
+        AdError(
+          FiveAdErrorCode.INTERNAL_ERROR.value,
+          FiveAdErrorCode.INTERNAL_ERROR.name,
+          LineMediationAdapter.SDK_ERROR_DOMAIN,
+        )
+      assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
     }
   }
 
@@ -241,8 +249,7 @@ class LineInterstitialAdTest {
 
       rtbAd?.loadRtbAd(activity)
 
-      verify(mediationAdLoadCallback, never()).onSuccess(any())
-      verify(mediationAdLoadCallback, never()).onFailure(any())
+      verify(mockFiveAdInterstitial, never()).loadAdAsync()
     }
   }
 
@@ -311,21 +318,20 @@ class LineInterstitialAdTest {
     lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
 
     verify(mockFiveAdInterstitial).setEventListener(lineInterstitialAd)
-    verify(mediationAdLoadCallback).onSuccess(lineInterstitialAd)
+    assertThat(mediationAdLoadCallback).hasSucceededWith(lineInterstitialAd)
   }
 
   @Test
   fun onFiveAdLoadError_invokesOnFailure() {
-    val adErrorCaptor = argumentCaptor<AdError>()
-
     lineInterstitialAd.onFiveAdLoadError(mockFiveAdInterstitial, FiveAdErrorCode.INTERNAL_ERROR)
 
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(FiveAdErrorCode.INTERNAL_ERROR.value)
-    assertThat(capturedError.message)
-      .isEqualTo("FiveAd SDK returned a load error with code INTERNAL_ERROR.")
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.SDK_ERROR_DOMAIN)
+    val expectedError =
+      AdError(
+        FiveAdErrorCode.INTERNAL_ERROR.value,
+        "FiveAd SDK returned a load error with code INTERNAL_ERROR.",
+        LineMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -335,8 +341,8 @@ class LineInterstitialAdTest {
 
     lineInterstitialAd.onClick(mockFiveAdInterstitial)
 
-    verify(mockMediationAdCallback).reportAdClicked()
-    verify(mockMediationAdCallback).onAdLeftApplication()
+    assertThat(interstitialAdCallback.isClicked).isTrue()
+    assertThat(interstitialAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -346,7 +352,7 @@ class LineInterstitialAdTest {
 
     lineInterstitialAd.onFullScreenClose(mockFiveAdInterstitial)
 
-    verify(mockMediationAdCallback).onAdClosed()
+    assertThat(interstitialAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -356,7 +362,7 @@ class LineInterstitialAdTest {
 
     lineInterstitialAd.onImpression(mockFiveAdInterstitial)
 
-    verify(mockMediationAdCallback).reportAdImpression()
+    assertThat(interstitialAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -364,16 +370,17 @@ class LineInterstitialAdTest {
     lineInterstitialAd.loadAd(activity)
     lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
     val dummyErrorCode = FiveAdErrorCode.INTERNAL_ERROR
-    val adErrorCaptor = argumentCaptor<AdError>()
 
     lineInterstitialAd.onViewError(mockFiveAdInterstitial, dummyErrorCode)
 
-    verify(mockMediationAdCallback).onAdFailedToShow(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(dummyErrorCode.value)
-    assertThat(capturedError.message)
-      .isEqualTo("FiveAd SDK could not show ad with error with code INTERNAL_ERROR.")
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.SDK_ERROR_DOMAIN)
+    val expectedError =
+      AdError(
+        dummyErrorCode.value,
+        "FiveAd SDK could not show ad with error with code INTERNAL_ERROR.",
+        LineMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    assertThat(interstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(interstitialAdCallback.adFailedToShowError).isEqualTo(expectedError)
   }
 
   @Test
@@ -383,7 +390,7 @@ class LineInterstitialAdTest {
 
     lineInterstitialAd.onFullScreenOpen(mockFiveAdInterstitial)
 
-    verify(mockMediationAdCallback).onAdOpened()
+    assertThat(interstitialAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -428,6 +435,5 @@ class LineInterstitialAdTest {
     const val TEST_APP_ID = "testAppId"
     const val TEST_SLOT_ID = "testSlotId"
     const val TEST_WATERMARK = "testWatermark"
-    const val TEST_BID_RESPONSE = "testBidResponse"
   }
 }
