@@ -43,18 +43,21 @@ public class InMobiExtrasBuilder {
 
     map.put(THIRD_PARTY_KEY, protocol);
     map.put(THIRD_PARTY_VERSION, MobileAds.getVersion().toString());
-    // If the COPPA value isn't specified by the publisher, InMobi SDK expects the default value to
-    // be `0`.
+
     boolean isAgeRestrictedTreatmentChild =
         AgeRestrictedTreatmentUtils.runtimeGmaSdkSupportsChildAgeRestrictedTreatment()
             && MobileAds.getRequestConfiguration().getAgeRestrictedTreatment()
                 == AgeRestrictedTreatment.CHILD;
     if (MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment()
             == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+        || MobileAds.getRequestConfiguration().getTagForUnderAgeOfConsent()
+            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
         || isAgeRestrictedTreatmentChild) {
       map.put(COPPA, "1");
-    } else {
-      // TODO (b/527112815): Update the default TFCD and TFUA behavior and get 3p review
+    } else if (MobileAds.getRequestConfiguration().getTagForChildDirectedTreatment()
+            == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+        || MobileAds.getRequestConfiguration().getTagForUnderAgeOfConsent()
+            == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE) {
       map.put(COPPA, "0");
     }
 
