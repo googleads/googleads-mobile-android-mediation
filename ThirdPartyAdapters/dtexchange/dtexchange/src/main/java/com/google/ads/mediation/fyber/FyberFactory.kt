@@ -21,18 +21,38 @@ import com.fyber.inneractive.sdk.external.NativeAdUnitController
 import com.fyber.inneractive.sdk.external.NativeAdVideoContentController
 
 object FyberFactory {
+  internal var delegate: Factory =
+    object : Factory {
+      override fun createRewardedAdSpot(): InneractiveAdSpot =
+        InneractiveAdSpotManager.get().createSpot()
+
+      override fun createInneractiveFullscreenUnitController():
+        InneractiveFullscreenUnitController = InneractiveFullscreenUnitController()
+
+      override fun createNativeAdUnitController(): NativeAdUnitController = NativeAdUnitController()
+
+      override fun createNativeAdVideoContentController(): NativeAdVideoContentController =
+        NativeAdVideoContentController()
+    }
+
+  @JvmStatic fun createRewardedAdSpot() = delegate.createRewardedAdSpot()
 
   @JvmStatic
-  fun createRewardedAdSpot(): InneractiveAdSpot {
-    return InneractiveAdSpotManager.get().createSpot()
-  }
+  fun createInneractiveFullscreenUnitController() =
+    delegate.createInneractiveFullscreenUnitController()
+
+  @JvmStatic fun createNativeAdUnitController() = delegate.createNativeAdUnitController()
 
   @JvmStatic
-  fun createInneractiveFullscreenUnitController(): InneractiveFullscreenUnitController {
-    return InneractiveFullscreenUnitController()
-  }
+  fun createNativeAdVideoContentController() = delegate.createNativeAdVideoContentController()
+}
 
-  @JvmStatic fun createNativeAdUnitController() = NativeAdUnitController()
+internal interface Factory {
+  fun createRewardedAdSpot(): InneractiveAdSpot
 
-  @JvmStatic fun createNativeAdVideoContentController() = NativeAdVideoContentController()
+  fun createInneractiveFullscreenUnitController(): InneractiveFullscreenUnitController
+
+  fun createNativeAdUnitController(): NativeAdUnitController
+
+  fun createNativeAdVideoContentController(): NativeAdVideoContentController
 }

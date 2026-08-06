@@ -235,4 +235,25 @@ class DTExchangeRtbInterstitialAdTest {
   fun onAdWillCloseInternalBrowser_throwsNoException() {
     dtExchangeRtbInterstitialAd.onAdWillCloseInternalBrowser(mock())
   }
+
+  @Test
+  fun onAdDismissed_invokesOnAdClosed() {
+    mockStatic(InneractiveAdSpotManager::class.java).use {
+      val mockAdViewController = mock<InneractiveAdViewUnitController>()
+      val mockAdSpot =
+        mock<InneractiveAdSpot> {
+          on { isReady } doReturn true
+          on { selectedUnitController } doReturn mockAdViewController
+        }
+      val mockInneractiveAdSpotManager =
+        mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
+      whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
+      dtExchangeRtbInterstitialAd.loadAd(adConfiguration)
+      dtExchangeRtbInterstitialAd.onInneractiveSuccessfulAdRequest(mock())
+
+      dtExchangeRtbInterstitialAd.onAdDismissed(mock())
+
+      verify(mockInterstitialAdCallback).onAdClosed()
+    }
+  }
 }
