@@ -10,12 +10,15 @@ import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAd
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAdInteractionListener
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedAdLoadListener
 import com.bytedance.sdk.openadsdk.api.reward.PAGRewardedRequest
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
+import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.pangle.PangleConstants
 import com.google.ads.mediation.pangle.PangleFactory
 import com.google.ads.mediation.pangle.PangleInitializer
 import com.google.ads.mediation.pangle.PangleRequestHelper.ADMOB_WATERMARK_KEY
 import com.google.ads.mediation.pangle.PangleSdkWrapper
-import com.google.ads.mediation.pangle.utils.AdErrorMatcher
 import com.google.ads.mediation.pangle.utils.TestConstants
 import com.google.ads.mediation.pangle.utils.TestConstants.APP_ID_VALUE
 import com.google.ads.mediation.pangle.utils.TestConstants.BID_RESPONSE
@@ -23,10 +26,8 @@ import com.google.ads.mediation.pangle.utils.TestConstants.PLACEMENT_ID_VALUE
 import com.google.ads.mediation.pangle.utils.TestConstants.WATERMARK
 import com.google.ads.mediation.pangle.utils.mockPangleSdkInitializationFailure
 import com.google.ads.mediation.pangle.utils.mockPangleSdkInitializationSuccess
-import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration.TagForChildDirectedTreatment
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
@@ -35,7 +36,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
@@ -57,12 +57,11 @@ class PangleRewardedAdTest {
   private var serverParameters: Bundle = Bundle()
 
   private val context: Context = ApplicationProvider.getApplicationContext()
-  private val rewardedAdCallback: MediationRewardedAdCallback = mock()
-  private val mediationAdLoadCallback:
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn rewardedAdCallback
-    }
+  private val rewardedAdCallback = FakeMediationRewardedAdCallback()
+  private val mediationAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      rewardedAdCallback
+    )
   private val pangleInitializer: PangleInitializer = mock()
   private val pangleSdkWrapper: PangleSdkWrapper = mock()
   private val pagRewardedRequest: PAGRewardedRequest = mock()
@@ -86,20 +85,20 @@ class PangleRewardedAdTest {
 
   @Test
   fun render_withoutPlacementId_callsOnFailureOnCallbackWithProperErrorCode() {
-    // Given a mediation rewarded ad configuration
+    // Given a mediation rewarded ad configuration without placement ID in serverParameters.
     serverParameters.remove(PangleConstants.PLACEMENT_ID)
-    initializeRewardedAd() // ... without serverParameters send in the Bundle
+    initializeRewardedAd()
 
     rewardedAd.render(mediationRewardedAdConfig)
 
     // The onFailure method of the mediationAdLoadCallback is called with the
     // ERROR_INVALID_SERVER_PARAMETERS code.
-    val adError: AdError =
+    val expectedAdError =
       PangleConstants.createAdapterError(
         PangleConstants.ERROR_INVALID_SERVER_PARAMETERS,
         "Failed to load rewarded ad from Pangle. Missing or invalid Placement ID.",
       )
-    verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(adError)))
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -111,8 +110,7 @@ class PangleRewardedAdTest {
     rewardedAd.render(mediationRewardedAdConfig)
 
     // No onFailure should be triggered.
-    verify(mediationAdLoadCallback, never()).onFailure(any<AdError>())
-    // TODO(b/272102212): Refactor Pangle Rtb classes for better unit testing.
+    assertThat(mediationAdLoadCallback).hasNotFailed()
   }
 
   /**
@@ -161,7 +159,7 @@ class PangleRewardedAdTest {
 
     rewardedAd.render(mediationRewardedAdConfig)
 
-    verify(mediationAdLoadCallback).onSuccess(rewardedAd)
+    assertThat(mediationAdLoadCallback).hasSucceededWith(rewardedAd)
   }
 
   @Test
@@ -181,12 +179,12 @@ class PangleRewardedAdTest {
 
     rewardedAd.render(mediationRewardedAdConfig)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(FAILURE_CODE_PANGLE_REWARDED_LOAD)
-    assertThat(adError.message).isEqualTo(FAILURE_MESSAGE_PANGLE_REWARDED_LOAD)
-    assertThat(adError.domain).isEqualTo(PangleConstants.PANGLE_SDK_ERROR_DOMAIN)
+    val expectedAdError =
+      PangleConstants.createSdkError(
+        FAILURE_CODE_PANGLE_REWARDED_LOAD,
+        FAILURE_MESSAGE_PANGLE_REWARDED_LOAD,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -196,12 +194,12 @@ class PangleRewardedAdTest {
 
     rewardedAd.render(mediationRewardedAdConfig)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(TestConstants.PANGLE_INIT_FAILURE_CODE)
-    assertThat(adError.message).isEqualTo(TestConstants.PANGLE_INIT_FAILURE_MESSAGE)
-    assertThat(adError.domain).isEqualTo(PangleConstants.PANGLE_SDK_ERROR_DOMAIN)
+    val expectedAdError =
+      PangleConstants.createSdkError(
+        TestConstants.PANGLE_INIT_FAILURE_CODE,
+        TestConstants.PANGLE_INIT_FAILURE_MESSAGE,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -243,8 +241,8 @@ class PangleRewardedAdTest {
     // Mock that the ad is showed.
     pagAdInteractionListenerCaptor.firstValue.onAdShowed()
 
-    verify(rewardedAdCallback).onAdOpened()
-    verify(rewardedAdCallback).reportAdImpression()
+    assertThat(rewardedAdCallback.isOpened).isTrue()
+    assertThat(rewardedAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -257,7 +255,7 @@ class PangleRewardedAdTest {
     // Mock that the ad is clicked.
     pagAdInteractionListenerCaptor.firstValue.onAdClicked()
 
-    verify(rewardedAdCallback).reportAdClicked()
+    assertThat(rewardedAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -270,7 +268,7 @@ class PangleRewardedAdTest {
     // Mock that the ad is dismissed.
     pagAdInteractionListenerCaptor.firstValue.onAdDismissed()
 
-    verify(rewardedAdCallback).onAdClosed()
+    assertThat(rewardedAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -283,7 +281,7 @@ class PangleRewardedAdTest {
     // Mock that the user earns reward.
     pagAdInteractionListenerCaptor.firstValue.onUserEarnedReward(pagRewardItem)
 
-    verify(rewardedAdCallback).onUserEarnedReward()
+    assertThat(rewardedAdCallback.isUserEarnedReward).isTrue()
   }
 
   private fun initializeRewardedAd(
@@ -293,19 +291,13 @@ class PangleRewardedAdTest {
     bidResponse: String = TestConstants.BID_RESPONSE,
     watermark: String = WATERMARK,
   ) {
-    // Constructor of the MediationRewardedAdConfiguration called by the GMA SDK
     mediationRewardedAdConfig =
-      MediationRewardedAdConfiguration(
-        context,
-        bidResponse,
-        serverParameters,
-        /*mediationExtras=*/ Bundle(),
-        /*isTesting=*/ true,
-        /*location=*/ null,
-        tagForChildDirectedTreatment,
-        /*taggedForUnderAgeTreatment=*/ -1,
-        /*maxAdContentRating=*/ null,
-        watermark,
+      createMediationRewardedAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+        bidResponse = bidResponse,
+        watermark = watermark,
+        taggedForChildDirectedTreatment = tagForChildDirectedTreatment,
       )
 
     rewardedAd =

@@ -8,12 +8,15 @@ import androidx.test.core.app.ApplicationProvider
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAd
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdLoadListener
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
+import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.pangle.PangleConstants
 import com.google.ads.mediation.pangle.PangleFactory
 import com.google.ads.mediation.pangle.PangleInitializer
 import com.google.ads.mediation.pangle.PangleRequestHelper.ADMOB_WATERMARK_KEY
 import com.google.ads.mediation.pangle.PangleSdkWrapper
-import com.google.ads.mediation.pangle.utils.AdErrorMatcher
 import com.google.ads.mediation.pangle.utils.TestConstants.APP_ID_VALUE
 import com.google.ads.mediation.pangle.utils.TestConstants.BID_RESPONSE
 import com.google.ads.mediation.pangle.utils.TestConstants.PANGLE_INIT_FAILURE_CODE
@@ -22,11 +25,9 @@ import com.google.ads.mediation.pangle.utils.TestConstants.PLACEMENT_ID_VALUE
 import com.google.ads.mediation.pangle.utils.TestConstants.WATERMARK
 import com.google.ads.mediation.pangle.utils.mockPangleSdkInitializationFailure
 import com.google.ads.mediation.pangle.utils.mockPangleSdkInitializationSuccess
-import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
 import com.google.android.gms.ads.RequestConfiguration.TagForChildDirectedTreatment
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
@@ -35,7 +36,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
@@ -56,10 +56,9 @@ class PangleBannerAdTest {
   lateinit var serverParameters: Bundle
   lateinit var mediationBannerAdConfig: MediationBannerAdConfiguration
 
-  val mediationAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
-    mock()
-  private val bannerAdCallback: MediationBannerAdCallback = mock()
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
+  val mediationAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
   private val pangleInitializer: PangleInitializer = mock()
   private val pangleSdkWrapper: PangleSdkWrapper = mock()
   private val pagBannerRequest: PAGBannerRequest = mock()
@@ -76,30 +75,25 @@ class PangleBannerAdTest {
     serverParameters.putString(PangleConstants.PLACEMENT_ID, PLACEMENT_ID_VALUE)
     serverParameters.putString(PangleConstants.APP_ID, APP_ID_VALUE)
 
-    whenever(mediationAdLoadCallback.onSuccess(any())) doReturn bannerAdCallback
-
     initializeBannerAd()
   }
 
   @Test
   fun render_withoutPlacementId_callsOnFailureOnCallbackWithProperErrorCode() {
-    // Given a mediation banner ad configuration...
-    serverParameters.remove(
-      PangleConstants.PLACEMENT_ID
-    ) // ... without serverParameters send in the Bundle
+    serverParameters.remove(PangleConstants.PLACEMENT_ID)
     initializeBannerAd()
 
     // When render() is called.
     bannerAd.render(mediationBannerAdConfig)
 
     // The onFailure method of the mediationAdLoadCallback is called with the
-    // ERROR_INVALIS_SERVER_PARAMETERS code.
-    val adError =
+    // ERROR_INVALID_SERVER_PARAMETERS code.
+    val expectedAdError =
       PangleConstants.createAdapterError(
         PangleConstants.ERROR_INVALID_SERVER_PARAMETERS,
         "Failed to load banner ad from Pangle. Missing or invalid Placement ID.",
       )
-    verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(adError)))
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -112,7 +106,7 @@ class PangleBannerAdTest {
     bannerAd.render(mediationBannerAdConfig)
 
     // No onFailure should be triggered.
-    verify(mediationAdLoadCallback, never()).onFailure(any<AdError>())
+    assertThat(mediationAdLoadCallback).hasNotFailed()
   }
 
   /**
@@ -175,7 +169,7 @@ class PangleBannerAdTest {
     verify(pagBannerAd).setAdInteractionListener(any())
     assertThat(bannerAd.wrappedAdView.childCount).isEqualTo(1)
     assertThat(bannerAd.wrappedAdView[0]).isEqualTo(pangleBannerView)
-    verify(mediationAdLoadCallback).onSuccess(any())
+    assertThat(mediationAdLoadCallback).hasSucceededWith(bannerAd)
   }
 
   @Test
@@ -195,12 +189,12 @@ class PangleBannerAdTest {
 
     bannerAd.render(mediationBannerAdConfig)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(PANGLE_BANNER_AD_LOAD_FAILURE_CODE)
-    assertThat(adError.message).isEqualTo(PANGLE_BANNER_AD_LOAD_FAILURE_MESSAGE)
-    assertThat(adError.domain).isEqualTo(PangleConstants.PANGLE_SDK_ERROR_DOMAIN)
+    val expectedAdError =
+      PangleConstants.createSdkError(
+        PANGLE_BANNER_AD_LOAD_FAILURE_CODE,
+        PANGLE_BANNER_AD_LOAD_FAILURE_MESSAGE,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -210,12 +204,9 @@ class PangleBannerAdTest {
 
     bannerAd.render(mediationBannerAdConfig)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(PANGLE_INIT_FAILURE_CODE)
-    assertThat(adError.message).isEqualTo(PANGLE_INIT_FAILURE_MESSAGE)
-    assertThat(adError.domain).isEqualTo(PangleConstants.PANGLE_SDK_ERROR_DOMAIN)
+    val expectedAdError =
+      PangleConstants.createSdkError(PANGLE_INIT_FAILURE_CODE, PANGLE_INIT_FAILURE_MESSAGE)
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -234,7 +225,7 @@ class PangleBannerAdTest {
 
     bannerAd.onAdShowed()
 
-    verify(bannerAdCallback).reportAdImpression()
+    assertThat(bannerAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -244,7 +235,7 @@ class PangleBannerAdTest {
 
     bannerAd.onAdClicked()
 
-    verify(bannerAdCallback).reportAdClicked()
+    assertThat(bannerAdCallback.isClicked).isTrue()
   }
 
   private fun loadPangleAd() {
@@ -270,20 +261,14 @@ class PangleBannerAdTest {
     watermark: String = WATERMARK,
     adSize: AdSize = AdSize.BANNER,
   ) {
-    // Constructor of the MediationBannerAdConfiguration called by the GMA SDK
     mediationBannerAdConfig =
-      MediationBannerAdConfiguration(
+      createMediationBannerAdConfiguration(
         context,
-        bidResponse,
-        serverParameters,
-        Bundle(),
-        true,
-        null,
-        tagForChildDirectedTreatment,
-        -1,
-        "maxAdContentRating",
-        adSize,
-        watermark,
+        bidResponse = bidResponse,
+        serverParameters = serverParameters,
+        taggedForChildDirectedTreatment = tagForChildDirectedTreatment,
+        adSize = adSize,
+        watermark = watermark,
       )
     bannerAd =
       PangleBannerAd(mediationAdLoadCallback, pangleInitializer, pangleSdkWrapper, pangleFactory)
