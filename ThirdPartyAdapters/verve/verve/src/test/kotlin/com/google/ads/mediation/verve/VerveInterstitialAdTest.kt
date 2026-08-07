@@ -17,8 +17,10 @@ package com.google.ads.mediation.verve
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_CODE_AD_LOAD_FAILED_TO_LOAD
@@ -26,15 +28,13 @@ import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_CODE
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_FULLSCREEN_AD_IS_NULL
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.common.truth.Truth.assertThat
 import net.pubnative.lite.sdk.interstitial.HyBidInterstitialAd
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -48,18 +48,17 @@ class VerveInterstitialAdTest {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val mockHyBidInterstitialAd = mock<HyBidInterstitialAd>()
-  private val mockInterstitialAdCallback: MediationInterstitialAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockInterstitialAdCallback
-    }
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
+  private val interstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
 
   @Before
   fun setUp() {
     val adConfiguration =
       createMediationInterstitialAdConfiguration(context = context, bidResponse = TEST_BID_RESPONSE)
-    VerveInterstitialAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess {
+    VerveInterstitialAd.newInstance(adConfiguration, interstitialAdLoadCallback).onSuccess {
       verveInterstitialAd = it
     }
     VerveSdkFactory.delegate = mock {
@@ -96,7 +95,8 @@ class VerveInterstitialAdTest {
 
     verveInterstitialAd.showAd(context)
 
-    verify(mockInterstitialAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(interstitialAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
     verify(mockHyBidInterstitialAd, never()).show()
   }
 
@@ -104,7 +104,7 @@ class VerveInterstitialAdTest {
   fun onInterstitialLoaded_invokesOnSuccess() {
     verveInterstitialAd.onInterstitialLoaded()
 
-    verify(mockAdLoadCallback).onSuccess(eq(verveInterstitialAd))
+    assertThat(interstitialAdLoadCallback).hasSucceededWith(verveInterstitialAd)
   }
 
   @Test
@@ -119,7 +119,7 @@ class VerveInterstitialAdTest {
 
     verveInterstitialAd.onInterstitialLoadFailed(testError)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -128,7 +128,7 @@ class VerveInterstitialAdTest {
 
     verveInterstitialAd.onInterstitialDismissed()
 
-    verify(mockInterstitialAdCallback).onAdClosed()
+    assertThat(interstitialAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -137,8 +137,8 @@ class VerveInterstitialAdTest {
 
     verveInterstitialAd.onInterstitialImpression()
 
-    verify(mockInterstitialAdCallback).onAdOpened()
-    verify(mockInterstitialAdCallback).reportAdImpression()
+    assertThat(interstitialAdCallback.isOpened).isTrue()
+    assertThat(interstitialAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -147,7 +147,7 @@ class VerveInterstitialAdTest {
 
     verveInterstitialAd.onInterstitialClick()
 
-    verify(mockInterstitialAdCallback).reportAdClicked()
-    verify(mockInterstitialAdCallback).onAdLeftApplication()
+    assertThat(interstitialAdCallback.isClicked).isTrue()
+    assertThat(interstitialAdCallback.isLeftApplication).isTrue()
   }
 }
