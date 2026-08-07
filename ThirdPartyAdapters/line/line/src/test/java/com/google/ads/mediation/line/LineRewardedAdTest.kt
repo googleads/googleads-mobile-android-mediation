@@ -23,9 +23,12 @@ import com.five_corp.ad.BidData
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdErrorCode
 import com.five_corp.ad.FiveAdVideoReward
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.RequestConfiguration
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
@@ -52,15 +55,16 @@ class LineRewardedAdTest {
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
   private val mockFiveAdConfig = mock<FiveAdConfig>()
   private val mockFiveAdVideoReward = mock<FiveAdVideoReward>()
-  private val mockMediationAdCallback = mock<MediationRewardedAdCallback>()
+  private val rewardedAdCallback = FakeMediationRewardedAdCallback()
   private val sdkFactory =
     mock<SdkFactory> {
       on { createFiveAdConfig(any()) } doReturn mockFiveAdConfig
       on { createFiveVideoRewarded(activity, TEST_SLOT_ID) } doReturn mockFiveAdVideoReward
     }
-  private val mediationAdLoadCallback:
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
-    mock()
+  private val mediationAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      rewardedAdCallback
+    )
 
   @Before
   fun setup() {
@@ -71,7 +75,6 @@ class LineRewardedAdTest {
     LineRewardedAd.newInstance(mediationAdConfiguration, mediationAdLoadCallback).onSuccess {
       lineRewardedAd = it
     }
-    whenever(mediationAdLoadCallback.onSuccess(lineRewardedAd)) doReturn mockMediationAdCallback
   }
 
   // region newInstance Tests
@@ -88,16 +91,17 @@ class LineRewardedAdTest {
   fun newInstance_withMissingAppId_invokesOnFailureAndReturnsFailure() {
     val serverParameters = bundleOf(LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID)
     val config = createMediationRewardedAdConfiguration(serverParameters = serverParameters)
-    val adErrorCaptor = argumentCaptor<AdError>()
 
     val result = LineRewardedAd.newInstance(config, mediationAdLoadCallback)
 
+    val expectedError =
+      AdError(
+        LineMediationAdapter.ERROR_CODE_MISSING_APP_ID,
+        LineMediationAdapter.ERROR_MSG_MISSING_APP_ID,
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
     assertThat(result.isFailure).isTrue()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_APP_ID)
-    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_APP_ID)
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -108,16 +112,17 @@ class LineRewardedAdTest {
         LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID,
       )
     val config = createMediationRewardedAdConfiguration(serverParameters = serverParameters)
-    val adErrorCaptor = argumentCaptor<AdError>()
 
     val result = LineRewardedAd.newInstance(config, mediationAdLoadCallback)
 
+    val expectedError =
+      AdError(
+        LineMediationAdapter.ERROR_CODE_MISSING_APP_ID,
+        LineMediationAdapter.ERROR_MSG_MISSING_APP_ID,
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
     assertThat(result.isFailure).isTrue()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_APP_ID)
-    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_APP_ID)
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   // endregion
@@ -127,17 +132,18 @@ class LineRewardedAdTest {
   fun loadAd_withNullSlotId_invokesOnFailure() {
     val serverParameters = bundleOf(LineMediationAdapter.KEY_APP_ID to TEST_APP_ID)
     val config = createMediationRewardedAdConfiguration(serverParameters = serverParameters)
-    val adErrorCaptor = argumentCaptor<AdError>()
     var ad: LineRewardedAd? = null
     LineRewardedAd.newInstance(config, mediationAdLoadCallback).onSuccess { ad = it }
 
     ad?.loadAd(activity)
 
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID)
-    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID)
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+    val expectedError =
+      AdError(
+        LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
+        LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -148,17 +154,18 @@ class LineRewardedAdTest {
         LineMediationAdapter.KEY_SLOT_ID to "",
       )
     val config = createMediationRewardedAdConfiguration(serverParameters = serverParameters)
-    val adErrorCaptor = argumentCaptor<AdError>()
     var ad: LineRewardedAd? = null
     LineRewardedAd.newInstance(config, mediationAdLoadCallback).onSuccess { ad = it }
 
     ad?.loadAd(activity)
 
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID)
-    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID)
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+    val expectedError =
+      AdError(
+        LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
+        LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -203,7 +210,7 @@ class LineRewardedAdTest {
       verify(mockAdLoader).loadRewardAd(any<BidData>(), callbackCaptor.capture())
       callbackCaptor.firstValue.onLoad(mockFiveAdVideoReward)
       verify(mockFiveAdVideoReward).setEventListener(rtbAd!!)
-      verify(mediationAdLoadCallback).onSuccess(rtbAd!!)
+      assertThat(mediationAdLoadCallback).hasSucceededWith(rtbAd!!)
     }
   }
 
@@ -221,12 +228,13 @@ class LineRewardedAdTest {
       val callbackCaptor = argumentCaptor<AdLoader.LoadRewardAdCallback>()
       verify(mockAdLoader).loadRewardAd(any<BidData>(), callbackCaptor.capture())
       callbackCaptor.firstValue.onError(FiveAdErrorCode.INTERNAL_ERROR)
-      val adErrorCaptor = argumentCaptor<AdError>()
-      verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-      val capturedError = adErrorCaptor.firstValue
-      assertThat(capturedError.code).isEqualTo(FiveAdErrorCode.INTERNAL_ERROR.value)
-      assertThat(capturedError.message).isEqualTo(FiveAdErrorCode.INTERNAL_ERROR.name)
-      assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.SDK_ERROR_DOMAIN)
+      val expectedError =
+        AdError(
+          FiveAdErrorCode.INTERNAL_ERROR.value,
+          FiveAdErrorCode.INTERNAL_ERROR.name,
+          LineMediationAdapter.SDK_ERROR_DOMAIN,
+        )
+      assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
     }
   }
 
@@ -240,8 +248,7 @@ class LineRewardedAdTest {
 
       rtbAd?.loadRtbAd(activity)
 
-      verify(mediationAdLoadCallback, never()).onSuccess(any())
-      verify(mediationAdLoadCallback, never()).onFailure(any())
+      verify(mockFiveAdVideoReward, never()).loadAdAsync()
     }
   }
 
@@ -310,21 +317,20 @@ class LineRewardedAdTest {
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
 
     verify(mockFiveAdVideoReward).setEventListener(lineRewardedAd)
-    verify(mediationAdLoadCallback).onSuccess(lineRewardedAd)
+    assertThat(mediationAdLoadCallback).hasSucceededWith(lineRewardedAd)
   }
 
   @Test
   fun onFiveAdLoadError_invokesOnFailure() {
-    val adErrorCaptor = argumentCaptor<AdError>()
-
     lineRewardedAd.onFiveAdLoadError(mockFiveAdVideoReward, FiveAdErrorCode.INTERNAL_ERROR)
 
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(FiveAdErrorCode.INTERNAL_ERROR.value)
-    assertThat(capturedError.message)
-      .isEqualTo("FiveAd SDK returned a load error with code INTERNAL_ERROR.")
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.SDK_ERROR_DOMAIN)
+    val expectedError =
+      AdError(
+        FiveAdErrorCode.INTERNAL_ERROR.value,
+        "FiveAd SDK returned a load error with code INTERNAL_ERROR.",
+        LineMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -334,7 +340,7 @@ class LineRewardedAdTest {
 
     lineRewardedAd.onClick(mockFiveAdVideoReward)
 
-    verify(mockMediationAdCallback).reportAdClicked()
+    assertThat(rewardedAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -344,7 +350,7 @@ class LineRewardedAdTest {
 
     lineRewardedAd.onFullScreenClose(mockFiveAdVideoReward)
 
-    verify(mockMediationAdCallback).onAdClosed()
+    assertThat(rewardedAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -354,7 +360,7 @@ class LineRewardedAdTest {
 
     lineRewardedAd.onReward(mockFiveAdVideoReward)
 
-    verify(mockMediationAdCallback).onUserEarnedReward()
+    assertThat(rewardedAdCallback.isUserEarnedReward).isTrue()
   }
 
   @Test
@@ -364,7 +370,7 @@ class LineRewardedAdTest {
 
     lineRewardedAd.onImpression(mockFiveAdVideoReward)
 
-    verify(mockMediationAdCallback).reportAdImpression()
+    assertThat(rewardedAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -372,16 +378,17 @@ class LineRewardedAdTest {
     lineRewardedAd.loadAd(activity)
     lineRewardedAd.onFiveAdLoad(mockFiveAdVideoReward)
     val dummyErrorCode = FiveAdErrorCode.INTERNAL_ERROR
-    val adErrorCaptor = argumentCaptor<AdError>()
 
     lineRewardedAd.onViewError(mockFiveAdVideoReward, dummyErrorCode)
 
-    verify(mockMediationAdCallback).onAdFailedToShow(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(dummyErrorCode.value)
-    assertThat(capturedError.message)
-      .isEqualTo("FiveAd SDK could not show ad with error with code INTERNAL_ERROR.")
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.SDK_ERROR_DOMAIN)
+    val expectedError =
+      AdError(
+        dummyErrorCode.value,
+        "FiveAd SDK could not show ad with error with code INTERNAL_ERROR.",
+        LineMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
+    assertThat(rewardedAdCallback.adFailedToShowError).isEqualTo(expectedError)
   }
 
   @Test
@@ -391,7 +398,7 @@ class LineRewardedAdTest {
 
     lineRewardedAd.onPlay(mockFiveAdVideoReward)
 
-    verify(mockMediationAdCallback).onVideoStart()
+    assertThat(rewardedAdCallback.isVideoStarted).isTrue()
   }
 
   @Test
@@ -401,7 +408,7 @@ class LineRewardedAdTest {
 
     lineRewardedAd.onFullScreenOpen(mockFiveAdVideoReward)
 
-    verify(mockMediationAdCallback).onAdOpened()
+    assertThat(rewardedAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -416,7 +423,7 @@ class LineRewardedAdTest {
 
     lineRewardedAd.onViewThrough(mockFiveAdVideoReward)
 
-    verify(mockMediationAdCallback).onVideoComplete()
+    assertThat(rewardedAdCallback.isVideoCompleted).isTrue()
   }
 
   private fun createMediationRewardedAdConfiguration(
@@ -446,6 +453,5 @@ class LineRewardedAdTest {
     const val TEST_APP_ID = "testAppId"
     const val TEST_SLOT_ID = "testSlotId"
     const val TEST_WATERMARK = "testWatermark"
-    const val TEST_BID_RESPONSE = "testBidResponse"
   }
 }
