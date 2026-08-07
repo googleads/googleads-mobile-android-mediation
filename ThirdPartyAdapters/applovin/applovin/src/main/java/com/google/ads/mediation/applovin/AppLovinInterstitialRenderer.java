@@ -14,7 +14,6 @@
 
 package com.google.ads.mediation.applovin;
 
-import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -62,8 +61,6 @@ public abstract class AppLovinInterstitialRenderer
   @Nullable protected AppLovinAd appLovinInterstitialAd;
 
   @Nullable protected String zoneId;
-
-  @Nullable protected Bundle networkExtras;
 
   public AppLovinInterstitialRenderer(
       @NonNull
