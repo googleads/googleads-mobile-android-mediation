@@ -363,6 +363,27 @@ class MolocoNativeAdTest {
 
   // endregion
 
+  // region com.moloco.sdk.publisher.NativeAd.InteractionListener implementation tests
+  @Test
+  fun onImpressionHandled_reportsAdImpression() {
+    molocoNativeAd.onAdLoadSuccess(mock())
+
+    molocoNativeAd.onImpressionHandled()
+
+    verify(mockMediationAdCallback).reportAdImpression()
+  }
+
+  @Test
+  fun onGeneralClickHandled_reportsAdClicked() {
+    molocoNativeAd.onAdLoadSuccess(mock())
+
+    molocoNativeAd.onGeneralClickHandled()
+
+    verify(mockMediationAdCallback).reportAdClicked()
+  }
+
+  // endregion
+
   private fun createMediationNativeAdConfiguration(
     serverParameters: android.os.Bundle =
       bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)

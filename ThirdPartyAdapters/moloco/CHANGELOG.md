@@ -1,5 +1,9 @@
 ## Moloco Android Mediation Adapter Changelog
 
+#### Next version
+
+- Updated to report ad impression when native ad is displayed.
+
 #### Version 4.11.0.0 (In progress)
 
 #### Version 4.10.1.1 (In progress)
