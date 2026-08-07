@@ -87,12 +87,13 @@ class UnityInterstitialAdTest {
   }
 
   @Test
-  fun onUnityAdsShowStart_invokesOnAdOpened() {
+  fun onUnityAdsShowStart_invokesOnAdOpenedAndReportsAdImpression() {
     unityInterstitialAd.onUnityAdsAdLoaded(PLACEMENT_ID)
 
     unityInterstitialAd.onUnityAdsShowStart(PLACEMENT_ID)
 
     verify(interstitialAdCallback).onAdOpened()
+    verify(interstitialAdCallback).reportAdImpression()
   }
 
   @Test
