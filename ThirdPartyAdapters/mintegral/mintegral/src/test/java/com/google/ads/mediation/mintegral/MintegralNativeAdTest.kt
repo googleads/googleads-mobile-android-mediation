@@ -157,6 +157,7 @@ class MintegralNativeAdTest {
     mintegralNativeAd.onEnterFullscreen()
 
     verify(mockNativeAdCallback).onAdOpened()
+    verify(mockNativeAdCallback).reportAdImpression()
   }
 
   @Test
@@ -199,6 +200,7 @@ class MintegralNativeAdTest {
     mintegralNativeAd.onVideoStart()
 
     verify(mockNativeAdCallback).onVideoPlay()
+    verify(mockNativeAdCallback).reportAdImpression()
   }
 
   @Test

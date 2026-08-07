@@ -119,6 +119,7 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
   public void onEnterFullscreen() {
     if (nativeCallback != null) {
       nativeCallback.onAdOpened();
+      nativeCallback.reportAdImpression();
     }
   }
 
@@ -155,6 +156,7 @@ public abstract class MintegralNativeAd extends UnifiedNativeAdMapper implements
   public void onVideoStart() {
     if (nativeCallback != null) {
       nativeCallback.onVideoPlay();
+      nativeCallback.reportAdImpression();
     }
   }
 
