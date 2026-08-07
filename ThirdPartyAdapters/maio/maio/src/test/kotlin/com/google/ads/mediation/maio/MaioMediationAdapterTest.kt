@@ -6,12 +6,12 @@ import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeInitializationCompleteCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
-import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifyFailure
-import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.maio.MaioMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.maio.MaioMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS
 import com.google.ads.mediation.maio.MaioMediationAdapter.ERROR_USER_IS_AGE_RESTRICTED
@@ -28,14 +28,13 @@ import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TR
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
-import com.google.android.gms.ads.mediation.InitializationCompleteCallback
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
+import com.google.common.truth.Truth.assertThat
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager.KEY_MEDIA_ID
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager.KEY_ZONE_ID
@@ -46,11 +45,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.Robolectric
 
@@ -64,17 +61,11 @@ class MaioMediationAdapterTest {
 
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val mockInitializationCompleteCallback = mock<InitializationCompleteCallback>()
-  private val mockRewardedAdCallback = mock<MediationRewardedAdCallback>()
-  private val mockMediationRewardedAdLoadCallback =
-    mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>> {
-      on { onSuccess(any()) } doReturn mockRewardedAdCallback
-    }
-  private val mockBannerAdCallback = mock<MediationBannerAdCallback>()
-  private val mockMediationBannerAdLoadCallback =
-    mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>> {
-      on { onSuccess(any()) } doReturn mockBannerAdCallback
-    }
+  private val initializationCompleteCallback = FakeInitializationCompleteCallback()
+  private val rewardedAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>()
+  private val bannerAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>()
 
   @Before
   fun setUp() {
@@ -150,11 +141,13 @@ class MaioMediationAdapterTest {
   // region initialize tests
   @Test
   fun initialize_withMediationConfigurations_invokesOnInitializationSucceeded() {
-    adapter.mediationAdapterInitializeVerifySuccess(
+    adapter.initialize(
       activity,
-      mockInitializationCompleteCallback,
-      /* serverParameters= */ bundleOf(),
+      initializationCompleteCallback,
+      /* mediationConfigurations= */ emptyList(),
     )
+
+    assertThat(initializationCompleteCallback).hasSucceeded()
   }
 
   @Test
@@ -166,11 +159,13 @@ class MaioMediationAdapterTest {
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
 
-    adapter.mediationAdapterInitializeVerifySuccess(
+    adapter.initialize(
       activity,
-      mockInitializationCompleteCallback,
-      /* serverParameters= */ bundleOf(),
+      initializationCompleteCallback,
+      /* mediationConfigurations= */ emptyList(),
     )
+
+    assertThat(initializationCompleteCallback).hasSucceeded()
   }
 
   @Test
@@ -182,12 +177,13 @@ class MaioMediationAdapterTest {
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
 
-    adapter.mediationAdapterInitializeVerifyFailure(
+    adapter.initialize(
       activity,
-      mockInitializationCompleteCallback,
-      /* serverParameters= */ bundleOf(),
-      MAIO_IS_AGE_RESTRICTED_ERROR,
+      initializationCompleteCallback,
+      /* mediationConfigurations= */ emptyList(),
     )
+
+    assertThat(initializationCompleteCallback).hasFailedWith(MAIO_IS_AGE_RESTRICTED_ERROR)
   }
 
   @Test
@@ -199,12 +195,13 @@ class MaioMediationAdapterTest {
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
 
-    adapter.mediationAdapterInitializeVerifyFailure(
+    adapter.initialize(
       activity,
-      mockInitializationCompleteCallback,
-      /* serverParameters= */ bundleOf(),
-      MAIO_IS_AGE_RESTRICTED_ERROR,
+      initializationCompleteCallback,
+      /* mediationConfigurations= */ emptyList(),
     )
+
+    assertThat(initializationCompleteCallback).hasFailedWith(MAIO_IS_AGE_RESTRICTED_ERROR)
   }
 
   @Test
@@ -217,12 +214,13 @@ class MaioMediationAdapterTest {
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
 
-    adapter.mediationAdapterInitializeVerifyFailure(
+    adapter.initialize(
       activity,
-      mockInitializationCompleteCallback,
-      /* serverParameters= */ bundleOf(),
-      MAIO_IS_AGE_RESTRICTED_ERROR,
+      initializationCompleteCallback,
+      /* mediationConfigurations= */ emptyList(),
     )
+
+    assertThat(initializationCompleteCallback).hasFailedWith(MAIO_IS_AGE_RESTRICTED_ERROR)
   }
 
   // endregion
@@ -238,11 +236,11 @@ class MaioMediationAdapterTest {
     MobileAds.setRequestConfiguration(requestConfiguration)
     val rewardedAdConfiguration = createRewardedAdConfiguration()
 
-    adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+    adapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN)
-    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -255,11 +253,11 @@ class MaioMediationAdapterTest {
     MobileAds.setRequestConfiguration(requestConfiguration)
     val rewardedAdConfiguration = createRewardedAdConfiguration()
 
-    adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+    adapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN)
-    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -273,22 +271,22 @@ class MaioMediationAdapterTest {
     MobileAds.setRequestConfiguration(requestConfiguration)
     val rewardedAdConfiguration = createRewardedAdConfiguration()
 
-    adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+    adapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN)
-    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
   fun loadRewardedAd_withNullKeyMedia_invokesOnFailure() {
     val rewardedAdConfiguration = createRewardedAdConfiguration()
 
-    adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+    adapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Media ID.", ERROR_DOMAIN)
-    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -296,11 +294,11 @@ class MaioMediationAdapterTest {
     val serverParameters = bundleOf(KEY_MEDIA_ID to "")
     val rewardedAdConfiguration = createRewardedAdConfiguration(serverParameters = serverParameters)
 
-    adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+    adapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Media ID.", ERROR_DOMAIN)
-    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -308,11 +306,11 @@ class MaioMediationAdapterTest {
     val serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1)
     val rewardedAdConfiguration = createRewardedAdConfiguration(serverParameters = serverParameters)
 
-    adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+    adapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Zone ID.", ERROR_DOMAIN)
-    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -320,11 +318,11 @@ class MaioMediationAdapterTest {
     val serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1, KEY_ZONE_ID to "")
     val rewardedAdConfiguration = createRewardedAdConfiguration(serverParameters = serverParameters)
 
-    adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+    adapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Zone ID.", ERROR_DOMAIN)
-    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   private fun createRewardedAdConfiguration(
@@ -357,11 +355,11 @@ class MaioMediationAdapterTest {
     MobileAds.setRequestConfiguration(requestConfiguration)
     val bannerAdConfiguration = createBannerAdConfiguration()
 
-    adapter.loadBannerAd(bannerAdConfiguration, mockMediationBannerAdLoadCallback)
+    adapter.loadBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN)
-    verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -374,11 +372,11 @@ class MaioMediationAdapterTest {
     MobileAds.setRequestConfiguration(requestConfiguration)
     val bannerAdConfiguration = createBannerAdConfiguration()
 
-    adapter.loadBannerAd(bannerAdConfiguration, mockMediationBannerAdLoadCallback)
+    adapter.loadBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN)
-    verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -392,22 +390,22 @@ class MaioMediationAdapterTest {
     MobileAds.setRequestConfiguration(requestConfiguration)
     val bannerAdConfiguration = createBannerAdConfiguration()
 
-    adapter.loadBannerAd(bannerAdConfiguration, mockMediationBannerAdLoadCallback)
+    adapter.loadBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN)
-    verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
   fun loadBannerAd_withNullKeyMedia_invokesOnFailure() {
     val bannerAdConfiguration = createBannerAdConfiguration()
 
-    adapter.loadBannerAd(bannerAdConfiguration, mockMediationBannerAdLoadCallback)
+    adapter.loadBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Media ID.", ERROR_DOMAIN)
-    verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -415,11 +413,11 @@ class MaioMediationAdapterTest {
     val serverParameters = bundleOf(KEY_MEDIA_ID to "")
     val bannerAdConfiguration = createBannerAdConfiguration(serverParameters = serverParameters)
 
-    adapter.loadBannerAd(bannerAdConfiguration, mockMediationBannerAdLoadCallback)
+    adapter.loadBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Media ID.", ERROR_DOMAIN)
-    verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -427,11 +425,11 @@ class MaioMediationAdapterTest {
     val serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1)
     val bannerAdConfiguration = createBannerAdConfiguration(serverParameters = serverParameters)
 
-    adapter.loadBannerAd(bannerAdConfiguration, mockMediationBannerAdLoadCallback)
+    adapter.loadBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Zone ID.", ERROR_DOMAIN)
-    verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -439,11 +437,11 @@ class MaioMediationAdapterTest {
     val serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1, KEY_ZONE_ID to "")
     val bannerAdConfiguration = createBannerAdConfiguration(serverParameters = serverParameters)
 
-    adapter.loadBannerAd(bannerAdConfiguration, mockMediationBannerAdLoadCallback)
+    adapter.loadBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Zone ID.", ERROR_DOMAIN)
-    verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -453,7 +451,7 @@ class MaioMediationAdapterTest {
       createBannerAdConfiguration(serverParameters = serverParameters, adSize = AdSize(300, 50))
     whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize(300, 50)), any())) doReturn null
 
-    adapter.loadBannerAd(bannerAdConfiguration, mockMediationBannerAdLoadCallback)
+    adapter.loadBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
 
     val expectedAdError =
       AdError(
@@ -461,7 +459,7 @@ class MaioMediationAdapterTest {
         "The requested ad size is not supported by maio SDK.",
         ERROR_DOMAIN,
       )
-    verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   private fun createBannerAdConfiguration(
