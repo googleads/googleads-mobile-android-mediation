@@ -1,5 +1,9 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated how the Google Mobile Ads SDK `tagForUnderAgeOfConsent` and
+`tagForChildDirectedTreatement` parameters are forwarded to the InMobi SDK.
+
 #### Version 11.4.0.0
 - Verified compatibility with InMobi Kotlin SDK version 11.4.0.
 

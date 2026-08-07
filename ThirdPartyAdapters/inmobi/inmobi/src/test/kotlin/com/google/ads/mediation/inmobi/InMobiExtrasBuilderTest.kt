@@ -7,6 +7,7 @@ import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.ParameterizedRobolectricTestRunner
@@ -17,6 +18,19 @@ class InMobiExtrasBuilderTest(
   private val protocol: String,
 ) {
   private val context = ApplicationProvider.getApplicationContext<Context>()
+
+  @Before
+  fun setUp() {
+    val requestConfig =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfig)
+  }
 
   @Test
   fun buildInMobiExtras_returnsInMobiExtrasWithCorrectProtocol() {
@@ -39,6 +53,8 @@ class InMobiExtrasBuilderTest(
       .isEqualTo(mobileAdsVersion)
   }
 
+  // region COPPA Tests
+
   @Test
   fun buildInMobiExtras_whenCoppaTrue_returnsInMobiExtrasWithCoppaTrue() {
     // when coppa value is set...
@@ -55,64 +71,6 @@ class InMobiExtrasBuilderTest(
     assertThat(inMobiExtras.parameterMap).isNotEmpty()
     // ...should set coppa as '1' in the inMobiExtras Map
     assertThat(inMobiExtras.parameterMap[InMobiAdapterUtils.COPPA]).isEqualTo("1")
-  }
-
-  @Test
-  fun buildInMobiExtras_whenAgeRestrictedTreatmentChild_returnsInMobiExtrasWithCoppaTrue() {
-    val requestConfiguration =
-      MobileAds.getRequestConfiguration()
-        .toBuilder()
-        .setTagForChildDirectedTreatment(
-          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
-        )
-        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
-        .build()
-    MobileAds.setRequestConfiguration(requestConfiguration)
-
-    val inMobiExtras = InMobiExtrasBuilder.build(context, mapToBundle(mediationExtras), protocol)
-
-    assertThat(inMobiExtras).isNotNull()
-    assertThat(inMobiExtras.parameterMap).isNotEmpty()
-    assertThat(inMobiExtras.parameterMap[InMobiAdapterUtils.COPPA]).isEqualTo("1")
-  }
-
-  @Test
-  fun buildInMobiExtras_whenAgeRestrictedTreatmentTeen_returnsInMobiExtrasWithCoppaFalse() {
-    val requestConfiguration =
-      MobileAds.getRequestConfiguration()
-        .toBuilder()
-        .setTagForChildDirectedTreatment(
-          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
-        )
-        .setAgeRestrictedTreatment(AgeRestrictedTreatment.TEEN)
-        .build()
-    MobileAds.setRequestConfiguration(requestConfiguration)
-
-    val inMobiExtras = InMobiExtrasBuilder.build(context, mapToBundle(mediationExtras), protocol)
-
-    assertThat(inMobiExtras).isNotNull()
-    assertThat(inMobiExtras.parameterMap).isNotEmpty()
-    assertThat(inMobiExtras.parameterMap[InMobiAdapterUtils.COPPA]).isEqualTo("0")
-  }
-
-  @Test
-  fun buildInMobiExtras_whenCoppaNotSet_returnsInMobiExtrasWithCoppaFalse() {
-    // when coppa value is not specified...
-    val requestConfiguration =
-      MobileAds.getRequestConfiguration()
-        .toBuilder()
-        .setTagForChildDirectedTreatment(
-          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
-        )
-        .build()
-    MobileAds.setRequestConfiguration(requestConfiguration)
-
-    val inMobiExtras = InMobiExtrasBuilder.build(context, mapToBundle(mediationExtras), protocol)
-
-    assertThat(inMobiExtras).isNotNull()
-    assertThat(inMobiExtras.parameterMap).isNotEmpty()
-    // ...should set coppa as '0' in the inMobiExtras Map
-    assertThat(inMobiExtras.parameterMap[InMobiAdapterUtils.COPPA]).isEqualTo("0")
   }
 
   @Test
@@ -134,6 +92,110 @@ class InMobiExtrasBuilderTest(
     // ...should set coppa as '0' in the inMobiExtras Map
     assertThat(inMobiExtras.parameterMap[InMobiAdapterUtils.COPPA]).isEqualTo("0")
   }
+
+  @Test
+  fun buildInMobiExtras_whenUnderagedTrue_returnsInMobiExtrasWithCoppaTrue() {
+    // when coppa value is set...
+    val requestConfiguration =
+      MobileAds.getRequestConfiguration()
+        .toBuilder()
+        .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+
+    val inMobiExtras = InMobiExtrasBuilder.build(context, mapToBundle(mediationExtras), protocol)
+
+    assertThat(inMobiExtras).isNotNull()
+    assertThat(inMobiExtras.parameterMap).isNotEmpty()
+    // ...should set coppa as '1' in the inMobiExtras Map
+    assertThat(inMobiExtras.parameterMap[InMobiAdapterUtils.COPPA]).isEqualTo("1")
+  }
+
+  @Test
+  fun buildInMobiExtras_whenUnderagedFalse_returnsInMobiExtrasWithCoppaFalse() {
+    val requestConfiguration =
+      MobileAds.getRequestConfiguration()
+        .toBuilder()
+        .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+
+    val inMobiExtras = InMobiExtrasBuilder.build(context, mapToBundle(mediationExtras), protocol)
+
+    assertThat(inMobiExtras).isNotNull()
+    assertThat(inMobiExtras.parameterMap).isNotEmpty()
+    assertThat(inMobiExtras.parameterMap[InMobiAdapterUtils.COPPA]).isEqualTo("0")
+  }
+
+  @Test
+  fun buildInMobiExtras_whenAgeRestrictedTreatmentChild_returnsInMobiExtrasWithCoppaTrue() {
+    val requestConfiguration =
+      MobileAds.getRequestConfiguration()
+        .toBuilder()
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+
+    val inMobiExtras = InMobiExtrasBuilder.build(context, mapToBundle(mediationExtras), protocol)
+
+    assertThat(inMobiExtras).isNotNull()
+    assertThat(inMobiExtras.parameterMap).isNotEmpty()
+    assertThat(inMobiExtras.parameterMap[InMobiAdapterUtils.COPPA]).isEqualTo("1")
+  }
+
+  @Test
+  fun buildInMobiExtras_whenAgeRestrictedTreatmentTeen_returnsInMobiExtrasWithCoppaUnknown() {
+    val requestConfiguration =
+      MobileAds.getRequestConfiguration()
+        .toBuilder()
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.TEEN)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+
+    val inMobiExtras = InMobiExtrasBuilder.build(context, mapToBundle(mediationExtras), protocol)
+
+    assertThat(inMobiExtras).isNotNull()
+    assertThat(inMobiExtras.parameterMap).isNotEmpty()
+    assertThat(inMobiExtras.parameterMap[InMobiAdapterUtils.COPPA]).isNull()
+  }
+
+  @Test
+  fun buildInMobiExtras_whenCoppaNotSet_returnsInMobiExtrasWithCoppaUnknown() {
+    val requestConfiguration =
+      MobileAds.getRequestConfiguration()
+        .toBuilder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+
+    val inMobiExtras = InMobiExtrasBuilder.build(context, mapToBundle(mediationExtras), protocol)
+
+    assertThat(inMobiExtras).isNotNull()
+    assertThat(inMobiExtras.parameterMap).isNotEmpty()
+    assertThat(inMobiExtras.parameterMap[InMobiAdapterUtils.COPPA]).isNull()
+  }
+
+  @Test
+  fun buildInMobiExtras_whenUnderageNotSet_returnsInMobiExtrasWithCoppaUnknown() {
+    val requestConfiguration =
+      MobileAds.getRequestConfiguration()
+        .toBuilder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
+        )
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+
+    val inMobiExtras = InMobiExtrasBuilder.build(context, mapToBundle(mediationExtras), protocol)
+
+    assertThat(inMobiExtras).isNotNull()
+    assertThat(inMobiExtras.parameterMap).isNotEmpty()
+    assertThat(inMobiExtras.parameterMap[InMobiAdapterUtils.COPPA]).isNull()
+  }
+
+  // endregion
 
   @Test
   fun buildInMobiExtras_returnsInMobiExtrasMapPopulatedWithMediationExtras() {
