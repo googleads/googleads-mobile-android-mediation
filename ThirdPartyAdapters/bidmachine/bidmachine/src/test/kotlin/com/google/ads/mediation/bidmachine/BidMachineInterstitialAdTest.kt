@@ -18,10 +18,12 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_AD_REQUEST_EXPIRED
@@ -29,7 +31,6 @@ import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.PLACEMENT_ID_KEY
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.common.truth.Truth.assertThat
@@ -41,7 +42,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -56,12 +56,11 @@ class BidMachineInterstitialAdTest {
   private lateinit var bidMachineInterstitialAd: BidMachineInterstitialAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val mockInterstitialAdCallback: MediationInterstitialAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockInterstitialAdCallback
-    }
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
+  private val interstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
   private val mockInterstitialRequest =
     mock<InterstitialRequest> { on { isExpired } doReturn false }
   private val mockInterstitialAd = mock<InterstitialAd> { on { canShow() } doReturn true }
@@ -76,7 +75,7 @@ class BidMachineInterstitialAdTest {
         serverParameters = serverParams,
         watermark = TEST_WATERMARK,
       )
-    BidMachineInterstitialAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess {
+    BidMachineInterstitialAd.newInstance(adConfiguration, interstitialAdLoadCallback).onSuccess {
       bidMachineInterstitialAd = it
     }
   }
@@ -150,7 +149,7 @@ class BidMachineInterstitialAdTest {
 
     bidMachineInterstitialAd.onRequestSuccess(mockInterstitialRequest, mock())
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
     verify(mockInterstitialRequest).destroy()
     verify(mockInterstitialAd, never()).load(mockInterstitialRequest)
   }
@@ -162,7 +161,7 @@ class BidMachineInterstitialAdTest {
 
     bidMachineInterstitialAd.onRequestFailed(mockInterstitialRequest, bMError)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
     verify(mockInterstitialRequest).destroy()
   }
 
@@ -173,7 +172,7 @@ class BidMachineInterstitialAdTest {
 
     bidMachineInterstitialAd.onRequestExpired(mockInterstitialRequest)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
     verify(mockInterstitialRequest).destroy()
   }
 
@@ -181,7 +180,7 @@ class BidMachineInterstitialAdTest {
   fun onAdLoaded_invokesOnSuccess() {
     bidMachineInterstitialAd.onAdLoaded(mockInterstitialAd)
 
-    verify(mockAdLoadCallback).onSuccess(bidMachineInterstitialAd)
+    assertThat(interstitialAdLoadCallback).hasSucceededWith(bidMachineInterstitialAd)
   }
 
   @Test
@@ -192,7 +191,7 @@ class BidMachineInterstitialAdTest {
 
     bidMachineInterstitialAd.onAdLoadFailed(mockInterstitialAd, bMError)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
     verify(mockInterstitialAd).destroy()
   }
 
@@ -202,8 +201,8 @@ class BidMachineInterstitialAdTest {
 
     bidMachineInterstitialAd.onAdImpression(mockInterstitialAd)
 
-    verify(mockInterstitialAdCallback).reportAdImpression()
-    verify(mockInterstitialAdCallback).onAdOpened()
+    assertThat(interstitialAdCallback.isImpressionReported).isTrue()
+    assertThat(interstitialAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -212,7 +211,7 @@ class BidMachineInterstitialAdTest {
 
     bidMachineInterstitialAd.onAdClicked(mockInterstitialAd)
 
-    verify(mockInterstitialAdCallback).reportAdClicked()
+    assertThat(interstitialAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -223,7 +222,8 @@ class BidMachineInterstitialAdTest {
 
     bidMachineInterstitialAd.onAdShowFailed(mockInterstitialAd, bMError)
 
-    verify(mockInterstitialAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(interstitialAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
@@ -232,7 +232,7 @@ class BidMachineInterstitialAdTest {
 
     bidMachineInterstitialAd.onAdClosed(mockInterstitialAd, /* finished= */ true)
 
-    verify(mockInterstitialAdCallback).onAdClosed()
+    assertThat(interstitialAdCallback.isClosed).isTrue()
   }
 
   @Test
