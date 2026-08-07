@@ -84,7 +84,7 @@ public class AppLovinWaterfallRewardedRenderer extends AppLovinRewardedRenderer
     if (AppLovinUtils.isMultiAdsEnabled()) {
       enableMultipleAdLoading = true;
     }
-    networkExtras = adConfiguration.getMediationExtras();
+    final Bundle networkExtras = adConfiguration.getMediationExtras();
 
     appLovinInitializer.initialize(
         context,

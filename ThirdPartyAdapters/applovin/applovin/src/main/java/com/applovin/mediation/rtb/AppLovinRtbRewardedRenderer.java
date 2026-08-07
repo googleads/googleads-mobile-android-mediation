@@ -17,6 +17,7 @@ package com.applovin.mediation.rtb;
 import static com.applovin.mediation.AppLovinExtras.Keys.KEY_WATERMARK;
 
 import android.content.Context;
+import android.os.Bundle;
 import androidx.annotation.NonNull;
 import com.applovin.mediation.AppLovinUtils;
 import com.applovin.sdk.AppLovinAd;
@@ -53,7 +54,7 @@ public final class AppLovinRtbRewardedRenderer extends AppLovinRewardedRenderer 
     // Create rewarded video object.
     incentivizedInterstitial = appLovinAdFactory.createIncentivizedInterstitial(appLovinSdk);
     incentivizedInterstitial.setExtraInfo(KEY_WATERMARK, adConfiguration.getWatermark());
-    networkExtras = adConfiguration.getMediationExtras();
+    Bundle networkExtras = adConfiguration.getMediationExtras();
     appLovinSdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(networkExtras));
 
     // Load ad.
