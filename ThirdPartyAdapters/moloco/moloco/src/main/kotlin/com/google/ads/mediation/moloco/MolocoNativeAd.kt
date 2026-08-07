@@ -42,8 +42,10 @@ private constructor(
   private val watermark: String,
   private val mediationNativeAdLoadCallback:
     MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
-) : AdLoad.Listener, NativeAdMapper() {
+) : AdLoad.Listener, NativeAdMapper(), NativeAd.InteractionListener {
   @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE) internal var nativeAd: NativeAd? = null
+
+  private var showCallback: MediationNativeAdCallback? = null
 
   fun loadAd() {
     val mediationInfo = MediationInfo(MEDIATION_PLATFORM_NAME)
@@ -78,6 +80,7 @@ private constructor(
     }
   }
 
+  // region com.moloco.sdk.publisher.AdLoad.Listener implementation
   override fun onAdLoadSuccess(molocoAd: MolocoAd) {
     overrideClickHandling = true
     nativeAd?.apply {
@@ -101,13 +104,8 @@ private constructor(
       }
     }
 
-    val showCallback = mediationNativeAdLoadCallback.onSuccess(this)
-    nativeAd?.interactionListener =
-      object : NativeAd.InteractionListener {
-        override fun onImpressionHandled() {}
-
-        override fun onGeneralClickHandled() = showCallback.reportAdClicked()
-      }
+    showCallback = mediationNativeAdLoadCallback.onSuccess(this)
+    nativeAd?.interactionListener = this
   }
 
   override fun onAdLoadFailed(molocoAdError: MolocoAdError) {
@@ -120,6 +118,9 @@ private constructor(
     mediationNativeAdLoadCallback.onFailure(adError)
   }
 
+  // endregion
+
+  // region com.google.android.gms.ads.mediation.NativeAdMapper implementation
   override fun handleClick(view: View) {
     nativeAd?.handleGeneralAdClick()
   }
@@ -143,6 +144,19 @@ private constructor(
     nativeAd?.destroy()
     nativeAd = null
   }
+
+  // endregion
+
+  // region com.moloco.sdk.publisher.NativeAd.InteractionListener implementation
+  override fun onImpressionHandled() {
+    showCallback?.reportAdImpression()
+  }
+
+  override fun onGeneralClickHandled() {
+    showCallback?.reportAdClicked()
+  }
+
+  // endregion
 
   companion object {
     fun newInstance(
