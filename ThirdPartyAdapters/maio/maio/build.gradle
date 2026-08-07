@@ -151,6 +151,7 @@ dependencies {
     testImplementation 'androidx.test.ext:junit:1.2.1'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
     testImplementation project(':adaptertestkit')
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
 }
 
 /**

@@ -1,3 +1,17 @@
+// Copyright 2023 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.maio
 
 import android.app.Activity
@@ -16,6 +30,7 @@ import com.google.ads.mediation.maio.MaioMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.maio.MaioMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS
 import com.google.ads.mediation.maio.MaioMediationAdapter.ERROR_USER_IS_AGE_RESTRICTED
 import com.google.ads.mediation.maio.MaioMediationAdapter.MAIO_IS_AGE_RESTRICTED_ERROR
+import com.google.ads.mediation.maio.MaioMediationAdapter.MAIO_SDK_ERROR_DOMAIN
 import com.google.ads.mediation.maio.MaioUtils.getVersionInfo
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
@@ -33,17 +48,25 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
+import com.google.android.gms.ads.mediation.MediationInterstitialAd
+import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
+import com.google.common.truth.Truth.assertThat
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager.KEY_MEDIA_ID
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager.KEY_ZONE_ID
 import jp.maio.sdk.android.mediation.admob.adapter.MaioAdsManager.getSdkVersion
 import jp.maio.sdk.android.v2.Version
+import jp.maio.sdk.android.v2.banner.MaioBannerView
+import jp.maio.sdk.android.v2.interstitial.Interstitial
+import jp.maio.sdk.android.v2.rewarded.Rewarded
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.mockConstruction
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
@@ -65,6 +88,11 @@ class MaioMediationAdapterTest {
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val mockInitializationCompleteCallback = mock<InitializationCompleteCallback>()
+  private val mockInterstitialAdCallback = mock<MediationInterstitialAdCallback>()
+  private val mockMediationInterstitialAdLoadCallback =
+    mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>> {
+      on { onSuccess(any()) } doReturn mockInterstitialAdCallback
+    }
   private val mockRewardedAdCallback = mock<MediationRewardedAdCallback>()
   private val mockMediationRewardedAdLoadCallback =
     mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>> {
@@ -86,6 +114,28 @@ class MaioMediationAdapterTest {
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
   }
+
+  // region constructor tests
+  @Test
+  fun constructor_defaultConstructor_initializesAdapter() {
+    val defaultAdapter = MaioMediationAdapter()
+    assertThat(defaultAdapter).isNotNull()
+  }
+
+  // endregion
+
+  // region getAdError tests
+  @Test
+  fun getAdError_withErrorCode_returnsExpectedAdError() {
+    val errorCode = 10700
+    val adError = MaioMediationAdapter.getAdError(errorCode)
+
+    assertThat(adError.code).isEqualTo(errorCode)
+    assertThat(adError.message).isEqualTo("Failed to request ad from Maio: $errorCode")
+    assertThat(adError.domain).isEqualTo(MAIO_SDK_ERROR_DOMAIN)
+  }
+
+  // endregion
 
   // region version tests
   @Test
@@ -227,43 +277,45 @@ class MaioMediationAdapterTest {
 
   // endregion
 
-  // region Rewarded ad tests
+  // region Interstitial ad tests
   @Test
-  fun loadRewardedAd_withTFCDTrue_invokesOnFailure() {
+  fun loadInterstitialAd_withTFCDTrue_invokesOnFailure() {
     val requestConfiguration =
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
-    val rewardedAdConfiguration = createRewardedAdConfiguration()
+    val interstitialAdConfiguration = createInterstitialAdConfiguration()
 
-    adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+    adapter.loadInterstitialAd(interstitialAdConfiguration, mockMediationInterstitialAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN)
-    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    verify(mockMediationInterstitialAdLoadCallback)
+      .onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   @Test
-  fun loadRewardedAd_withTFUATrue_invokesOnFailure() {
+  fun loadInterstitialAd_withTFUATrue_invokesOnFailure() {
     val requestConfiguration =
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
         .setTagForUnderAgeOfConsent(TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
-    val rewardedAdConfiguration = createRewardedAdConfiguration()
+    val interstitialAdConfiguration = createInterstitialAdConfiguration()
 
-    adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+    adapter.loadInterstitialAd(interstitialAdConfiguration, mockMediationInterstitialAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN)
-    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    verify(mockMediationInterstitialAdLoadCallback)
+      .onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   @Test
-  fun loadRewardedAd_withAgeRestrictedTreatmentChild_invokesOnFailure() {
+  fun loadInterstitialAd_withAgeRestrictedTreatmentChild_invokesOnFailure() {
     val requestConfiguration =
       RequestConfiguration.Builder()
         .setTagForChildDirectedTreatment(TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED)
@@ -271,26 +323,113 @@ class MaioMediationAdapterTest {
         .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
-    val rewardedAdConfiguration = createRewardedAdConfiguration()
+    val interstitialAdConfiguration = createInterstitialAdConfiguration()
 
-    adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+    adapter.loadInterstitialAd(interstitialAdConfiguration, mockMediationInterstitialAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN)
-    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    verify(mockMediationInterstitialAdLoadCallback)
+      .onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   @Test
-  fun loadRewardedAd_withNullKeyMedia_invokesOnFailure() {
-    val rewardedAdConfiguration = createRewardedAdConfiguration()
+  fun loadInterstitialAd_withNullKeyMedia_invokesOnFailure() {
+    val interstitialAdConfiguration = createInterstitialAdConfiguration()
 
-    adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+    adapter.loadInterstitialAd(interstitialAdConfiguration, mockMediationInterstitialAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Media ID.", ERROR_DOMAIN)
-    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    verify(mockMediationInterstitialAdLoadCallback)
+      .onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
+  @Test
+  fun loadInterstitialAd_withEmptyKeyMedia_invokesOnFailure() {
+    val serverParameters = bundleOf(KEY_MEDIA_ID to "")
+    val interstitialAdConfiguration =
+      createInterstitialAdConfiguration(serverParameters = serverParameters)
+
+    adapter.loadInterstitialAd(interstitialAdConfiguration, mockMediationInterstitialAdLoadCallback)
+
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Media ID.", ERROR_DOMAIN)
+    verify(mockMediationInterstitialAdLoadCallback)
+      .onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadInterstitialAd_withNullZoneId_invokesOnFailure() {
+    val serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1)
+    val interstitialAdConfiguration =
+      createInterstitialAdConfiguration(serverParameters = serverParameters)
+
+    adapter.loadInterstitialAd(interstitialAdConfiguration, mockMediationInterstitialAdLoadCallback)
+
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Zone ID.", ERROR_DOMAIN)
+    verify(mockMediationInterstitialAdLoadCallback)
+      .onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadInterstitialAd_withEmptyZoneId_invokesOnFailure() {
+    val serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1, KEY_ZONE_ID to "")
+    val interstitialAdConfiguration =
+      createInterstitialAdConfiguration(serverParameters = serverParameters)
+
+    adapter.loadInterstitialAd(interstitialAdConfiguration, mockMediationInterstitialAdLoadCallback)
+
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Zone ID.", ERROR_DOMAIN)
+    verify(mockMediationInterstitialAdLoadCallback)
+      .onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadInterstitialAd_withValidParameters_invokesInterstitialLoadAd() {
+    val serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1, KEY_ZONE_ID to "testZoneId")
+    val interstitialAdConfiguration =
+      createInterstitialAdConfiguration(serverParameters = serverParameters)
+
+    mockStatic(Interstitial::class.java).use { mockInterstitialStatic ->
+      val mockInterstitial = mock<Interstitial>()
+      mockInterstitialStatic
+        .`when`<Interstitial> { MaioTestHelper.loadInterstitialAd(any(), any(), any()) }
+        .thenReturn(mockInterstitial)
+
+      adapter.loadInterstitialAd(
+        interstitialAdConfiguration,
+        mockMediationInterstitialAdLoadCallback,
+      )
+
+      mockInterstitialStatic.verify {
+        MaioTestHelper.loadInterstitialAd(any(), eq(activity), any())
+      }
+    }
+  }
+
+  private fun createInterstitialAdConfiguration(
+    context: Context = activity,
+    serverParameters: Bundle = bundleOf(),
+  ) =
+    MediationInterstitialAdConfiguration(
+      context,
+      /*bidresponse=*/ "",
+      serverParameters,
+      /*mediationExtras=*/ Bundle(),
+      /*isTesting=*/ true,
+      /*location=*/ null,
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
+      RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
+      /*maxAdContentRating=*/ "",
+      /*watermark=*/ "",
+    )
+
+  // endregion
+
+  // region Rewarded ad tests
   @Test
   fun loadRewardedAd_withEmptyKeyMedia_invokesOnFailure() {
     val serverParameters = bundleOf(KEY_MEDIA_ID to "")
@@ -300,6 +439,30 @@ class MaioMediationAdapterTest {
 
     val expectedAdError =
       AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Media ID.", ERROR_DOMAIN)
+    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRewardedAd_withNullKeyMedia_invokesOnFailure() {
+    val serverParameters = bundleOf()
+    val rewardedAdConfiguration = createRewardedAdConfiguration(serverParameters = serverParameters)
+
+    adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Media ID.", ERROR_DOMAIN)
+    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRewardedAd_withEmptyZoneId_invokesOnFailure() {
+    val serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1, KEY_ZONE_ID to "")
+    val rewardedAdConfiguration = createRewardedAdConfiguration(serverParameters = serverParameters)
+
+    adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Zone ID.", ERROR_DOMAIN)
     verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
@@ -316,15 +479,79 @@ class MaioMediationAdapterTest {
   }
 
   @Test
-  fun loadRewardedAd_withEmptyZoneId_invokesOnFailure() {
-    val serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1, KEY_ZONE_ID to "")
+  fun loadRewardedAd_withTFCDTrue_invokesOnFailure() {
+    val serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1, KEY_ZONE_ID to "testZoneId")
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
     val rewardedAdConfiguration = createRewardedAdConfiguration(serverParameters = serverParameters)
 
     adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
 
     val expectedAdError =
-      AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid Zone ID.", ERROR_DOMAIN)
+      AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN)
     verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRewardedAd_withTFUATrue_invokesOnFailure() {
+    val serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1, KEY_ZONE_ID to "testZoneId")
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val rewardedAdConfiguration = createRewardedAdConfiguration(serverParameters = serverParameters)
+
+    adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+
+    val expectedAdError =
+      AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN)
+    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRewardedAd_withAgeRestrictedTreatmentChild_invokesOnFailure() {
+    val serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1, KEY_ZONE_ID to "testZoneId")
+    val requestConfiguration =
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(
+          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+        )
+        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+        .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
+        .build()
+    MobileAds.setRequestConfiguration(requestConfiguration)
+    val rewardedAdConfiguration = createRewardedAdConfiguration(serverParameters = serverParameters)
+
+    adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+
+    val expectedAdError =
+      AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN)
+    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadRewardedAd_withValidParameters_invokesRewardedLoadAd() {
+    val serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1, KEY_ZONE_ID to "testZoneId")
+    val rewardedAdConfiguration = createRewardedAdConfiguration(serverParameters = serverParameters)
+
+    mockStatic(Rewarded::class.java).use { mockRewardedStatic ->
+      val mockRewarded = mock<Rewarded>()
+      mockRewardedStatic
+        .`when`<Rewarded> { MaioTestHelper.loadRewardedAd(any(), any(), any()) }
+        .thenReturn(mockRewarded)
+
+      adapter.loadRewardedAd(rewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+
+      mockRewardedStatic.verify { MaioTestHelper.loadRewardedAd(any(), eq(activity), any()) }
+    }
   }
 
   private fun createRewardedAdConfiguration(
@@ -462,6 +689,20 @@ class MaioMediationAdapterTest {
         ERROR_DOMAIN,
       )
     verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadBannerAd_withValidParameters_loadsBannerAd() {
+    val serverParameters = bundleOf(KEY_MEDIA_ID to TEST_APP_ID_1, KEY_ZONE_ID to "testZoneId")
+    val bannerAdConfiguration =
+      createBannerAdConfiguration(serverParameters = serverParameters, adSize = AdSize.BANNER)
+    whenever(mediationUtils.findClosestSize(any(), any(), any())) doReturn AdSize.BANNER
+
+    mockConstruction(MaioBannerView::class.java).use { mockBannerViewConstruction ->
+      adapter.loadBannerAd(bannerAdConfiguration, mockMediationBannerAdLoadCallback)
+
+      assertThat(mockBannerViewConstruction.constructed()).hasSize(1)
+    }
   }
 
   private fun createBannerAdConfiguration(
