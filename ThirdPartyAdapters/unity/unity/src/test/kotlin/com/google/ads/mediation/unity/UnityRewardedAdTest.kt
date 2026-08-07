@@ -5,9 +5,6 @@ import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.unity.UnityAdsAdapterUtils.getMediationErrorCode
-import com.google.ads.mediation.unity.UnityMediationAdapter.ADAPTER_ERROR_DOMAIN
-import com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY
-import com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_NON_ACTIVITY
 import com.google.ads.mediation.unity.UnityMediationAdapter.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -25,6 +22,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
@@ -202,17 +200,14 @@ class UnityRewardedAdTest {
   }
 
   @Test
-  fun showAd_withNonActivityContext_invokesOnAdFailedToShow() {
+  fun showAd_withNonActivityContext_callsShowWithNullActivity() {
+    val unityAdsShowOptions: UnityAdsShowOptions = mock()
+    whenever(unityAdsLoader.createUnityAdsShowOptionsWithId(anyOrNull())) doReturn unityAdsShowOptions
     unityRewardedAd.unityLoadListener.onUnityAdsAdLoaded(TEST_PLACEMENT_ID)
-    val errorCaptor = argumentCaptor<AdError>()
 
     unityRewardedAd.showAd(ApplicationProvider.getApplicationContext())
 
-    verify(rewardedAdCallback).onAdFailedToShow(errorCaptor.capture())
-    val capturedError = errorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(ERROR_CONTEXT_NOT_ACTIVITY)
-    assertThat(capturedError.message).isEqualTo(ERROR_MSG_NON_ACTIVITY)
-    assertThat(capturedError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+    verify(unityAdsLoader).show(isNull(), any(), any(), any())
   }
 
   @Test
