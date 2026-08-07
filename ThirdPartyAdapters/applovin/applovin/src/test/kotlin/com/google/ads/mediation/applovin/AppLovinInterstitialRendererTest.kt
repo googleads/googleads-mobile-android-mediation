@@ -75,13 +75,14 @@ class AppLovinInterstitialRendererTest {
   }
 
   @Test
-  fun adDisplayed_invokesOnAdOpened() {
+  fun adDisplayed_invokesOnAdOpenedAndReportsAdImpression() {
     // Simulate successful ad loading
     appLovinMediationInterstitialAd.adReceived(appLovinAd)
 
     appLovinMediationInterstitialAd.adDisplayed(appLovinAd)
 
     verify(interstitialAdCallback).onAdOpened()
+    verify(interstitialAdCallback).reportAdImpression()
   }
 
   @Test
