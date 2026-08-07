@@ -18,13 +18,15 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.ERROR_AD_NOT_READY
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
@@ -36,7 +38,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -50,16 +51,14 @@ class PubMaticInterstitialAdTests {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
 
-  private val mediationInterstitialAdCallback = mock<MediationInterstitialAdCallback>()
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
 
-  private val mediationAdLoadCallback =
-    mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>> {
-      on { onSuccess(any()) } doReturn mediationInterstitialAdCallback
-    }
+  private val interstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
 
   private val pobInterstitial = mock<POBInterstitial>()
-
-  private val adErrorCaptor = argumentCaptor<AdError>()
 
   private val pubMaticAdFactory =
     mock<PubMaticAdFactory> { on { createPOBInterstitial(any()) } doReturn pobInterstitial }
@@ -82,7 +81,7 @@ class PubMaticInterstitialAdTests {
   fun setUp() {
     PubMaticInterstitialAd.newInstance(
         mediationInterstitialAdConfiguration,
-        mediationAdLoadCallback,
+        interstitialAdLoadCallback,
         pubMaticAdFactory,
         isRtb = true,
       )
@@ -93,7 +92,7 @@ class PubMaticInterstitialAdTests {
   fun onAdReceived_invokesLoadSuccessCallback() {
     pubMaticInterstitialAd.onAdReceived(pobInterstitial)
 
-    verify(mediationAdLoadCallback).onSuccess(pubMaticInterstitialAd)
+    assertThat(interstitialAdLoadCallback).hasSucceededWith(pubMaticInterstitialAd)
   }
 
   @Test
@@ -102,10 +101,8 @@ class PubMaticInterstitialAdTests {
 
     pubMaticInterstitialAd.onAdFailedToLoad(pobInterstitial, pobError)
 
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_PUBMATIC_AD_LOAD_FAILURE)
-    assertThat(adError.domain).isEqualTo(SDK_ERROR_DOMAIN)
+    val expectedError = AdError(pobError.errorCode, pobError.errorMessage, SDK_ERROR_DOMAIN)
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -125,10 +122,9 @@ class PubMaticInterstitialAdTests {
 
     pubMaticInterstitialAd.showAd(context)
 
-    verify(mediationInterstitialAdCallback).onAdFailedToShow(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_AD_NOT_READY)
-    assertThat(adError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+    val expectedError = AdError(ERROR_AD_NOT_READY, "Ad not ready", ADAPTER_ERROR_DOMAIN)
+    assertThat(interstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(interstitialAdCallback.error).isEqualTo(expectedError)
   }
 
   @Test
@@ -139,10 +135,9 @@ class PubMaticInterstitialAdTests {
 
     pubMaticInterstitialAd.onAdFailedToShow(pobInterstitial, pobError)
 
-    verify(mediationInterstitialAdCallback).onAdFailedToShow(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_PUBMATIC_AD_SHOW_FAILURE)
-    assertThat(adError.domain).isEqualTo(SDK_ERROR_DOMAIN)
+    val expectedError = AdError(pobError.errorCode, pobError.errorMessage, SDK_ERROR_DOMAIN)
+    assertThat(interstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(interstitialAdCallback.error).isEqualTo(expectedError)
   }
 
   @Test
@@ -152,7 +147,7 @@ class PubMaticInterstitialAdTests {
 
     pubMaticInterstitialAd.onAdImpression(pobInterstitial)
 
-    verify(mediationInterstitialAdCallback).reportAdImpression()
+    assertThat(interstitialAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -162,7 +157,7 @@ class PubMaticInterstitialAdTests {
 
     pubMaticInterstitialAd.onAdClicked(pobInterstitial)
 
-    verify(mediationInterstitialAdCallback).reportAdClicked()
+    assertThat(interstitialAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -172,7 +167,7 @@ class PubMaticInterstitialAdTests {
 
     pubMaticInterstitialAd.onAppLeaving(pobInterstitial)
 
-    verify(mediationInterstitialAdCallback).onAdLeftApplication()
+    assertThat(interstitialAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -182,7 +177,7 @@ class PubMaticInterstitialAdTests {
 
     pubMaticInterstitialAd.onAdOpened(pobInterstitial)
 
-    verify(mediationInterstitialAdCallback).onAdOpened()
+    assertThat(interstitialAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -192,7 +187,7 @@ class PubMaticInterstitialAdTests {
 
     pubMaticInterstitialAd.onAdClosed(pobInterstitial)
 
-    verify(mediationInterstitialAdCallback).onAdClosed()
+    assertThat(interstitialAdCallback.isClosed).isTrue()
   }
 
   private companion object {
