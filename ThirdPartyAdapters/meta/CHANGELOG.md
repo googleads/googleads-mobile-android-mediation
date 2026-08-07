@@ -1,5 +1,10 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
+#### Next version
+
+- Updated to report native ad impression when Meta logs impression for native
+  ads.
+
 #### Version 6.22.0.0
 - Verified compatibility with Meta Audience Network SDK v6.22.0.
 

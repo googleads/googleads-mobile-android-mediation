@@ -141,7 +141,7 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
 
     @Override
     public void onLoggingImpression(Ad ad) {
-      // Google Mobile Ads handles impression tracking.
+      nativeAdCallback.reportAdImpression();
     }
 
     @Override

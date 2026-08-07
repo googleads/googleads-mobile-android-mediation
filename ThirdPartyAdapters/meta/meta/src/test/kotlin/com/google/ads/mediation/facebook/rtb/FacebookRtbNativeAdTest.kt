@@ -354,8 +354,7 @@ class FacebookRtbNativeAdTest {
 
     nativeAdListener.onLoggingImpression(metaNativeAd)
 
-    // nativeAdListener.onLoggingImpression() is a no-op. So, this test is just a sanity-check that
-    // there is no crash when it is called.
+    verify(nativeAdCallback).reportAdImpression()
   }
 
   @Test
