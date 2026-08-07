@@ -2,12 +2,12 @@ package com.google.ads.mediation.applovin
 
 import android.content.Context
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.applovin.mediation.AppLovinUtils.ERROR_MSG_REASON_PREFIX
+import com.applovin.mediation.AppLovinUtils
 import com.applovin.sdk.AppLovinAd
 import com.applovin.sdk.AppLovinErrorCodes
-import com.google.ads.mediation.applovin.AppLovinMediationAdapter.APPLOVIN_SDK_ERROR_DOMAIN
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
@@ -15,11 +15,7 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
 
 @RunWith(AndroidJUnit4::class)
 class AppLovinInterstitialRendererTest {
@@ -28,13 +24,11 @@ class AppLovinInterstitialRendererTest {
   private lateinit var appLovinMediationInterstitialAd: AppLovinInterstitialRenderer
 
   private val appLovinAd: AppLovinAd = mock()
-  private val interstitialAdConfiguration: MediationInterstitialAdConfiguration = mock()
-  private val interstitialAdCallback: MediationInterstitialAdCallback = mock()
-  private val interstitialAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn interstitialAdCallback
-    }
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
+  private val interstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
   private val appLovinSdkWrapper: AppLovinSdkWrapper = AppLovinSdkWrapper()
   private val appLovinInitializer: AppLovinInitializer = AppLovinInitializer(appLovinSdkWrapper)
   private val appLovinAdFactory: AppLovinAdFactory = AppLovinAdFactory()
@@ -58,20 +52,15 @@ class AppLovinInterstitialRendererTest {
   fun adReceived_invokesOnSuccess() {
     appLovinMediationInterstitialAd.adReceived(appLovinAd)
 
-    verify(interstitialAdLoadCallback).onSuccess(appLovinMediationInterstitialAd)
+    assertThat(interstitialAdLoadCallback).hasSucceededWith(appLovinMediationInterstitialAd)
   }
 
   @Test
   fun failedToReceiveAd_invokesOnFailure() {
-    val adErrorCaptor = argumentCaptor<AdError>()
-
     appLovinMediationInterstitialAd.failedToReceiveAd(AppLovinErrorCodes.NO_FILL)
 
-    verify(interstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(AppLovinErrorCodes.NO_FILL)
-    assertThat(capturedError.message).startsWith(ERROR_MSG_REASON_PREFIX)
-    assertThat(capturedError.domain).isEqualTo(APPLOVIN_SDK_ERROR_DOMAIN)
+    val expectedError = AppLovinUtils.getAdError(AppLovinErrorCodes.NO_FILL)
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -81,8 +70,8 @@ class AppLovinInterstitialRendererTest {
 
     appLovinMediationInterstitialAd.adDisplayed(appLovinAd)
 
-    verify(interstitialAdCallback).onAdOpened()
-    verify(interstitialAdCallback).reportAdImpression()
+    assertThat(interstitialAdCallback.isOpened).isTrue()
+    assertThat(interstitialAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -92,7 +81,7 @@ class AppLovinInterstitialRendererTest {
 
     appLovinMediationInterstitialAd.adHidden(appLovinAd)
 
-    verify(interstitialAdCallback).onAdClosed()
+    assertThat(interstitialAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -102,7 +91,7 @@ class AppLovinInterstitialRendererTest {
 
     appLovinMediationInterstitialAd.adClicked(appLovinAd)
 
-    verify(interstitialAdCallback).reportAdClicked()
-    verify(interstitialAdCallback).onAdLeftApplication()
+    assertThat(interstitialAdCallback.isClicked).isTrue()
+    assertThat(interstitialAdCallback.isLeftApplication).isTrue()
   }
 }

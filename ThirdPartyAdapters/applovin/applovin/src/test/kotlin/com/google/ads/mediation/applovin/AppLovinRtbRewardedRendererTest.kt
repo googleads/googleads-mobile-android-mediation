@@ -12,7 +12,8 @@ import com.applovin.sdk.AppLovinAd
 import com.applovin.sdk.AppLovinAdService
 import com.applovin.sdk.AppLovinSdk
 import com.applovin.sdk.AppLovinSdkSettings
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
@@ -59,10 +60,11 @@ class AppLovinRtbRewardedRendererTest {
     on { serverParameters } doReturn serverParameters
     on { mediationExtras } doReturn mediationExtras
   }
-  private val rewardedAdCallback: MediationRewardedAdCallback = mock()
-  private val rewardedAdLoadCallback:
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
-    mock()
+  private val rewardedAdCallback = FakeMediationRewardedAdCallback()
+  private val rewardedAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      rewardedAdCallback
+    )
 
   @Before
   fun setUp() {
