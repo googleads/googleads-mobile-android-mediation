@@ -153,6 +153,7 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
     testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.3.0'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test:2.3.0'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
     testImplementation 'org.robolectric:robolectric:4.9'
     testImplementation project(':adaptertestkit')

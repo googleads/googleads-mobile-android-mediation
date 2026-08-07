@@ -74,10 +74,11 @@ import com.moloco.sdk.publisher.MolocoInitializationListener
 import com.moloco.sdk.publisher.NativeAd
 import com.moloco.sdk.publisher.RewardedInterstitialAd
 import com.moloco.sdk.publisher.init.MolocoInitParams
-import org.junit.Assert.assertEquals
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.MockedStatic
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
@@ -91,8 +92,9 @@ import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class MolocoMediationAdapterTest {
-  // Subject of testing
+
   private lateinit var adapter: MolocoMediationAdapter
+  private lateinit var mockMoloco: MockedStatic<Moloco>
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val mockInitializationCompleteCallback = mock<InitializationCompleteCallback>()
@@ -116,6 +118,7 @@ class MolocoMediationAdapterTest {
 
   @Before
   fun setUp() {
+    mockMoloco = mockStatic(Moloco::class.java)
     adapter = MolocoMediationAdapter()
     val requestConfig =
       RequestConfiguration.Builder()
@@ -128,9 +131,14 @@ class MolocoMediationAdapterTest {
     MobileAds.setRequestConfiguration(requestConfig)
   }
 
+  @After
+  fun tearDown() {
+    mockMoloco.close()
+  }
+
   // region Version Tests
   @Test
-  fun getSDKVersionInfo_isSameAsMolocoSDKVersionName() {
+  fun getSDKVersionInfo_validSDKVersion_returnsVersionInfo() {
     adapter.assertGetSdkVersion(expectedValue = BuildConfig.SDK_VERSION_NAME)
   }
 
@@ -144,7 +152,7 @@ class MolocoMediationAdapterTest {
   }
 
   @Test
-  fun getVersionInfo_invalidVersion_returnsZeros() {
+  fun getVersionInfo_invalidVersion_returnsZeroVersionInfo() {
     mockStatic(MolocoAdapterUtils::class.java).use {
       whenever(MolocoAdapterUtils.adapterVersion) doReturn "4.3.2"
 
@@ -178,48 +186,65 @@ class MolocoMediationAdapterTest {
 
   @Test
   fun initialize_withMultipleAppIds_invokesInitializeOnlyOnce() {
-    mockStatic(Moloco::class.java).use { mockMoloco ->
-      val serverParameters1 = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
-      val serverParameters2 = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_2)
-      val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters1)
-      val mediationConfiguration2 = createMediationConfiguration(AdFormat.BANNER, serverParameters2)
-      val initParamsCaptor = argumentCaptor<MolocoInitParams>()
+    val serverParameters1 = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
+    val serverParameters2 = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_2)
+    val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters1)
+    val mediationConfiguration2 = createMediationConfiguration(AdFormat.BANNER, serverParameters2)
+    val initParamsCaptor = argumentCaptor<MolocoInitParams>()
 
-      adapter.initialize(
-        context,
-        mockInitializationCompleteCallback,
-        listOf(mediationConfiguration, mediationConfiguration2),
-      )
+    adapter.initialize(
+      context,
+      mockInitializationCompleteCallback,
+      listOf(mediationConfiguration, mediationConfiguration2),
+    )
 
-      mockMoloco.verify({ initialize(initParamsCaptor.capture(), any()) }, times(1))
-      assertEquals(initParamsCaptor.firstValue.appKey, TEST_APP_KEY_1)
-    }
+    mockMoloco.verify({ initialize(initParamsCaptor.capture(), any()) }, times(1))
+    assertThat(initParamsCaptor.firstValue.appKey).isEqualTo(TEST_APP_KEY_1)
   }
 
   @Test
   fun initialize_withCorrectApplicationKey_invokesMolocoInitialize() {
-    mockStatic(Moloco::class.java).use { mockMoloco ->
-      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
-      val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
+    val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
 
-      adapter.initialize(
-        context,
-        mockInitializationCompleteCallback,
-        listOf(mediationConfiguration),
-      )
+    adapter.initialize(context, mockInitializationCompleteCallback, listOf(mediationConfiguration))
 
-      mockMoloco.verify { initialize(molocoInitParamsCaptor.capture(), any()) }
-    }
+    mockMoloco.verify { initialize(molocoInitParamsCaptor.capture(), any()) }
     val molocoInitParams = molocoInitParamsCaptor.firstValue
     assertThat(molocoInitParams.mediationInfo.name).isEqualTo(MEDIATION_PLATFORM_NAME)
+    assertThat(molocoInitParams.appKey).isEqualTo(TEST_APP_KEY_1)
   }
 
   @Test
   fun initialize_initializationFailure_invokesOnInitializationFailed() {
-    mockStatic(Moloco::class.java).use { mockMoloco ->
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
+    val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+    val molocoCallbackCaptor = argumentCaptor<MolocoInitializationListener>()
+
+    adapter.initialize(context, mockInitializationCompleteCallback, listOf(mediationConfiguration))
+
+    mockMoloco.verify({ initialize(any(), molocoCallbackCaptor.capture()) }, times(1))
+    val molocoCallback = molocoCallbackCaptor.firstValue
+    molocoCallback.onMolocoInitializationStatus(
+      MolocoInitStatus(Initialization.FAILURE, "TestError")
+    )
+    verify(mockInitializationCompleteCallback)
+      .onInitializationFailed("Moloco SDK failed to initialize: TestError.")
+  }
+
+  @Test
+  fun initialize_initializationSuccess_invokesOnInitializationSucceededAndConfiguresTFUABit() {
+    mockStatic(MolocoAdapterUtils::class.java).use { mockedMolocoUtils ->
       val serverParameters = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
       val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
       val molocoCallbackCaptor = argumentCaptor<MolocoInitializationListener>()
+      val requestConfig =
+        RequestConfiguration.Builder()
+          .setTagForChildDirectedTreatment(
+            RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
+          )
+          .build()
+      MobileAds.setRequestConfiguration(requestConfig)
 
       adapter.initialize(
         context,
@@ -229,73 +254,91 @@ class MolocoMediationAdapterTest {
 
       mockMoloco.verify({ initialize(any(), molocoCallbackCaptor.capture()) }, times(1))
       val molocoCallback = molocoCallbackCaptor.firstValue
-      molocoCallback.onMolocoInitializationStatus(
-        MolocoInitStatus(Initialization.FAILURE, "TestError")
-      )
-      verify(mockInitializationCompleteCallback)
-        .onInitializationFailed("Moloco SDK failed to initialize: TestError.")
+      molocoCallback.onMolocoInitializationStatus(MolocoInitStatus(Initialization.SUCCESS, "Test"))
+      mockedMolocoUtils.verify { setMolocoIsAgeRestricted(true) }
+      verify(mockInitializationCompleteCallback).onInitializationSucceeded()
     }
   }
 
   @Test
-  fun initialize_initializationSuccess_invokesOnInitializationSucceededAndConfiguresTFUABit() {
+  fun initialize_withTagForUnderAgeOfConsentTrue_configuresPrivacyTrue() {
     mockStatic(MolocoAdapterUtils::class.java).use { mockedMolocoUtils ->
-      mockStatic(Moloco::class.java).use { mockedMoloco ->
-        val serverParameters = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
-        val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
-        val molocoCallbackCaptor = argumentCaptor<MolocoInitializationListener>()
-        val requestConfig =
-          RequestConfiguration.Builder()
-            .setTagForChildDirectedTreatment(
-              RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
-            )
-            .build()
-        MobileAds.setRequestConfiguration(requestConfig)
+      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
+      val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+      val molocoCallbackCaptor = argumentCaptor<MolocoInitializationListener>()
+      val requestConfig =
+        RequestConfiguration.Builder()
+          .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+          .build()
+      MobileAds.setRequestConfiguration(requestConfig)
 
-        adapter.initialize(
-          context,
-          mockInitializationCompleteCallback,
-          listOf(mediationConfiguration),
-        )
+      adapter.initialize(
+        context,
+        mockInitializationCompleteCallback,
+        listOf(mediationConfiguration),
+      )
 
-        mockedMoloco.verify({ initialize(any(), molocoCallbackCaptor.capture()) }, times(1))
-        val molocoCallback = molocoCallbackCaptor.firstValue
-        molocoCallback.onMolocoInitializationStatus(
-          MolocoInitStatus(Initialization.SUCCESS, "Test")
-        )
-        mockedMolocoUtils.verify { setMolocoIsAgeRestricted(true) }
-        verify(mockInitializationCompleteCallback).onInitializationSucceeded()
-      }
+      mockMoloco.verify({ initialize(any(), molocoCallbackCaptor.capture()) }, times(1))
+      val molocoCallback = molocoCallbackCaptor.firstValue
+      molocoCallback.onMolocoInitializationStatus(MolocoInitStatus(Initialization.SUCCESS, "Test"))
+      mockedMolocoUtils.verify { setMolocoIsAgeRestricted(true) }
+      verify(mockInitializationCompleteCallback).onInitializationSucceeded()
     }
   }
 
   @Test
   fun initialize_withAgeRestrictedTreatmentChild_configuresPrivacyTrue() {
     mockStatic(MolocoAdapterUtils::class.java).use { mockedMolocoUtils ->
-      mockStatic(Moloco::class.java).use { mockedMoloco ->
-        val serverParameters = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
-        val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
-        val molocoCallbackCaptor = argumentCaptor<MolocoInitializationListener>()
-        val requestConfig =
-          RequestConfiguration.Builder()
-            .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
-            .build()
-        MobileAds.setRequestConfiguration(requestConfig)
+      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
+      val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+      val molocoCallbackCaptor = argumentCaptor<MolocoInitializationListener>()
+      val requestConfig =
+        RequestConfiguration.Builder()
+          .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
+          .build()
+      MobileAds.setRequestConfiguration(requestConfig)
 
-        adapter.initialize(
-          context,
-          mockInitializationCompleteCallback,
-          listOf(mediationConfiguration),
-        )
+      adapter.initialize(
+        context,
+        mockInitializationCompleteCallback,
+        listOf(mediationConfiguration),
+      )
 
-        mockedMoloco.verify({ initialize(any(), molocoCallbackCaptor.capture()) }, times(1))
-        val molocoCallback = molocoCallbackCaptor.firstValue
-        molocoCallback.onMolocoInitializationStatus(
-          MolocoInitStatus(Initialization.SUCCESS, "Test")
-        )
-        mockedMolocoUtils.verify { setMolocoIsAgeRestricted(true) }
-        verify(mockInitializationCompleteCallback).onInitializationSucceeded()
-      }
+      mockMoloco.verify({ initialize(any(), molocoCallbackCaptor.capture()) }, times(1))
+      val molocoCallback = molocoCallbackCaptor.firstValue
+      molocoCallback.onMolocoInitializationStatus(MolocoInitStatus(Initialization.SUCCESS, "Test"))
+      mockedMolocoUtils.verify { setMolocoIsAgeRestricted(true) }
+      verify(mockInitializationCompleteCallback).onInitializationSucceeded()
+    }
+  }
+
+  @Test
+  fun initialize_withUnspecifiedPrivacy_configuresPrivacyFalse() {
+    mockStatic(MolocoAdapterUtils::class.java).use { mockedMolocoUtils ->
+      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_APP_KEY to TEST_APP_KEY_1)
+      val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+      val molocoCallbackCaptor = argumentCaptor<MolocoInitializationListener>()
+      val requestConfig =
+        RequestConfiguration.Builder()
+          .setTagForChildDirectedTreatment(
+            RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
+          )
+          .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
+          .setAgeRestrictedTreatment(AgeRestrictedTreatment.UNSPECIFIED)
+          .build()
+      MobileAds.setRequestConfiguration(requestConfig)
+
+      adapter.initialize(
+        context,
+        mockInitializationCompleteCallback,
+        listOf(mediationConfiguration),
+      )
+
+      mockMoloco.verify({ initialize(any(), molocoCallbackCaptor.capture()) }, times(1))
+      val molocoCallback = molocoCallbackCaptor.firstValue
+      molocoCallback.onMolocoInitializationStatus(MolocoInitStatus(Initialization.SUCCESS, "Test"))
+      mockedMolocoUtils.verify { setMolocoIsAgeRestricted(false) }
+      verify(mockInitializationCompleteCallback).onInitializationSucceeded()
     }
   }
 
@@ -306,49 +349,45 @@ class MolocoMediationAdapterTest {
 
   // endregion
 
-  // region collectSignals test
+  // region collectSignals Tests
   @Test
   fun collectSignals_withNullErrorType_invokesOnSuccess() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val tokenCallback = argumentCaptor<MolocoBidTokenListener>()
+    val tokenCallback = argumentCaptor<MolocoBidTokenListener>()
 
-      adapter.collectSignals(rtbSignalData, mockSignalCallbacks)
+    adapter.collectSignals(rtbSignalData, mockSignalCallbacks)
 
-      val mediationInfoCaptor = argumentCaptor<MediationInfo>()
-      mockedMoloco.verify {
-        getBidToken(mediationInfoCaptor.capture(), eq(context), tokenCallback.capture())
-      }
-      assertThat(mediationInfoCaptor.firstValue.name).isEqualTo(MEDIATION_PLATFORM_NAME)
-      tokenCallback.firstValue.onBidTokenResult(TEST_BID_RESPONSE, null)
-      verify(mockSignalCallbacks).onSuccess(TEST_BID_RESPONSE)
+    val mediationInfoCaptor = argumentCaptor<MediationInfo>()
+    mockMoloco.verify {
+      getBidToken(mediationInfoCaptor.capture(), eq(context), tokenCallback.capture())
     }
+    assertThat(mediationInfoCaptor.firstValue.name).isEqualTo(MEDIATION_PLATFORM_NAME)
+    tokenCallback.firstValue.onBidTokenResult(TEST_BID_RESPONSE, null)
+    verify(mockSignalCallbacks).onSuccess(TEST_BID_RESPONSE)
   }
 
   @Test
   fun collectSignals_withErrorType_invokesOnFailure() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val tokenCallback = argumentCaptor<MolocoBidTokenListener>()
+    val tokenCallback = argumentCaptor<MolocoBidTokenListener>()
 
-      adapter.collectSignals(rtbSignalData, mockSignalCallbacks)
+    adapter.collectSignals(rtbSignalData, mockSignalCallbacks)
 
-      mockedMoloco.verify { getBidToken(any(), eq(context), tokenCallback.capture()) }
-      tokenCallback.firstValue.onBidTokenResult(
-        TEST_BID_RESPONSE,
-        MolocoAdError.ErrorType.AD_BID_PARSE_ERROR,
+    mockMoloco.verify { getBidToken(any(), eq(context), tokenCallback.capture()) }
+    tokenCallback.firstValue.onBidTokenResult(
+      TEST_BID_RESPONSE,
+      MolocoAdError.ErrorType.AD_BID_PARSE_ERROR,
+    )
+    val expectedAdError =
+      AdError(
+        MolocoAdError.ErrorType.AD_BID_PARSE_ERROR.errorCode,
+        MolocoAdError.ErrorType.AD_BID_PARSE_ERROR.description,
+        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
       )
-      val expectedAdError =
-        AdError(
-          MolocoAdError.ErrorType.AD_BID_PARSE_ERROR.errorCode,
-          MolocoAdError.ErrorType.AD_BID_PARSE_ERROR.description,
-          MolocoMediationAdapter.SDK_ERROR_DOMAIN,
-        )
-      verify(mockSignalCallbacks).onFailure(argThat(AdErrorMatcher(expectedAdError)))
-    }
+    verify(mockSignalCallbacks).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   // endregion
 
-  // region Interstitial tests
+  // region Interstitial Tests
   @Test
   fun loadRtbInterstitialAd_withNullAdUnit_invokesOnFailure() {
     val mediationInterstitialAdConfiguration = createMediationInterstitialAdConfiguration()
@@ -391,101 +430,94 @@ class MolocoMediationAdapterTest {
 
   @Test
   fun loadRtbInterstitialAd_whenAdIsCreated_loadsMolocoInterstitial() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
-      val mediationInterstitialAdConfiguration =
-        createMediationInterstitialAdConfiguration(TEST_BID_RESPONSE, serverParameters)
-      val createInterstitialCaptor = argumentCaptor<CreateInterstitialAdCallback>()
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+    val mediationInterstitialAdConfiguration =
+      createMediationInterstitialAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+    val createInterstitialCaptor = argumentCaptor<CreateInterstitialAdCallback>()
 
-      adapter.loadRtbInterstitialAd(
-        mediationInterstitialAdConfiguration,
-        mockMediationInterstitialAdLoadCallback,
+    adapter.loadRtbInterstitialAd(
+      mediationInterstitialAdConfiguration,
+      mockMediationInterstitialAdLoadCallback,
+    )
+
+    val mediationInfoCaptor = argumentCaptor<MediationInfo>()
+    mockMoloco.verify {
+      createInterstitial(
+        mediationInfoCaptor.capture(),
+        eq(TEST_AD_UNIT),
+        eq(TEST_WATERMARK),
+        createInterstitialCaptor.capture(),
       )
-
-      val mediationInfoCaptor = argumentCaptor<MediationInfo>()
-      mockedMoloco.verify {
-        createInterstitial(
-          mediationInfoCaptor.capture(),
-          eq(TEST_AD_UNIT),
-          eq(TEST_WATERMARK),
-          createInterstitialCaptor.capture(),
-        )
-      }
-      assertThat(mediationInfoCaptor.firstValue.name).isEqualTo(MEDIATION_PLATFORM_NAME)
-      val capturedCallback = createInterstitialCaptor.firstValue
-      capturedCallback.invoke(mockInterstitialAd, /* error= */ null)
-      verify(mockInterstitialAd).load(eq(TEST_BID_RESPONSE), any())
     }
+    assertThat(mediationInfoCaptor.firstValue.name).isEqualTo(MEDIATION_PLATFORM_NAME)
+    val capturedCallback = createInterstitialCaptor.firstValue
+    capturedCallback.invoke(mockInterstitialAd, /* error= */ null)
+    verify(mockInterstitialAd).load(eq(TEST_BID_RESPONSE), any())
   }
 
   @Test
   fun loadRtbInterstitialAd_whenMolocoErrorIsReported_invokesOnFailure() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
-      val mediationInterstitialAdConfiguration =
-        createMediationInterstitialAdConfiguration(TEST_BID_RESPONSE, serverParameters)
-      val createInterstitialCaptor = argumentCaptor<CreateInterstitialAdCallback>()
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+    val mediationInterstitialAdConfiguration =
+      createMediationInterstitialAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+    val createInterstitialCaptor = argumentCaptor<CreateInterstitialAdCallback>()
 
-      adapter.loadRtbInterstitialAd(
-        mediationInterstitialAdConfiguration,
-        mockMediationInterstitialAdLoadCallback,
+    adapter.loadRtbInterstitialAd(
+      mediationInterstitialAdConfiguration,
+      mockMediationInterstitialAdLoadCallback,
+    )
+    mockMoloco.verify {
+      createInterstitial(
+        any(),
+        eq(TEST_AD_UNIT),
+        eq(TEST_WATERMARK),
+        createInterstitialCaptor.capture(),
       )
-      mockedMoloco.verify {
-        createInterstitial(
-          any(),
-          eq(TEST_AD_UNIT),
-          eq(TEST_WATERMARK),
-          createInterstitialCaptor.capture(),
-        )
-      }
-      val capturedCallback = createInterstitialCaptor.firstValue
-      // An example Moloco ad creation error.
-      val molocoError = MolocoAdError.AdCreateError.SDK_INIT_FAILED
-      capturedCallback.invoke(/* interstitialAd= */ null, molocoError)
-
-      val expectedAdError =
-        AdError(
-          MolocoAdError.AdCreateError.SDK_INIT_FAILED.errorCode,
-          MolocoAdError.AdCreateError.SDK_INIT_FAILED.description,
-          MolocoMediationAdapter.SDK_ERROR_DOMAIN,
-        )
-      verify(mockMediationInterstitialAdLoadCallback)
-        .onFailure(argThat(AdErrorMatcher(expectedAdError)))
     }
+    val capturedCallback = createInterstitialCaptor.firstValue
+    val molocoError = MolocoAdError.AdCreateError.SDK_INIT_FAILED
+    capturedCallback.invoke(/* returnedAd= */ null, molocoError)
+
+    val expectedAdError =
+      AdError(
+        MolocoAdError.AdCreateError.SDK_INIT_FAILED.errorCode,
+        MolocoAdError.AdCreateError.SDK_INIT_FAILED.description,
+        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    verify(mockMediationInterstitialAdLoadCallback)
+      .onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   @Test
   fun loadRtbInterstitialAd_whenAdIsNullAndNoMolocoErrorIsReported_invokesOnFailure() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
-      val mediationInterstitialAdConfiguration =
-        createMediationInterstitialAdConfiguration(TEST_BID_RESPONSE, serverParameters)
-      val createInterstitialCaptor = argumentCaptor<CreateInterstitialAdCallback>()
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+    val mediationInterstitialAdConfiguration =
+      createMediationInterstitialAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+    val createInterstitialCaptor = argumentCaptor<CreateInterstitialAdCallback>()
 
-      adapter.loadRtbInterstitialAd(
-        mediationInterstitialAdConfiguration,
-        mockMediationInterstitialAdLoadCallback,
+    adapter.loadRtbInterstitialAd(
+      mediationInterstitialAdConfiguration,
+      mockMediationInterstitialAdLoadCallback,
+    )
+
+    mockMoloco.verify {
+      createInterstitial(
+        any(),
+        eq(TEST_AD_UNIT),
+        eq(TEST_WATERMARK),
+        createInterstitialCaptor.capture(),
       )
-
-      mockedMoloco.verify {
-        createInterstitial(
-          any(),
-          eq(TEST_AD_UNIT),
-          eq(TEST_WATERMARK),
-          createInterstitialCaptor.capture(),
-        )
-      }
-      val capturedCallback = createInterstitialCaptor.firstValue
-      capturedCallback.invoke(/* interstitialAd= */ null, /* error= */ null)
-      val expectedAdError =
-        AdError(
-          MolocoMediationAdapter.ERROR_CODE_AD_IS_NULL,
-          MolocoMediationAdapter.ERROR_MSG_AD_IS_NULL,
-          MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
-        )
-      verify(mockMediationInterstitialAdLoadCallback)
-        .onFailure(argThat(AdErrorMatcher(expectedAdError)))
     }
+    val capturedCallback = createInterstitialCaptor.firstValue
+    capturedCallback.invoke(/* returnedAd= */ null, /* error= */ null)
+    val expectedAdError =
+      AdError(
+        MolocoMediationAdapter.ERROR_CODE_AD_IS_NULL,
+        MolocoMediationAdapter.ERROR_MSG_AD_IS_NULL,
+        MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    verify(mockMediationInterstitialAdLoadCallback)
+      .onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   private fun createMediationInterstitialAdConfiguration(
@@ -507,7 +539,7 @@ class MolocoMediationAdapterTest {
 
   // endregion
 
-  // region Rewarded tests
+  // region Rewarded Tests
   @Test
   fun loadRtbRewardedAd_withNullAdUnit_invokesOnFailure() {
     val mediationRewardedAdConfiguration = createMediationRewardedAdConfiguration()
@@ -542,101 +574,83 @@ class MolocoMediationAdapterTest {
 
   @Test
   fun loadRtbRewardedAd_whenAdIsCreated_loadsMolocoRewarded() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
-      val mediationRewardedAdConfiguration =
-        createMediationRewardedAdConfiguration(TEST_BID_RESPONSE, serverParameters)
-      val createRewardedCaptor = argumentCaptor<CreateRewardedInterstitialAdCallback>()
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+    val mediationRewardedAdConfiguration =
+      createMediationRewardedAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+    val createRewardedCaptor = argumentCaptor<CreateRewardedInterstitialAdCallback>()
 
-      adapter.loadRtbRewardedAd(
-        mediationRewardedAdConfiguration,
-        mockMediationRewardedAdLoadCallback,
+    adapter.loadRtbRewardedAd(mediationRewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+
+    val mediationInfoCaptor = argumentCaptor<MediationInfo>()
+    mockMoloco.verify {
+      createRewardedInterstitial(
+        mediationInfoCaptor.capture(),
+        eq(TEST_AD_UNIT),
+        eq(TEST_WATERMARK),
+        createRewardedCaptor.capture(),
       )
-
-      val mediationInfoCaptor = argumentCaptor<MediationInfo>()
-      mockedMoloco.verify {
-        createRewardedInterstitial(
-          mediationInfoCaptor.capture(),
-          eq(TEST_AD_UNIT),
-          eq(TEST_WATERMARK),
-          createRewardedCaptor.capture(),
-        )
-      }
-      assertThat(mediationInfoCaptor.firstValue.name).isEqualTo(MEDIATION_PLATFORM_NAME)
-      val capturedCallback = createRewardedCaptor.firstValue
-      capturedCallback.invoke(mockRewardedAd, /* error= */ null)
-      verify(mockRewardedAd).load(eq(TEST_BID_RESPONSE), any())
     }
+    assertThat(mediationInfoCaptor.firstValue.name).isEqualTo(MEDIATION_PLATFORM_NAME)
+    val capturedCallback = createRewardedCaptor.firstValue
+    capturedCallback.invoke(mockRewardedAd, /* error= */ null)
+    verify(mockRewardedAd).load(eq(TEST_BID_RESPONSE), any())
   }
 
   @Test
   fun loadRtbRewardedAd_whenMolocoErrorIsReported_invokesOnFailure() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
-      val mediationRewardedAdConfiguration =
-        createMediationRewardedAdConfiguration(TEST_BID_RESPONSE, serverParameters)
-      val createRewardedCaptor = argumentCaptor<CreateRewardedInterstitialAdCallback>()
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+    val mediationRewardedAdConfiguration =
+      createMediationRewardedAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+    val createRewardedCaptor = argumentCaptor<CreateRewardedInterstitialAdCallback>()
 
-      adapter.loadRtbRewardedAd(
-        mediationRewardedAdConfiguration,
-        mockMediationRewardedAdLoadCallback,
+    adapter.loadRtbRewardedAd(mediationRewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+    mockMoloco.verify {
+      createRewardedInterstitial(
+        any(),
+        eq(TEST_AD_UNIT),
+        eq(TEST_WATERMARK),
+        createRewardedCaptor.capture(),
       )
-      mockedMoloco.verify {
-        createRewardedInterstitial(
-          any(),
-          eq(TEST_AD_UNIT),
-          eq(TEST_WATERMARK),
-          createRewardedCaptor.capture(),
-        )
-      }
-      val capturedCallback = createRewardedCaptor.firstValue
-      // An example Moloco ad creation error.
-      val molocoError = MolocoAdError.AdCreateError.SDK_INIT_FAILED
-      capturedCallback.invoke(/* rewardedAd= */ null, molocoError)
-
-      val expectedAdError =
-        AdError(
-          MolocoAdError.AdCreateError.SDK_INIT_FAILED.errorCode,
-          MolocoAdError.AdCreateError.SDK_INIT_FAILED.description,
-          MolocoMediationAdapter.SDK_ERROR_DOMAIN,
-        )
-      verify(mockMediationRewardedAdLoadCallback)
-        .onFailure(argThat(AdErrorMatcher(expectedAdError)))
     }
+    val capturedCallback = createRewardedCaptor.firstValue
+    val molocoError = MolocoAdError.AdCreateError.SDK_INIT_FAILED
+    capturedCallback.invoke(/* returnedAd= */ null, molocoError)
+
+    val expectedAdError =
+      AdError(
+        MolocoAdError.AdCreateError.SDK_INIT_FAILED.errorCode,
+        MolocoAdError.AdCreateError.SDK_INIT_FAILED.description,
+        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   @Test
   fun loadRtbRewardedAd_whenAdIsNullAndNoMolocoErrorIsReported_invokesOnFailure() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
-      val mediationRewardedAdConfiguration =
-        createMediationRewardedAdConfiguration(TEST_BID_RESPONSE, serverParameters)
-      val createRewardedCaptor = argumentCaptor<CreateRewardedInterstitialAdCallback>()
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+    val mediationRewardedAdConfiguration =
+      createMediationRewardedAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+    val createRewardedCaptor = argumentCaptor<CreateRewardedInterstitialAdCallback>()
 
-      adapter.loadRtbRewardedAd(
-        mediationRewardedAdConfiguration,
-        mockMediationRewardedAdLoadCallback,
+    adapter.loadRtbRewardedAd(mediationRewardedAdConfiguration, mockMediationRewardedAdLoadCallback)
+
+    mockMoloco.verify {
+      createRewardedInterstitial(
+        any(),
+        eq(TEST_AD_UNIT),
+        eq(TEST_WATERMARK),
+        createRewardedCaptor.capture(),
       )
-
-      mockedMoloco.verify {
-        createRewardedInterstitial(
-          any(),
-          eq(TEST_AD_UNIT),
-          eq(TEST_WATERMARK),
-          createRewardedCaptor.capture(),
-        )
-      }
-      val capturedCallback = createRewardedCaptor.firstValue
-      capturedCallback.invoke(/* rewardedAd= */ null, /* error= */ null)
-      val expectedAdError =
-        AdError(
-          MolocoMediationAdapter.ERROR_CODE_AD_IS_NULL,
-          MolocoMediationAdapter.ERROR_MSG_AD_IS_NULL,
-          MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
-        )
-      verify(mockMediationRewardedAdLoadCallback)
-        .onFailure(argThat(AdErrorMatcher(expectedAdError)))
     }
+    val capturedCallback = createRewardedCaptor.firstValue
+    capturedCallback.invoke(/* returnedAd= */ null, /* error= */ null)
+    val expectedAdError =
+      AdError(
+        MolocoMediationAdapter.ERROR_CODE_AD_IS_NULL,
+        MolocoMediationAdapter.ERROR_MSG_AD_IS_NULL,
+        MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   private fun createMediationRewardedAdConfiguration(
@@ -658,7 +672,7 @@ class MolocoMediationAdapterTest {
 
   // endregion
 
-  // region Banner tests
+  // region Banner Tests
   @Test
   fun loadRtbBannerAd_withNullAdUnit_invokesOnFailure() {
     val mediationBannerAdConfiguration = createMediationBannerAdConfiguration()
@@ -692,228 +706,141 @@ class MolocoMediationAdapterTest {
   }
 
   @Test
-  fun loadRtbBannerAd_whenAdIsCreated_loadsMolocoBanner() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
-      val mediationBannerAdConfiguration =
-        createMediationBannerAdConfiguration(TEST_BID_RESPONSE, serverParameters)
-      val createBannerCaptor = argumentCaptor<CreateBannerCallback>()
+  fun loadRtbBannerAd_whenStandardBannerCreated_loadsMolocoBanner() {
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+    val mediationBannerAdConfiguration =
+      createMediationBannerAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+    val createBannerCaptor = argumentCaptor<CreateBannerCallback>()
 
-      adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
+    adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
 
-      val mediationInfoCaptor = argumentCaptor<MediationInfo>()
-      mockedMoloco.verify {
-        createMolocoBanner(
-          mediationInfoCaptor.capture(),
-          eq(TEST_AD_UNIT),
-          eq(BannerAdSize.Standard),
-          eq(TEST_WATERMARK),
-          createBannerCaptor.capture(),
-        )
-      }
-      assertThat(mediationInfoCaptor.firstValue.name).isEqualTo(MEDIATION_PLATFORM_NAME)
-      val capturedCallback = createBannerCaptor.firstValue
-      capturedCallback.invoke(mockBannerAd, /* error= */ null)
-      verify(mockBannerAd).load(eq(TEST_BID_RESPONSE), any())
+    val mediationInfoCaptor = argumentCaptor<MediationInfo>()
+    mockMoloco.verify {
+      createMolocoBanner(
+        mediationInfoCaptor.capture(),
+        eq(TEST_AD_UNIT),
+        eq(BannerAdSize.Standard),
+        eq(TEST_WATERMARK),
+        createBannerCaptor.capture(),
+      )
     }
+    assertThat(mediationInfoCaptor.firstValue.name).isEqualTo(MEDIATION_PLATFORM_NAME)
+    val capturedCallback = createBannerCaptor.firstValue
+    capturedCallback.invoke(mockBannerAd, /* error= */ null)
+    verify(mockBannerAd).load(eq(TEST_BID_RESPONSE), any())
   }
 
   @Test
   fun loadRtbBannerAd_whenMolocoErrorIsReported_invokesOnFailure() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
-      val mediationBannerAdConfiguration =
-        createMediationBannerAdConfiguration(TEST_BID_RESPONSE, serverParameters)
-      val createBannerCaptor = argumentCaptor<CreateBannerCallback>()
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+    val mediationBannerAdConfiguration =
+      createMediationBannerAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+    val createBannerCaptor = argumentCaptor<CreateBannerCallback>()
 
-      adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
-      mockedMoloco.verify {
-        createMolocoBanner(
-          any(),
-          eq(TEST_AD_UNIT),
-          eq(BannerAdSize.Standard),
-          eq(TEST_WATERMARK),
-          createBannerCaptor.capture(),
-        )
-      }
-      val capturedCallback = createBannerCaptor.firstValue
-      // An example Moloco ad creation error.
-      val molocoError = MolocoAdError.AdCreateError.SDK_INIT_FAILED
-      capturedCallback.invoke(/* banner= */ null, molocoError)
-
-      val expectedAdError =
-        AdError(
-          MolocoAdError.AdCreateError.SDK_INIT_FAILED.errorCode,
-          MolocoAdError.AdCreateError.SDK_INIT_FAILED.description,
-          MolocoMediationAdapter.SDK_ERROR_DOMAIN,
-        )
-      verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
+    mockMoloco.verify {
+      createMolocoBanner(
+        any(),
+        eq(TEST_AD_UNIT),
+        eq(BannerAdSize.Standard),
+        eq(TEST_WATERMARK),
+        createBannerCaptor.capture(),
+      )
     }
+    val capturedCallback = createBannerCaptor.firstValue
+    val molocoError = MolocoAdError.AdCreateError.SDK_INIT_FAILED
+    capturedCallback.invoke(/* banner= */ null, molocoError)
+
+    val expectedAdError =
+      AdError(
+        MolocoAdError.AdCreateError.SDK_INIT_FAILED.errorCode,
+        MolocoAdError.AdCreateError.SDK_INIT_FAILED.description,
+        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   @Test
   fun loadRtbBannerAd_whenAdIsNullAndNoMolocoErrorIsReported_invokesOnFailure() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
-      val mediationBannerAdConfiguration =
-        createMediationBannerAdConfiguration(TEST_BID_RESPONSE, serverParameters)
-      val createBannerCaptor = argumentCaptor<CreateBannerCallback>()
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+    val mediationBannerAdConfiguration =
+      createMediationBannerAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+    val createBannerCaptor = argumentCaptor<CreateBannerCallback>()
 
-      adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
+    adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
 
-      mockedMoloco.verify {
-        createMolocoBanner(
-          any(),
-          eq(TEST_AD_UNIT),
-          eq(BannerAdSize.Standard),
-          eq(TEST_WATERMARK),
-          createBannerCaptor.capture(),
-        )
-      }
-      val capturedCallback = createBannerCaptor.firstValue
-      capturedCallback.invoke(/* banner= */ null, /* error= */ null)
-      val expectedAdError =
-        AdError(
-          MolocoMediationAdapter.ERROR_CODE_AD_IS_NULL,
-          MolocoMediationAdapter.ERROR_MSG_AD_IS_NULL,
-          MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
-        )
-      verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    mockMoloco.verify {
+      createMolocoBanner(
+        any(),
+        eq(TEST_AD_UNIT),
+        eq(BannerAdSize.Standard),
+        eq(TEST_WATERMARK),
+        createBannerCaptor.capture(),
+      )
     }
+    val capturedCallback = createBannerCaptor.firstValue
+    capturedCallback.invoke(/* banner= */ null, /* error= */ null)
+    val expectedAdError =
+      AdError(
+        MolocoMediationAdapter.ERROR_CODE_AD_IS_NULL,
+        MolocoMediationAdapter.ERROR_MSG_AD_IS_NULL,
+        MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   @Test
-  fun loadRtbBannerAd_whenSizeIsMediumRectangle_loadsMolocoCreateMREC() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
-      val mediationBannerAdConfiguration =
-        createMediationBannerAdConfiguration(
-          TEST_BID_RESPONSE,
-          serverParameters,
-          AdSize.MEDIUM_RECTANGLE,
-        )
-      val createBannerCaptor = argumentCaptor<CreateBannerCallback>()
+  fun loadRtbBannerAd_whenSizeIsMediumRectangle_loadsMolocoBannerMREC() {
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+    val mediationBannerAdConfiguration =
+      createMediationBannerAdConfiguration(
+        TEST_BID_RESPONSE,
+        serverParameters,
+        AdSize.MEDIUM_RECTANGLE,
+      )
+    val createBannerCaptor = argumentCaptor<CreateBannerCallback>()
 
-      adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
+    adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
 
-      val mediationInfoCaptor = argumentCaptor<MediationInfo>()
-      mockedMoloco.verify {
-        createMolocoBanner(
-          mediationInfoCaptor.capture(),
-          eq(TEST_AD_UNIT),
-          eq(BannerAdSize.MREC),
-          eq(TEST_WATERMARK),
-          createBannerCaptor.capture(),
-        )
-      }
-      assertThat(mediationInfoCaptor.firstValue.name).isEqualTo(MEDIATION_PLATFORM_NAME)
-      val capturedCallback = createBannerCaptor.firstValue
-      capturedCallback.invoke(mockBannerAd, /* error= */ null)
-      verify(mockBannerAd).load(eq(TEST_BID_RESPONSE), any())
+    val mediationInfoCaptor = argumentCaptor<MediationInfo>()
+    mockMoloco.verify {
+      createMolocoBanner(
+        mediationInfoCaptor.capture(),
+        eq(TEST_AD_UNIT),
+        eq(BannerAdSize.MREC),
+        eq(TEST_WATERMARK),
+        createBannerCaptor.capture(),
+      )
     }
+    assertThat(mediationInfoCaptor.firstValue.name).isEqualTo(MEDIATION_PLATFORM_NAME)
+    val capturedCallback = createBannerCaptor.firstValue
+    capturedCallback.invoke(mockBannerAd, /* error= */ null)
+    verify(mockBannerAd).load(eq(TEST_BID_RESPONSE), any())
   }
 
   @Test
   fun loadRtbBannerAd_whenSizeIsLeaderboard_loadsMolocoBannerTablet() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
-      val mediationBannerAdConfiguration =
-        createMediationBannerAdConfiguration(
-          TEST_BID_RESPONSE,
-          serverParameters,
-          AdSize.LEADERBOARD,
-        )
-      val createBannerCaptor = argumentCaptor<CreateBannerCallback>()
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+    val mediationBannerAdConfiguration =
+      createMediationBannerAdConfiguration(TEST_BID_RESPONSE, serverParameters, AdSize.LEADERBOARD)
+    val createBannerCaptor = argumentCaptor<CreateBannerCallback>()
 
-      adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
+    adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
 
-      val mediationInfoCaptor = argumentCaptor<MediationInfo>()
-      mockedMoloco.verify {
-        createMolocoBanner(
-          mediationInfoCaptor.capture(),
-          eq(TEST_AD_UNIT),
-          eq(BannerAdSize.Tablet),
-          eq(TEST_WATERMARK),
-          createBannerCaptor.capture(),
-        )
-      }
-      assertThat(mediationInfoCaptor.firstValue.name).isEqualTo(MEDIATION_PLATFORM_NAME)
-      val capturedCallback = createBannerCaptor.firstValue
-      capturedCallback.invoke(mockBannerAd, /* error= */ null)
-      verify(mockBannerAd).load(eq(TEST_BID_RESPONSE), any())
+    val mediationInfoCaptor = argumentCaptor<MediationInfo>()
+    mockMoloco.verify {
+      createMolocoBanner(
+        mediationInfoCaptor.capture(),
+        eq(TEST_AD_UNIT),
+        eq(BannerAdSize.Tablet),
+        eq(TEST_WATERMARK),
+        createBannerCaptor.capture(),
+      )
     }
-  }
-
-  @Test
-  fun loadRtbBannerTabletAd_whenMolocoErrorIsReported_invokesOnFailure() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
-      val mediationBannerAdConfiguration =
-        createMediationBannerAdConfiguration(
-          TEST_BID_RESPONSE,
-          serverParameters,
-          AdSize.LEADERBOARD,
-        )
-      val createBannerCaptor = argumentCaptor<CreateBannerCallback>()
-
-      adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
-      mockedMoloco.verify {
-        createMolocoBanner(
-          any(),
-          eq(TEST_AD_UNIT),
-          eq(BannerAdSize.Tablet),
-          eq(TEST_WATERMARK),
-          createBannerCaptor.capture(),
-        )
-      }
-      val capturedCallback = createBannerCaptor.firstValue
-      // An example Moloco ad creation error.
-      val molocoError = MolocoAdError.AdCreateError.SDK_INIT_FAILED
-      capturedCallback.invoke(/* banner= */ null, molocoError)
-
-      val expectedAdError =
-        AdError(
-          MolocoAdError.AdCreateError.SDK_INIT_FAILED.errorCode,
-          MolocoAdError.AdCreateError.SDK_INIT_FAILED.description,
-          MolocoMediationAdapter.SDK_ERROR_DOMAIN,
-        )
-      verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
-    }
-  }
-
-  @Test
-  fun loadRtbBannerTabletAd_whenAdIsNullAndNoMolocoErrorIsReported_invokesOnFailure() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
-      val mediationBannerAdConfiguration =
-        createMediationBannerAdConfiguration(
-          TEST_BID_RESPONSE,
-          serverParameters,
-          AdSize.LEADERBOARD,
-        )
-      val createBannerCaptor = argumentCaptor<CreateBannerCallback>()
-
-      adapter.loadRtbBannerAd(mediationBannerAdConfiguration, mockMediationBannerAdLoadCallback)
-      mockedMoloco.verify {
-        createMolocoBanner(
-          any(),
-          eq(TEST_AD_UNIT),
-          eq(BannerAdSize.Tablet),
-          eq(TEST_WATERMARK),
-          createBannerCaptor.capture(),
-        )
-      }
-      val capturedCallback = createBannerCaptor.firstValue
-      capturedCallback.invoke(/* banner= */ null, /* error= */ null)
-
-      val expectedAdError =
-        AdError(
-          MolocoMediationAdapter.ERROR_CODE_AD_IS_NULL,
-          MolocoMediationAdapter.ERROR_MSG_AD_IS_NULL,
-          MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
-        )
-      verify(mockMediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
-    }
+    assertThat(mediationInfoCaptor.firstValue.name).isEqualTo(MEDIATION_PLATFORM_NAME)
+    val capturedCallback = createBannerCaptor.firstValue
+    capturedCallback.invoke(mockBannerAd, /* error= */ null)
+    verify(mockBannerAd).load(eq(TEST_BID_RESPONSE), any())
   }
 
   private fun createMediationBannerAdConfiguration(
@@ -937,8 +864,7 @@ class MolocoMediationAdapterTest {
 
   // endregion
 
-  // region NativeAd tests
-
+  // region NativeAd Tests
   @Test
   fun loadRtbNativeAdMapper_withNullAdUnit_invokesOnFailure() {
     val mediationNativeAdConfiguration = createMediationNativeAdConfiguration()
@@ -973,89 +899,73 @@ class MolocoMediationAdapterTest {
 
   @Test
   fun loadRtbNativeAdMapper_whenAdIsCreated_loadsMolocoNativeAd() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
-      val mediationNativeAdConfiguration =
-        createMediationNativeAdConfiguration(TEST_BID_RESPONSE, serverParameters)
-      val createNativeAdCaptor = argumentCaptor<CreateNativeAdCallback>()
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+    val mediationNativeAdConfiguration =
+      createMediationNativeAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+    val createNativeAdCaptor = argumentCaptor<CreateNativeAdCallback>()
 
-      adapter.loadRtbNativeAdMapper(
-        mediationNativeAdConfiguration,
-        mockMediationNativeAdLoadCallback,
+    adapter.loadRtbNativeAdMapper(mediationNativeAdConfiguration, mockMediationNativeAdLoadCallback)
+
+    val mediationInfoCaptor = argumentCaptor<MediationInfo>()
+    mockMoloco.verify {
+      createNativeAd(
+        mediationInfoCaptor.capture(),
+        eq(TEST_AD_UNIT),
+        eq(TEST_WATERMARK),
+        createNativeAdCaptor.capture(),
       )
-
-      val mediationInfoCaptor = argumentCaptor<MediationInfo>()
-      mockedMoloco.verify {
-        createNativeAd(
-          mediationInfoCaptor.capture(),
-          eq(TEST_AD_UNIT),
-          eq(TEST_WATERMARK),
-          createNativeAdCaptor.capture(),
-        )
-      }
-      assertThat(mediationInfoCaptor.firstValue.name).isEqualTo(MEDIATION_PLATFORM_NAME)
-      val capturedCallback = createNativeAdCaptor.firstValue
-      capturedCallback.invoke(mockNativeAd, /* error= */ null)
-      verify(mockNativeAd).load(eq(TEST_BID_RESPONSE), any())
     }
+    assertThat(mediationInfoCaptor.firstValue.name).isEqualTo(MEDIATION_PLATFORM_NAME)
+    val capturedCallback = createNativeAdCaptor.firstValue
+    capturedCallback.invoke(mockNativeAd, /* error= */ null)
+    verify(mockNativeAd).load(eq(TEST_BID_RESPONSE), any())
   }
 
   @Test
   fun loadRtbNativeAdMapper_whenMolocoErrorIsReported_invokesOnFailure() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
-      val mediationNativeAdConfiguration =
-        createMediationNativeAdConfiguration(TEST_BID_RESPONSE, serverParameters)
-      val createNativeAdCaptor = argumentCaptor<CreateNativeAdCallback>()
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+    val mediationNativeAdConfiguration =
+      createMediationNativeAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+    val createNativeAdCaptor = argumentCaptor<CreateNativeAdCallback>()
 
-      adapter.loadRtbNativeAdMapper(
-        mediationNativeAdConfiguration,
-        mockMediationNativeAdLoadCallback,
-      )
-      mockedMoloco.verify {
-        createNativeAd(any(), eq(TEST_AD_UNIT), eq(TEST_WATERMARK), createNativeAdCaptor.capture())
-      }
-      val capturedCallback = createNativeAdCaptor.firstValue
-      // An example Moloco ad creation error.
-      val molocoError = MolocoAdError.AdCreateError.SDK_INIT_FAILED
-      capturedCallback.invoke(/* nativeAd= */ null, molocoError)
-
-      val expectedAdError =
-        AdError(
-          MolocoAdError.AdCreateError.SDK_INIT_FAILED.errorCode,
-          MolocoAdError.AdCreateError.SDK_INIT_FAILED.description,
-          MolocoMediationAdapter.SDK_ERROR_DOMAIN,
-        )
-      verify(mockMediationNativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    adapter.loadRtbNativeAdMapper(mediationNativeAdConfiguration, mockMediationNativeAdLoadCallback)
+    mockMoloco.verify {
+      createNativeAd(any(), eq(TEST_AD_UNIT), eq(TEST_WATERMARK), createNativeAdCaptor.capture())
     }
+    val capturedCallback = createNativeAdCaptor.firstValue
+    val molocoError = MolocoAdError.AdCreateError.SDK_INIT_FAILED
+    capturedCallback.invoke(/* nativeAd= */ null, molocoError)
+
+    val expectedAdError =
+      AdError(
+        MolocoAdError.AdCreateError.SDK_INIT_FAILED.errorCode,
+        MolocoAdError.AdCreateError.SDK_INIT_FAILED.description,
+        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    verify(mockMediationNativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   @Test
   fun loadRtbNativeAdMapper_whenAdIsNullAndNoMolocoErrorIsReported_invokesOnFailure() {
-    mockStatic(Moloco::class.java).use { mockedMoloco ->
-      val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
-      val mediationNativeAdConfiguration =
-        createMediationNativeAdConfiguration(TEST_BID_RESPONSE, serverParameters)
-      val createNativeAdCaptor = argumentCaptor<CreateNativeAdCallback>()
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+    val mediationNativeAdConfiguration =
+      createMediationNativeAdConfiguration(TEST_BID_RESPONSE, serverParameters)
+    val createNativeAdCaptor = argumentCaptor<CreateNativeAdCallback>()
 
-      adapter.loadRtbNativeAdMapper(
-        mediationNativeAdConfiguration,
-        mockMediationNativeAdLoadCallback,
-      )
+    adapter.loadRtbNativeAdMapper(mediationNativeAdConfiguration, mockMediationNativeAdLoadCallback)
 
-      mockedMoloco.verify {
-        createNativeAd(any(), eq(TEST_AD_UNIT), eq(TEST_WATERMARK), createNativeAdCaptor.capture())
-      }
-      val capturedCallback = createNativeAdCaptor.firstValue
-      capturedCallback.invoke(/* nativeAd= */ null, /* error= */ null)
-      val expectedAdError =
-        AdError(
-          MolocoMediationAdapter.ERROR_CODE_AD_IS_NULL,
-          MolocoMediationAdapter.ERROR_MSG_AD_IS_NULL,
-          MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
-        )
-      verify(mockMediationNativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    mockMoloco.verify {
+      createNativeAd(any(), eq(TEST_AD_UNIT), eq(TEST_WATERMARK), createNativeAdCaptor.capture())
     }
+    val capturedCallback = createNativeAdCaptor.firstValue
+    capturedCallback.invoke(/* nativeAd= */ null, /* error= */ null)
+    val expectedAdError =
+      AdError(
+        MolocoMediationAdapter.ERROR_CODE_AD_IS_NULL,
+        MolocoMediationAdapter.ERROR_MSG_AD_IS_NULL,
+        MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    verify(mockMediationNativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
   }
 
   private fun createMediationNativeAdConfiguration(
