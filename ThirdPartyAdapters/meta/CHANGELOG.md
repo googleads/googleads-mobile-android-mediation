@@ -4,6 +4,9 @@
 
 - Updated to report native ad impression when Meta logs impression for native
   ads.
+- Updated to display banner ad within a wrapper view whose bounds are the
+  publisher-requested width and height. This will prevent banner ads from
+  unexpectedly covering app's content.
 
 #### Version 6.22.0.0
 - Verified compatibility with Meta Audience Network SDK v6.22.0.
