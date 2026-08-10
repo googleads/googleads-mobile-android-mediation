@@ -4,13 +4,15 @@ import android.app.Activity
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.unity.UnityAdsAdapterUtils.getMediationErrorCode
 import com.google.ads.mediation.unity.UnityMediationAdapter.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY
 import com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_NON_ACTIVITY
 import com.google.ads.mediation.unity.UnityMediationAdapter.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
@@ -25,13 +27,11 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
 import org.mockito.kotlin.notNull
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
@@ -48,10 +48,11 @@ class UnityRewardedAdTest {
   private val rewardedAdConfiguration: MediationRewardedAdConfiguration = mock {
     on { watermark } doReturn TEST_WATERMARK
   }
-  private val rewardedAdCallback: MediationRewardedAdCallback = mock()
-  private val rewardedAdLoadCallback:
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
-    mock()
+  private val rewardedAdCallback = FakeMediationRewardedAdCallback()
+  private val rewardedAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      rewardedAdCallback
+    )
   private val unityAdsLoader: UnityAdsLoader = mock()
   private val unityInitializer: UnityInitializer = spy(UnityInitializer.getInstance())
 
@@ -64,22 +65,20 @@ class UnityRewardedAdTest {
         unityInitializer,
         unityAdsLoader,
       )
-
-    doReturn(rewardedAdCallback).whenever(rewardedAdLoadCallback).onSuccess(unityRewardedAd)
   }
 
   @Test
   fun onUnityAdsAdLoaded_invokesOnSuccess() {
     unityRewardedAd.unityLoadListener.onUnityAdsAdLoaded(TEST_PLACEMENT_ID)
 
-    verify(rewardedAdLoadCallback).onSuccess(unityRewardedAd)
+    assertThat(rewardedAdLoadCallback).hasSucceededWith(unityRewardedAd)
   }
 
   @Test
   fun onUnityAdsFailedToLoad_invokesOnFailure() {
-    val errorCaptor = argumentCaptor<AdError>()
     val unityAdsLoadError = UnityAdsLoadError.NO_FILL
     val errorCode = getMediationErrorCode(unityAdsLoadError)
+    val expectedAdError = AdError(errorCode, TEST_ERROR_MESSAGE, SDK_ERROR_DOMAIN)
 
     unityRewardedAd.unityLoadListener.onUnityAdsFailedToLoad(
       TEST_PLACEMENT_ID,
@@ -87,11 +86,7 @@ class UnityRewardedAdTest {
       TEST_ERROR_MESSAGE,
     )
 
-    verify(rewardedAdLoadCallback).onFailure(errorCaptor.capture())
-    val capturedError = errorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(errorCode)
-    assertThat(capturedError.message).isEqualTo(TEST_ERROR_MESSAGE)
-    assertThat(capturedError.domain).isEqualTo(SDK_ERROR_DOMAIN)
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -100,18 +95,18 @@ class UnityRewardedAdTest {
 
     unityRewardedAd.unityShowListener.onUnityAdsShowStart(TEST_PLACEMENT_ID)
 
-    verify(rewardedAdCallback).onAdOpened()
-    verify(rewardedAdCallback).reportAdImpression()
-    verify(rewardedAdCallback).onVideoStart()
+    assertThat(rewardedAdCallback.isOpened).isTrue()
+    assertThat(rewardedAdCallback.isImpressionReported).isTrue()
+    assertThat(rewardedAdCallback.isVideoStarted).isTrue()
   }
 
   @Test
   fun onUnityAdsShowStart_withNullAdCallback_doesNotInvokeAnyCallbackMethod() {
     unityRewardedAd.unityShowListener.onUnityAdsShowStart(TEST_PLACEMENT_ID)
 
-    verify(rewardedAdCallback, never()).onAdOpened()
-    verify(rewardedAdCallback, never()).reportAdImpression()
-    verify(rewardedAdCallback, never()).onVideoStart()
+    assertThat(rewardedAdCallback.isOpened).isFalse()
+    assertThat(rewardedAdCallback.isImpressionReported).isFalse()
+    assertThat(rewardedAdCallback.isVideoStarted).isFalse()
   }
 
   @Test
@@ -120,14 +115,14 @@ class UnityRewardedAdTest {
 
     unityRewardedAd.unityShowListener.onUnityAdsShowClick(TEST_PLACEMENT_ID)
 
-    verify(rewardedAdCallback).reportAdClicked()
+    assertThat(rewardedAdCallback.isClicked).isTrue()
   }
 
   @Test
   fun onUnityAdsShowClick_withNullAdCallback_doesNotInvokeReportAdClicked() {
     unityRewardedAd.unityShowListener.onUnityAdsShowClick(TEST_PLACEMENT_ID)
 
-    verify(rewardedAdCallback, never()).reportAdClicked()
+    assertThat(rewardedAdCallback.isClicked).isFalse()
   }
 
   @Test
@@ -139,9 +134,9 @@ class UnityRewardedAdTest {
       UnityAds.UnityAdsShowCompletionState.COMPLETED,
     )
 
-    verify(rewardedAdCallback).onVideoComplete()
-    verify(rewardedAdCallback).onUserEarnedReward()
-    verify(rewardedAdCallback).onAdClosed()
+    assertThat(rewardedAdCallback.isVideoCompleted).isTrue()
+    assertThat(rewardedAdCallback.isUserEarnedReward).isTrue()
+    assertThat(rewardedAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -153,9 +148,9 @@ class UnityRewardedAdTest {
       UnityAds.UnityAdsShowCompletionState.SKIPPED,
     )
 
-    verify(rewardedAdCallback, never()).onVideoComplete()
-    verify(rewardedAdCallback, never()).onUserEarnedReward()
-    verify(rewardedAdCallback).onAdClosed()
+    assertThat(rewardedAdCallback.isVideoCompleted).isFalse()
+    assertThat(rewardedAdCallback.isUserEarnedReward).isFalse()
+    assertThat(rewardedAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -165,16 +160,16 @@ class UnityRewardedAdTest {
       UnityAds.UnityAdsShowCompletionState.COMPLETED,
     )
 
-    verify(rewardedAdCallback, never()).onVideoComplete()
-    verify(rewardedAdCallback, never()).onUserEarnedReward()
-    verify(rewardedAdCallback, never()).onAdClosed()
+    assertThat(rewardedAdCallback.isVideoCompleted).isFalse()
+    assertThat(rewardedAdCallback.isUserEarnedReward).isFalse()
+    assertThat(rewardedAdCallback.isClosed).isFalse()
   }
 
   @Test
   fun onUnityAdsShowFailure_invokesOnAdFailedToShow() {
-    val errorCaptor = argumentCaptor<AdError>()
     val unityAdsShowError = UnityAdsShowError.INTERNAL_ERROR
     val errorCode = getMediationErrorCode(unityAdsShowError)
+    val expectedAdError = AdError(errorCode, TEST_ERROR_MESSAGE, SDK_ERROR_DOMAIN)
     unityRewardedAd.unityLoadListener.onUnityAdsAdLoaded(TEST_PLACEMENT_ID)
 
     unityRewardedAd.unityShowListener.onUnityAdsShowFailure(
@@ -183,11 +178,8 @@ class UnityRewardedAdTest {
       TEST_ERROR_MESSAGE,
     )
 
-    verify(rewardedAdCallback).onAdFailedToShow(errorCaptor.capture())
-    val capturedError = errorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(errorCode)
-    assertThat(capturedError.message).isEqualTo(TEST_ERROR_MESSAGE)
-    assertThat(capturedError.domain).isEqualTo(SDK_ERROR_DOMAIN)
+    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
+    assertThat(rewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
@@ -198,21 +190,19 @@ class UnityRewardedAdTest {
       TEST_ERROR_MESSAGE,
     )
 
-    verify(rewardedAdCallback, never()).onAdFailedToShow(any<AdError>())
+    assertThat(rewardedAdCallback.isFailedToShow).isFalse()
   }
 
   @Test
   fun showAd_withNonActivityContext_invokesOnAdFailedToShow() {
     unityRewardedAd.unityLoadListener.onUnityAdsAdLoaded(TEST_PLACEMENT_ID)
-    val errorCaptor = argumentCaptor<AdError>()
+    val expectedAdError =
+      AdError(ERROR_CONTEXT_NOT_ACTIVITY, ERROR_MSG_NON_ACTIVITY, ADAPTER_ERROR_DOMAIN)
 
     unityRewardedAd.showAd(ApplicationProvider.getApplicationContext())
 
-    verify(rewardedAdCallback).onAdFailedToShow(errorCaptor.capture())
-    val capturedError = errorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(ERROR_CONTEXT_NOT_ACTIVITY)
-    assertThat(capturedError.message).isEqualTo(ERROR_MSG_NON_ACTIVITY)
-    assertThat(capturedError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
+    assertThat(rewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test

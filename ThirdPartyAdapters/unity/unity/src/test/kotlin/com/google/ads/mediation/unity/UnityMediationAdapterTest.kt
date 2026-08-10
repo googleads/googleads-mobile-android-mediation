@@ -6,6 +6,9 @@ import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.FakeInitializationCompleteCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.unity.UnityAdsAdapterUtils.getMediationErrorCode
 import com.google.ads.mediation.unity.UnityInitializer.ADMOB
 import com.google.ads.mediation.unity.UnityInitializer.KEY_ADAPTER_VERSION
@@ -25,8 +28,6 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.RequestConfiguration
-import com.google.android.gms.ads.mediation.InitializationCompleteCallback
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
@@ -84,16 +85,13 @@ class UnityMediationAdapterTest {
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
   private val nonActivityContext: Context = ApplicationProvider.getApplicationContext()
 
-  private val initializationCompleteCallback: InitializationCompleteCallback = mock()
-  private val mediationBannerAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
-    mock()
-  private val mediationInterstitialAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock()
-  private val mediationRewardedAdLoadCallback:
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
-    mock()
+  private val initializationCompleteCallback = FakeInitializationCompleteCallback()
+  private val mediationBannerAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>()
+  private val mediationInterstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>()
+  private val mediationRewardedAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>()
   private val unityAdsWrapper: UnityAdsWrapper = mock()
   private val unityInitializer: UnityInitializer = spy(UnityInitializer(unityAdsWrapper))
   private val unityAdsLoader: UnityAdsLoader = mock()
@@ -139,7 +137,7 @@ class UnityMediationAdapterTest {
 
     val adError =
       AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid Game ID.", ADAPTER_ERROR_DOMAIN)
-    verify(initializationCompleteCallback).onInitializationFailed(adError.toString())
+    assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
   }
 
   @Test
@@ -158,7 +156,7 @@ class UnityMediationAdapterTest {
       mediationConfigurations,
     )
 
-    verify(initializationCompleteCallback).onInitializationSucceeded()
+    assertThat(initializationCompleteCallback).hasSucceeded()
   }
 
   @Test
@@ -190,7 +188,7 @@ class UnityMediationAdapterTest {
       mediationConfigurations,
     )
 
-    verify(initializationCompleteCallback).onInitializationFailed(eq(adError.toString()))
+    assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
   }
 
   @Test
@@ -445,7 +443,7 @@ class UnityMediationAdapterTest {
       mediationConfigurations,
     )
 
-    verify(initializationCompleteCallback).onInitializationSucceeded()
+    assertThat(initializationCompleteCallback).hasSucceeded()
     verify(unityAdsWrapper, never()).initialize(any(), any(), any())
   }
 
@@ -460,12 +458,9 @@ class UnityMediationAdapterTest {
       mediationBannerAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationBannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(ERROR_INVALID_SERVER_PARAMETERS)
-    assertThat(capturedError.message).isEqualTo(ERROR_MSG_MISSING_PARAMETERS)
-    assertThat(capturedError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_PARAMETERS, ADAPTER_ERROR_DOMAIN)
+    assertThat(mediationBannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -478,12 +473,9 @@ class UnityMediationAdapterTest {
       mediationBannerAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationBannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(ERROR_INVALID_SERVER_PARAMETERS)
-    assertThat(capturedError.message).isEqualTo(ERROR_MSG_MISSING_PARAMETERS)
-    assertThat(capturedError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_PARAMETERS, ADAPTER_ERROR_DOMAIN)
+    assertThat(mediationBannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -496,12 +488,9 @@ class UnityMediationAdapterTest {
       mediationBannerAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationBannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(ERROR_INVALID_SERVER_PARAMETERS)
-    assertThat(capturedError.message).isEqualTo(ERROR_MSG_MISSING_PARAMETERS)
-    assertThat(capturedError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_PARAMETERS, ADAPTER_ERROR_DOMAIN)
+    assertThat(mediationBannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -514,12 +503,13 @@ class UnityMediationAdapterTest {
       mediationBannerAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationBannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(ERROR_BANNER_SIZE_MISMATCH)
-    assertThat(capturedError.message).isEqualTo("${ERROR_MSG_NO_MATCHING_AD_SIZE}${adSize}")
-    assertThat(capturedError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+    val expectedAdError =
+      AdError(
+        ERROR_BANNER_SIZE_MISMATCH,
+        "${ERROR_MSG_NO_MATCHING_AD_SIZE}${adSize}",
+        ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(mediationBannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -531,12 +521,9 @@ class UnityMediationAdapterTest {
       mediationBannerAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationBannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(ERROR_CONTEXT_NOT_ACTIVITY)
-    assertThat(capturedError.message).isEqualTo(ERROR_MSG_NON_ACTIVITY)
-    assertThat(capturedError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+    val expectedAdError =
+      AdError(ERROR_CONTEXT_NOT_ACTIVITY, ERROR_MSG_NON_ACTIVITY, ADAPTER_ERROR_DOMAIN)
+    assertThat(mediationBannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -567,22 +554,20 @@ class UnityMediationAdapterTest {
     mediationBannerAdConfiguration = initializeBannerAd()
     whenever(mediationUtils.findClosestSize(eq(activity), eq(AdSize.BANNER), any())) doReturn
       AdSize.BANNER
-    val errorCaptor = argumentCaptor<AdError>()
     val errorCode = getMediationErrorCode(UnityAdsInitializationError.INTERNAL_ERROR)
+    val expectedAdError =
+      AdError(
+        errorCode,
+        ERROR_MSG_INITIALIZATION_FAILED_FOR_GAME_ID.format(TEST_GAME_ID, TEST_ERROR_MESSAGE),
+        SDK_ERROR_DOMAIN,
+      )
 
     unityMediationAdapter.loadBannerAd(
       mediationBannerAdConfiguration,
       mediationBannerAdLoadCallback,
     )
 
-    verify(mediationBannerAdLoadCallback).onFailure(errorCaptor.capture())
-    val capturedError = errorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(errorCode)
-    assertThat(capturedError.message)
-      .isEqualTo(
-        ERROR_MSG_INITIALIZATION_FAILED_FOR_GAME_ID.format(TEST_GAME_ID, TEST_ERROR_MESSAGE)
-      )
-    assertThat(capturedError.domain).isEqualTo(SDK_ERROR_DOMAIN)
+    assertThat(mediationBannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -694,12 +679,9 @@ class UnityMediationAdapterTest {
       mediationInterstitialAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationInterstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(ERROR_INVALID_SERVER_PARAMETERS)
-    assertThat(capturedError.message).isEqualTo(ERROR_MSG_MISSING_PARAMETERS)
-    assertThat(capturedError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_PARAMETERS, ADAPTER_ERROR_DOMAIN)
+    assertThat(mediationInterstitialAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -712,12 +694,9 @@ class UnityMediationAdapterTest {
       mediationInterstitialAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationInterstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(ERROR_INVALID_SERVER_PARAMETERS)
-    assertThat(capturedError.message).isEqualTo(ERROR_MSG_MISSING_PARAMETERS)
-    assertThat(capturedError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_PARAMETERS, ADAPTER_ERROR_DOMAIN)
+    assertThat(mediationInterstitialAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -730,12 +709,9 @@ class UnityMediationAdapterTest {
       mediationInterstitialAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationInterstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(ERROR_INVALID_SERVER_PARAMETERS)
-    assertThat(capturedError.message).isEqualTo(ERROR_MSG_MISSING_PARAMETERS)
-    assertThat(capturedError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_PARAMETERS, ADAPTER_ERROR_DOMAIN)
+    assertThat(mediationInterstitialAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -774,22 +750,20 @@ class UnityMediationAdapterTest {
       .whenever(unityInitializer)
       .initializeUnityAds(any(), any(), any())
     initializeInterstitialAd()
-    val adErrorCaptor = argumentCaptor<AdError>()
     val errorCode = getMediationErrorCode(UnityAdsInitializationError.INTERNAL_ERROR)
+    val expectedAdError =
+      AdError(
+        errorCode,
+        ERROR_MSG_INTERSTITIAL_INITIALIZATION_FAILED.format(TEST_GAME_ID, TEST_ERROR_MESSAGE),
+        SDK_ERROR_DOMAIN,
+      )
 
     unityMediationAdapter.loadInterstitialAd(
       mediationInterstitialAdConfiguration,
       mediationInterstitialAdLoadCallback,
     )
 
-    verify(mediationInterstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(errorCode)
-    assertThat(capturedError.message)
-      .isEqualTo(
-        ERROR_MSG_INTERSTITIAL_INITIALIZATION_FAILED.format(TEST_GAME_ID, TEST_ERROR_MESSAGE)
-      )
-    assertThat(capturedError.domain).isEqualTo(SDK_ERROR_DOMAIN)
+    assertThat(mediationInterstitialAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -871,12 +845,9 @@ class UnityMediationAdapterTest {
       mediationRewardedAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationRewardedAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(ERROR_INVALID_SERVER_PARAMETERS)
-    assertThat(capturedError.message).isEqualTo(ERROR_MSG_MISSING_PARAMETERS)
-    assertThat(capturedError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_PARAMETERS, ADAPTER_ERROR_DOMAIN)
+    assertThat(mediationRewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -889,12 +860,9 @@ class UnityMediationAdapterTest {
       mediationRewardedAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationRewardedAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(ERROR_INVALID_SERVER_PARAMETERS)
-    assertThat(capturedError.message).isEqualTo(ERROR_MSG_MISSING_PARAMETERS)
-    assertThat(capturedError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_PARAMETERS, ADAPTER_ERROR_DOMAIN)
+    assertThat(mediationRewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -907,12 +875,9 @@ class UnityMediationAdapterTest {
       mediationRewardedAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationRewardedAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(ERROR_INVALID_SERVER_PARAMETERS)
-    assertThat(capturedError.message).isEqualTo(ERROR_MSG_MISSING_PARAMETERS)
-    assertThat(capturedError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, ERROR_MSG_MISSING_PARAMETERS, ADAPTER_ERROR_DOMAIN)
+    assertThat(mediationRewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -951,22 +916,20 @@ class UnityMediationAdapterTest {
       .whenever(unityInitializer)
       .initializeUnityAds(any(), any(), any())
     initializeRewardedAd()
-    val adErrorCaptor = argumentCaptor<AdError>()
     val errorCode = getMediationErrorCode(UnityAdsInitializationError.INTERNAL_ERROR)
+    val expectedAdError =
+      AdError(
+        errorCode,
+        ERROR_MSG_INTERSTITIAL_INITIALIZATION_FAILED.format(TEST_GAME_ID, TEST_ERROR_MESSAGE),
+        SDK_ERROR_DOMAIN,
+      )
 
     unityMediationAdapter.loadRewardedAd(
       mediationRewardedAdConfiguration,
       mediationRewardedAdLoadCallback,
     )
 
-    verify(mediationRewardedAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(errorCode)
-    assertThat(capturedError.message)
-      .isEqualTo(
-        ERROR_MSG_INTERSTITIAL_INITIALIZATION_FAILED.format(TEST_GAME_ID, TEST_ERROR_MESSAGE)
-      )
-    assertThat(capturedError.domain).isEqualTo(SDK_ERROR_DOMAIN)
+    assertThat(mediationRewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
