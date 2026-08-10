@@ -18,20 +18,20 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAppOpenAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfiguration
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SLOT_ID_KEY
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAd
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
@@ -47,15 +47,12 @@ class BigoAppOpenAdTest {
   private lateinit var bigoAppOpenAd: BigoAppOpenAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val mockAppOpenAdCallback: MediationAppOpenAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockAppOpenAdCallback
-    }
+  private val appOpenAdCallback = FakeMediationAppOpenAdCallback()
+  private val adLoadCallback =
+    FakeMediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>(appOpenAdCallback)
   private val mockSplashAdRequest = mock<SplashAdRequest>()
   private val mockSplashAdLoader = mock<BigoSplashAdLoaderWrapper>()
-  private var mockBigoFactory =
+  private val mockBigoFactory =
     mock<SdkFactory> {
       on {
         createSplashAdRequest(eq(TEST_BID_RESPONSE), eq(TEST_SLOT_ID), eq(TEST_WATERMARK))
@@ -74,7 +71,7 @@ class BigoAppOpenAdTest {
         watermark = TEST_WATERMARK,
       )
     BigoFactory.delegate = mockBigoFactory
-    BigoAppOpenAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess { bigoAppOpenAd = it }
+    BigoAppOpenAd.newInstance(adConfiguration, adLoadCallback).onSuccess { bigoAppOpenAd = it }
   }
 
   @Test
@@ -94,7 +91,7 @@ class BigoAppOpenAdTest {
     bigoAppOpenAd.onAdLoaded(mockSplashAd)
 
     verify(mockSplashAd).setAdInteractionListener(bigoAppOpenAd)
-    verify(mockAdLoadCallback).onSuccess(bigoAppOpenAd)
+    assertThat(adLoadCallback).hasSucceededWith(bigoAppOpenAd)
   }
 
   @Test
@@ -103,7 +100,7 @@ class BigoAppOpenAdTest {
 
     bigoAppOpenAd.onError(AdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(adLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -123,7 +120,8 @@ class BigoAppOpenAdTest {
 
     bigoAppOpenAd.onAdError(AdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
 
-    verify(mockAppOpenAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(appOpenAdCallback.isFailedToShow).isTrue()
+    assertThat(appOpenAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
@@ -132,7 +130,7 @@ class BigoAppOpenAdTest {
 
     bigoAppOpenAd.onAdImpression()
 
-    verify(mockAppOpenAdCallback).reportAdImpression()
+    assertThat(appOpenAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -141,7 +139,7 @@ class BigoAppOpenAdTest {
 
     bigoAppOpenAd.onAdClicked()
 
-    verify(mockAppOpenAdCallback).reportAdClicked()
+    assertThat(appOpenAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -150,7 +148,7 @@ class BigoAppOpenAdTest {
 
     bigoAppOpenAd.onAdOpened()
 
-    verify(mockAppOpenAdCallback).onAdOpened()
+    assertThat(appOpenAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -159,7 +157,7 @@ class BigoAppOpenAdTest {
 
     bigoAppOpenAd.onAdClosed()
 
-    verify(mockAppOpenAdCallback).onAdClosed()
+    assertThat(appOpenAdCallback.isClosed).isTrue()
   }
 
   @Test
