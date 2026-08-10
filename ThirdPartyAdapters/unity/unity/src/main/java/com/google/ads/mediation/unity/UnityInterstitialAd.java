@@ -102,6 +102,7 @@ public class UnityInterstitialAd
     // Sending Ad Opened event when the video ad starts playing.
     if (interstitialAdCallback != null) {
       interstitialAdCallback.onAdOpened();
+      interstitialAdCallback.reportAdImpression();
     }
   }
 

@@ -15,6 +15,8 @@ import com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION
 import com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID
 import com.google.ads.mediation.vungle.VungleFactory
 import com.google.ads.mediation.vungle.VungleInitializer
+import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_CANNOT_PLAY_AD
+import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.vungle.VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -111,6 +113,22 @@ class VungleRtbRewardedAdTest {
     adapterRtbRewardedAd.showAd(context)
 
     verify(vungleRewardedAd).play(context)
+  }
+
+  @Test
+  fun showAd_whenRewardedAdIsNull_invokesOnAdFailedToShow() {
+    adapterRtbRewardedAd.onAdLoaded(vungleRewardedAd)
+
+    adapterRtbRewardedAd.showAd(context)
+
+    val expectedError =
+      AdError(
+        ERROR_CANNOT_PLAY_AD,
+        "Failed to show bidding rewardedad from Liftoff Monetize.",
+        ERROR_DOMAIN,
+      )
+    verify(rewardedAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedError)))
+    verifyNoMoreInteractions(rewardedAdCallback)
   }
 
   private fun renderAdAndMockLoadSuccess() {

@@ -9,13 +9,15 @@ import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAd
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdInteractionListener
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialAdLoadListener
 import com.bytedance.sdk.openadsdk.api.interstitial.PAGInterstitialRequest
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
+import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.ads.mediation.pangle.PangleConstants
-import com.google.ads.mediation.pangle.PangleConstants.PANGLE_SDK_ERROR_DOMAIN
 import com.google.ads.mediation.pangle.PangleFactory
 import com.google.ads.mediation.pangle.PangleInitializer
 import com.google.ads.mediation.pangle.PangleRequestHelper.ADMOB_WATERMARK_KEY
 import com.google.ads.mediation.pangle.PangleSdkWrapper
-import com.google.ads.mediation.pangle.utils.AdErrorMatcher
 import com.google.ads.mediation.pangle.utils.TestConstants
 import com.google.ads.mediation.pangle.utils.TestConstants.APP_ID_VALUE
 import com.google.ads.mediation.pangle.utils.TestConstants.BID_RESPONSE
@@ -23,10 +25,8 @@ import com.google.ads.mediation.pangle.utils.TestConstants.PLACEMENT_ID_VALUE
 import com.google.ads.mediation.pangle.utils.TestConstants.WATERMARK
 import com.google.ads.mediation.pangle.utils.mockPangleSdkInitializationFailure
 import com.google.ads.mediation.pangle.utils.mockPangleSdkInitializationSuccess
-import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
 import com.google.android.gms.ads.RequestConfiguration.TagForChildDirectedTreatment
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
@@ -35,7 +35,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
@@ -56,12 +55,11 @@ class PangleInterstitialAdTest {
   private var serverParameters: Bundle = Bundle()
 
   private val context: Context = ApplicationProvider.getApplicationContext()
-  private val interstitialAdCallback: MediationInterstitialAdCallback = mock()
-  private val mediationAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn interstitialAdCallback
-    }
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
+  private val mediationAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
   private val pangleInitializer: PangleInitializer = mock()
   private val pangleSdkWrapper: PangleSdkWrapper = mock()
   private val pagInterstitialRequest: PAGInterstitialRequest = mock()
@@ -86,20 +84,19 @@ class PangleInterstitialAdTest {
 
   @Test
   fun render_withoutPlacementId_callsOnFailureOnCallbackWithProperErrorCode() {
-    // Given a mediation interstitial ad configuration...
     serverParameters.remove(PangleConstants.PLACEMENT_ID)
-    initializeInterstitialAd() // ... without serverParameters send in the Bundle
+    initializeInterstitialAd()
 
     interstitialAd.render(mediationInterstitialAdConfig)
 
     // The onFailure method of the mediationAdLoadCallback is called with the
     // ERROR_INVALID_SERVER_PARAMETERS code.
-    val adError: AdError =
+    val expectedAdError =
       PangleConstants.createAdapterError(
         PangleConstants.ERROR_INVALID_SERVER_PARAMETERS,
         "Failed to load interstitial ad from Pangle. Missing or invalid Placement ID.",
       )
-    verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(adError)))
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -111,7 +108,7 @@ class PangleInterstitialAdTest {
     interstitialAd.render(mediationInterstitialAdConfig)
 
     // No onFailure should be triggered.
-    verify(mediationAdLoadCallback, never()).onFailure(any<AdError>())
+    assertThat(mediationAdLoadCallback).hasNotFailed()
   }
 
   /**
@@ -161,7 +158,7 @@ class PangleInterstitialAdTest {
 
     interstitialAd.render(mediationInterstitialAdConfig)
 
-    verify(mediationAdLoadCallback).onSuccess(interstitialAd)
+    assertThat(mediationAdLoadCallback).hasSucceededWith(interstitialAd)
   }
 
   @Test
@@ -181,12 +178,12 @@ class PangleInterstitialAdTest {
 
     interstitialAd.render(mediationInterstitialAdConfig)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(FAILURE_CODE_PANGLE_INTERSTITIAL_LOAD)
-    assertThat(adError.message).isEqualTo(FAILURE_MESSAGE_PANGLE_INTERSTITIAL_LOAD)
-    assertThat(adError.domain).isEqualTo(PangleConstants.PANGLE_SDK_ERROR_DOMAIN)
+    val expectedAdError =
+      PangleConstants.createSdkError(
+        FAILURE_CODE_PANGLE_INTERSTITIAL_LOAD,
+        FAILURE_MESSAGE_PANGLE_INTERSTITIAL_LOAD,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -196,12 +193,12 @@ class PangleInterstitialAdTest {
 
     interstitialAd.render(mediationInterstitialAdConfig)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(TestConstants.PANGLE_INIT_FAILURE_CODE)
-    assertThat(adError.message).isEqualTo(TestConstants.PANGLE_INIT_FAILURE_MESSAGE)
-    assertThat(adError.domain).isEqualTo(PANGLE_SDK_ERROR_DOMAIN)
+    val expectedAdError =
+      PangleConstants.createSdkError(
+        TestConstants.PANGLE_INIT_FAILURE_CODE,
+        TestConstants.PANGLE_INIT_FAILURE_MESSAGE,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -243,8 +240,8 @@ class PangleInterstitialAdTest {
     // Mock that the ad is showed.
     pagAdInteractionListenerCaptor.firstValue.onAdShowed()
 
-    verify(interstitialAdCallback).onAdOpened()
-    verify(interstitialAdCallback).reportAdImpression()
+    assertThat(interstitialAdCallback.isOpened).isTrue()
+    assertThat(interstitialAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -257,7 +254,7 @@ class PangleInterstitialAdTest {
     // Mock that the ad is clicked.
     pagAdInteractionListenerCaptor.firstValue.onAdClicked()
 
-    verify(interstitialAdCallback).reportAdClicked()
+    assertThat(interstitialAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -270,7 +267,7 @@ class PangleInterstitialAdTest {
     // Mock that the ad is dismissed.
     pagAdInteractionListenerCaptor.firstValue.onAdDismissed()
 
-    verify(interstitialAdCallback).onAdClosed()
+    assertThat(interstitialAdCallback.isClosed).isTrue()
   }
 
   private fun initializeInterstitialAd(
@@ -279,19 +276,13 @@ class PangleInterstitialAdTest {
     bidResponse: String = BID_RESPONSE,
     watermark: String = WATERMARK,
   ) {
-    // Constructor of the MediationInterstitialAdConfiguration called by the GMA SDK
     mediationInterstitialAdConfig =
-      MediationInterstitialAdConfiguration(
+      createMediationInterstitialAdConfiguration(
         context,
-        bidResponse,
-        serverParameters,
-        /*mediationExtras=*/ Bundle(),
-        /*isTesting=*/ true,
-        /*location=*/ null,
-        tagForChildDirectedTreatment,
-        /*taggedForUnderAgeTreatment=*/ -1,
-        /*maxAdContentRating=*/ null,
-        watermark,
+        bidResponse = bidResponse,
+        serverParameters = serverParameters,
+        taggedForChildDirectedTreatment = tagForChildDirectedTreatment,
+        watermark = watermark,
       )
 
     interstitialAd =

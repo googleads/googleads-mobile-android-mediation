@@ -9,8 +9,10 @@ import com.chartboost.sdk.Chartboost
 import com.chartboost.sdk.Chartboost.getSDKVersion
 import com.chartboost.sdk.privacy.model.COPPA
 import com.chartboost.sdk.privacy.model.GDPR
+import com.google.ads.mediation.adaptertestkit.FakeInitializationCompleteCallback
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.chartboost.ChartboostAdapterUtils.createChartboostParams
 import com.google.ads.mediation.chartboost.ChartboostAdapterUtils.getAdapterVersion
 import com.google.ads.mediation.chartboost.ChartboostConstants.AD_TECHNOLOGY_PROVIDER_ID
@@ -21,7 +23,6 @@ import com.google.ads.mediation.chartboost.ChartboostMediationAdapter.ERROR_MESS
 import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
-import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -44,7 +45,7 @@ class ChartboostMediationAdapterTest {
 
   private val mediationConfiguration: MediationConfiguration = mock()
   private val mediationConfiguration1: MediationConfiguration = mock()
-  private val initializationCompleteCallback: InitializationCompleteCallback = mock()
+  private val initializationCompleteCallback = FakeInitializationCompleteCallback()
   private val chartboostInitializer: ChartboostInitializer = mock()
   private val context = ApplicationProvider.getApplicationContext<Context>()
 
@@ -138,9 +139,7 @@ class ChartboostMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    val captor = argumentCaptor<String>()
-    verify(initializationCompleteCallback).onInitializationFailed(captor.capture())
-    assertThat(captor.firstValue).isEqualTo(adError.toString())
+    assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
   }
 
   @Test
@@ -162,9 +161,7 @@ class ChartboostMediationAdapterTest {
 
       adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-      val captor = argumentCaptor<String>()
-      verify(initializationCompleteCallback).onInitializationFailed(captor.capture())
-      assertThat(captor.firstValue).isEqualTo(adError.toString())
+      assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
     }
   }
 
@@ -182,9 +179,7 @@ class ChartboostMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    val captor = argumentCaptor<String>()
-    verify(initializationCompleteCallback).onInitializationFailed(captor.capture())
-    assertThat(captor.firstValue).isEqualTo(adError.toString())
+    assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
   }
 
   @Test
@@ -205,7 +200,7 @@ class ChartboostMediationAdapterTest {
 
       adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-      verify(initializationCompleteCallback).onInitializationSucceeded()
+      assertThat(initializationCompleteCallback).hasSucceeded()
     }
   }
 
@@ -238,7 +233,7 @@ class ChartboostMediationAdapterTest {
         listOf(mediationConfiguration1, mediationConfiguration),
       )
 
-      verify(initializationCompleteCallback).onInitializationSucceeded()
+      assertThat(initializationCompleteCallback).hasSucceeded()
     }
   }
 
@@ -264,7 +259,7 @@ class ChartboostMediationAdapterTest {
 
       adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-      verify(initializationCompleteCallback).onInitializationFailed(adError.toString())
+      assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
     }
   }
 
@@ -281,7 +276,7 @@ class ChartboostMediationAdapterTest {
 
       adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-      verify(initializationCompleteCallback).onInitializationSucceeded()
+      assertThat(initializationCompleteCallback).hasSucceeded()
     }
   }
 

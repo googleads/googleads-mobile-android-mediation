@@ -12,6 +12,7 @@ import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_APP_ID
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
 import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfiguration
 import com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID
 import com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID
@@ -21,14 +22,21 @@ import com.google.ads.mediation.vungle.VungleMediationAdapter
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.VersionInfo
+import com.google.android.gms.ads.VideoOptions
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames.ASSET_ICON
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
+import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_MEDIA_VIDEO
+import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.google.common.truth.Truth.assertThat
+import com.vungle.ads.AdConfig
 import com.vungle.ads.NativeAd
 import com.vungle.ads.VungleError
 import com.vungle.ads.internal.protos.Sdk.SDKError
+import com.vungle.ads.internal.ui.view.MediaView
+import com.vungle.ads.nativead.NativeVideoListener
+import com.vungle.ads.nativead.NativeVideoOptions
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -112,6 +120,32 @@ class VungleRtbNativeAdTest {
     assertThat(adapterRtbNativeAd.overrideImpressionRecording).isTrue()
     assertThat(adapterRtbNativeAd.overrideClickHandling).isTrue()
     verify(nativeAdLoadCallback).onSuccess(adapterRtbNativeAd)
+  }
+
+  @Test
+  fun onAdLoaded_whenAppIconIsNotFileUri_iconIsNull() {
+    whenever(vungleNativeAd.getAppIcon()) doReturn "https://liftoffmonetize/app/icon"
+    Mockito.mockStatic(VungleInitializer::class.java).use {
+      whenever(VungleInitializer.getInstance()) doReturn vungleInitializer
+      adapterRtbNativeAd.render(mediationNativeAdConfiguration)
+    }
+
+    adapterRtbNativeAd.onAdLoaded(vungleNativeAd)
+
+    assertThat(adapterRtbNativeAd.icon).isNull()
+  }
+
+  @Test
+  fun onAdLoaded_whenAppIconIsNull_iconIsNull() {
+    whenever(vungleNativeAd.getAppIcon()).thenReturn(null)
+    Mockito.mockStatic(VungleInitializer::class.java).use {
+      whenever(VungleInitializer.getInstance()) doReturn vungleInitializer
+      adapterRtbNativeAd.render(mediationNativeAdConfiguration)
+    }
+
+    adapterRtbNativeAd.onAdLoaded(vungleNativeAd)
+
+    assertThat(adapterRtbNativeAd.icon).isNull()
   }
 
   @Test
@@ -207,6 +241,73 @@ class VungleRtbNativeAdTest {
   }
 
   @Test
+  fun render_withStartMutedTrue_setsStartMutedTrueOnVungleVideoOptions() {
+    val vungleVideoOptions = mock<NativeVideoOptions>()
+    whenever(vungleNativeAd.videoOptions) doReturn vungleVideoOptions
+    val videoOptions = VideoOptions.Builder().setStartMuted(true).build()
+    val nativeAdOptions = NativeAdOptions.Builder().setVideoOptions(videoOptions).build()
+    val adConfiguration =
+      createMediationNativeAdConfiguration(
+        context = context,
+        serverParameters =
+          bundleOf(KEY_APP_ID to TEST_APP_ID, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+        bidResponse = TEST_BID_RESPONSE,
+      )
+    whenever(adConfiguration.nativeAdOptions) doReturn nativeAdOptions
+
+    Mockito.mockStatic(VungleInitializer::class.java).use {
+      whenever(VungleInitializer.getInstance()) doReturn vungleInitializer
+      adapterRtbNativeAd.render(adConfiguration)
+    }
+
+    verify(vungleVideoOptions).startMuted = true
+  }
+
+  @Test
+  fun render_withStartMutedFalse_setsStartMutedFalseOnVungleVideoOptions() {
+    val vungleVideoOptions = mock<NativeVideoOptions>()
+    whenever(vungleNativeAd.videoOptions) doReturn vungleVideoOptions
+    val videoOptions = VideoOptions.Builder().setStartMuted(false).build()
+    val nativeAdOptions = NativeAdOptions.Builder().setVideoOptions(videoOptions).build()
+    val adConfiguration =
+      createMediationNativeAdConfiguration(
+        context = context,
+        serverParameters =
+          bundleOf(KEY_APP_ID to TEST_APP_ID, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+        bidResponse = TEST_BID_RESPONSE,
+      )
+    whenever(adConfiguration.nativeAdOptions) doReturn nativeAdOptions
+
+    Mockito.mockStatic(VungleInitializer::class.java).use {
+      whenever(VungleInitializer.getInstance()) doReturn vungleInitializer
+      adapterRtbNativeAd.render(adConfiguration)
+    }
+
+    verify(vungleVideoOptions).startMuted = false
+  }
+
+  @Test
+  fun render_withWatermark_setsWatermarkOnVungleAdConfig() {
+    val adConfig = mock<AdConfig>()
+    whenever(vungleNativeAd.adConfig) doReturn adConfig
+    val adConfiguration =
+      createMediationNativeAdConfiguration(
+        context = context,
+        serverParameters =
+          bundleOf(KEY_APP_ID to TEST_APP_ID, KEY_PLACEMENT_ID to TEST_PLACEMENT_ID),
+        bidResponse = TEST_BID_RESPONSE,
+        watermark = TEST_WATERMARK,
+      )
+
+    Mockito.mockStatic(VungleInitializer::class.java).use {
+      whenever(VungleInitializer.getInstance()) doReturn vungleInitializer
+      adapterRtbNativeAd.render(adConfiguration)
+    }
+
+    verify(adConfig).setWatermark(TEST_WATERMARK)
+  }
+
+  @Test
   fun onAdFailedToLoad_callsLoadFailure() {
     val liftoffError =
       mock<VungleError> {
@@ -297,6 +398,61 @@ class VungleRtbNativeAdTest {
   }
 
   @Test
+  fun nativeVideoListener_onVideoPlay_invokesOnVideoPlay() {
+    renderAdAndMockLoadSuccess()
+    val videoListener = getNativeVideoListener(getMediaView(adapterRtbNativeAd))
+
+    videoListener.onVideoPlay()
+
+    verify(nativeAdCallback).onVideoPlay()
+    verifyNoMoreInteractions(nativeAdCallback)
+  }
+
+  @Test
+  fun nativeVideoListener_onVideoPause_invokesOnVideoPause() {
+    renderAdAndMockLoadSuccess()
+    val videoListener = getNativeVideoListener(getMediaView(adapterRtbNativeAd))
+
+    videoListener.onVideoPause()
+
+    verify(nativeAdCallback).onVideoPause()
+    verifyNoMoreInteractions(nativeAdCallback)
+  }
+
+  @Test
+  fun nativeVideoListener_onVideoEnd_invokesOnVideoComplete() {
+    renderAdAndMockLoadSuccess()
+    val videoListener = getNativeVideoListener(getMediaView(adapterRtbNativeAd))
+
+    videoListener.onVideoEnd()
+
+    verify(nativeAdCallback).onVideoComplete()
+    verifyNoMoreInteractions(nativeAdCallback)
+  }
+
+  @Test
+  fun nativeVideoListener_onVideoMute_invokesOnVideoMute() {
+    renderAdAndMockLoadSuccess()
+    val videoListener = getNativeVideoListener(getMediaView(adapterRtbNativeAd))
+
+    videoListener.onVideoMute()
+
+    verify(nativeAdCallback).onVideoMute()
+    verifyNoMoreInteractions(nativeAdCallback)
+  }
+
+  @Test
+  fun nativeVideoListener_onVideoUnmute_invokesOnVideoUnmute() {
+    renderAdAndMockLoadSuccess()
+    val videoListener = getNativeVideoListener(getMediaView(adapterRtbNativeAd))
+
+    videoListener.onVideoUnmute()
+
+    verify(nativeAdCallback).onVideoUnmute()
+    verifyNoMoreInteractions(nativeAdCallback)
+  }
+
+  @Test
   fun trackViews_registersViewForInteraction() {
     renderAdAndMockLoadSuccess()
     val iconView = ImageView(context)
@@ -308,6 +464,26 @@ class VungleRtbNativeAdTest {
 
     verify(vungleNativeAd)
       .registerViewForInteraction(eq(overlayView), any(), eq(iconView), eq(listOf(iconView)))
+  }
+
+  @Test
+  fun trackViews_withMediaVideoAsset_addsMediaViewToClickableAssetViews() {
+    renderAdAndMockLoadSuccess()
+    val mediaView = View(context)
+    val clickableAssets = mapOf(ASSET_MEDIA_VIDEO to mediaView)
+    val overlayView = FrameLayout(context)
+    containerView.addView(overlayView)
+    val liftoffMediaView = getMediaView(adapterRtbNativeAd)
+
+    adapterRtbNativeAd.trackViews(containerView, clickableAssets, emptyMap())
+
+    verify(vungleNativeAd)
+      .registerViewForInteraction(
+        eq(overlayView),
+        eq(liftoffMediaView),
+        /* iconView = */ eq(null),
+        eq(listOf(mediaView, liftoffMediaView)),
+      )
   }
 
   @Test
@@ -380,6 +556,21 @@ class VungleRtbNativeAdTest {
     adapterRtbNativeAd.untrackView(containerView)
 
     verifyNoInteractions(vungleNativeAd)
+  }
+
+  private fun getMediaView(nativeAd: VungleRtbNativeAd): MediaView {
+    val field = VungleRtbNativeAd::class.java.getDeclaredField("mediaView")
+    field.isAccessible = true
+    return field.get(nativeAd) as MediaView
+  }
+
+  private fun getNativeVideoListener(mediaView: View): NativeVideoListener {
+    val field =
+      mediaView.javaClass.declaredFields.first {
+        NativeVideoListener::class.java.isAssignableFrom(it.type)
+      }
+    field.isAccessible = true
+    return field.get(mediaView) as NativeVideoListener
   }
 
   private companion object {

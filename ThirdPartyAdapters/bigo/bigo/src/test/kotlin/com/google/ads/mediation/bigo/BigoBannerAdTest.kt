@@ -18,20 +18,21 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SLOT_ID_KEY
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
@@ -49,15 +50,12 @@ class BigoBannerAdTest {
   private lateinit var bigoBannerAd: BigoBannerAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val mockBannerAdCallback: MediationBannerAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockBannerAdCallback
-    }
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
+  private val adLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
   private val mockBannerAdRequest = mock<BannerAdRequest>()
   private val mockBigoAdView = mock<BigoAdView>()
-  private var mockBigoFactory =
+  private val mockBigoFactory =
     mock<SdkFactory> {
       on {
         createBannerAdRequest(
@@ -90,7 +88,7 @@ class BigoBannerAdTest {
       )
     ) doReturn com.google.android.gms.ads.AdSize.BANNER
     BigoFactory.delegate = mockBigoFactory
-    BigoBannerAd.newInstance(adConfiguration, mockAdLoadCallback, mediationUtils).onSuccess {
+    BigoBannerAd.newInstance(adConfiguration, adLoadCallback, mediationUtils).onSuccess {
       bigoBannerAd = it
     }
   }
@@ -110,7 +108,7 @@ class BigoBannerAdTest {
   fun onAdLoaded_invokesOnSuccess() {
     bigoBannerAd.onAdLoaded(mockBigoAdView)
 
-    verify(mockAdLoadCallback).onSuccess(bigoBannerAd)
+    assertThat(adLoadCallback).hasSucceededWith(bigoBannerAd)
   }
 
   @Test
@@ -119,7 +117,7 @@ class BigoBannerAdTest {
 
     bigoBannerAd.onError(AdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(adLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -133,7 +131,7 @@ class BigoBannerAdTest {
 
     bigoBannerAd.onAdImpression()
 
-    verify(mockBannerAdCallback).reportAdImpression()
+    assertThat(bannerAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -142,7 +140,7 @@ class BigoBannerAdTest {
 
     bigoBannerAd.onAdClicked()
 
-    verify(mockBannerAdCallback).reportAdClicked()
+    assertThat(bannerAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -151,7 +149,7 @@ class BigoBannerAdTest {
 
     bigoBannerAd.onAdOpened()
 
-    verify(mockBannerAdCallback).onAdOpened()
+    assertThat(bannerAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -160,7 +158,7 @@ class BigoBannerAdTest {
 
     bigoBannerAd.onAdClosed()
 
-    verify(mockBannerAdCallback).onAdClosed()
+    assertThat(bannerAdCallback.isClosed).isTrue()
   }
 
   private companion object {

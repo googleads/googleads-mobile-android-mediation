@@ -2,12 +2,12 @@ package com.google.ads.mediation.applovin
 
 import android.content.Context
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.applovin.mediation.AppLovinUtils.ERROR_MSG_REASON_PREFIX
+import com.applovin.mediation.AppLovinUtils
 import com.applovin.sdk.AppLovinAd
 import com.applovin.sdk.AppLovinErrorCodes
-import com.google.ads.mediation.applovin.AppLovinMediationAdapter.APPLOVIN_SDK_ERROR_DOMAIN
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
@@ -16,12 +16,8 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
-import org.mockito.kotlin.verify
 
 @RunWith(AndroidJUnit4::class)
 class AppLovinRewardedRendererTest {
@@ -30,13 +26,11 @@ class AppLovinRewardedRendererTest {
   private lateinit var appLovinMediationRewardedAd: AppLovinRewardedRenderer
 
   private val appLovinAd: AppLovinAd = mock()
-  private val rewardedAdConfiguration: MediationRewardedAdConfiguration = mock()
-  private val rewardedAdCallback: MediationRewardedAdCallback = mock()
-  private val rewardedAdLoadCallback:
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn rewardedAdCallback
-    }
+  private val rewardedAdCallback = FakeMediationRewardedAdCallback()
+  private val rewardedAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      rewardedAdCallback
+    )
   private val appLovinSdkWrapper: AppLovinSdkWrapper = AppLovinSdkWrapper()
   private val appLovinSdkUtilsWrapper: AppLovinSdkUtilsWrapper = mock {
     on { runOnUiThread(any()) } doAnswer
@@ -68,20 +62,15 @@ class AppLovinRewardedRendererTest {
   fun adReceived_invokesOnSuccess() {
     appLovinMediationRewardedAd.adReceived(appLovinAd)
 
-    verify(rewardedAdLoadCallback).onSuccess(appLovinMediationRewardedAd)
+    assertThat(rewardedAdLoadCallback).hasSucceededWith(appLovinMediationRewardedAd)
   }
 
   @Test
   fun failedToReceiveAd_invokesOnFailure() {
-    val adErrorCaptor = argumentCaptor<AdError>()
-
     appLovinMediationRewardedAd.failedToReceiveAd(AppLovinErrorCodes.NO_FILL)
 
-    verify(rewardedAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(AppLovinErrorCodes.NO_FILL)
-    assertThat(capturedError.message).startsWith(ERROR_MSG_REASON_PREFIX)
-    assertThat(capturedError.domain).isEqualTo(APPLOVIN_SDK_ERROR_DOMAIN)
+    val expectedError = AppLovinUtils.getAdError(AppLovinErrorCodes.NO_FILL)
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -91,16 +80,16 @@ class AppLovinRewardedRendererTest {
 
     appLovinMediationRewardedAd.adDisplayed(appLovinAd)
 
-    verify(rewardedAdCallback).onAdOpened()
-    verify(rewardedAdCallback).reportAdImpression()
+    assertThat(rewardedAdCallback.isOpened).isTrue()
+    assertThat(rewardedAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
   fun adDisplayed_withNullAdCallback_invokesOnAdOpenedAndReportAdImpression() {
     appLovinMediationRewardedAd.adDisplayed(appLovinAd)
 
-    verify(rewardedAdCallback, never()).onAdOpened()
-    verify(rewardedAdCallback, never()).reportAdImpression()
+    assertThat(rewardedAdCallback.isOpened).isFalse()
+    assertThat(rewardedAdCallback.isImpressionReported).isFalse()
   }
 
   @Test
@@ -110,15 +99,15 @@ class AppLovinRewardedRendererTest {
 
     appLovinMediationRewardedAd.adHidden(appLovinAd)
 
-    verify(rewardedAdCallback).onAdClosed()
+    assertThat(rewardedAdCallback.isClosed).isTrue()
   }
 
   @Test
   fun adHidden_withNullAdCallback_doesNotInvokeAnyCallbackMethod() {
     appLovinMediationRewardedAd.adHidden(appLovinAd)
 
-    verify(rewardedAdCallback, never()).onUserEarnedReward()
-    verify(rewardedAdCallback, never()).onAdClosed()
+    assertThat(rewardedAdCallback.isUserEarnedReward).isFalse()
+    assertThat(rewardedAdCallback.isClosed).isFalse()
   }
 
   @Test
@@ -127,14 +116,14 @@ class AppLovinRewardedRendererTest {
 
     appLovinMediationRewardedAd.adClicked(appLovinAd)
 
-    verify(rewardedAdCallback).reportAdClicked()
+    assertThat(rewardedAdCallback.isClicked).isTrue()
   }
 
   @Test
   fun adClicked_withNullAdCallback_doesNotInvokeReportAdClicked() {
     appLovinMediationRewardedAd.adClicked(appLovinAd)
 
-    verify(rewardedAdCallback, never()).reportAdClicked()
+    assertThat(rewardedAdCallback.isClicked).isFalse()
   }
 
   @Test
@@ -143,14 +132,14 @@ class AppLovinRewardedRendererTest {
 
     appLovinMediationRewardedAd.videoPlaybackBegan(appLovinAd)
 
-    verify(rewardedAdCallback).onVideoStart()
+    assertThat(rewardedAdCallback.isVideoStarted).isTrue()
   }
 
   @Test
   fun videoPlaybackBegan_withNullAdCallback_doesNotInvokeOnVideoStart() {
     appLovinMediationRewardedAd.videoPlaybackBegan(appLovinAd)
 
-    verify(rewardedAdCallback, never()).onVideoStart()
+    assertThat(rewardedAdCallback.isVideoStarted).isFalse()
   }
 
   @Test
@@ -163,8 +152,8 @@ class AppLovinRewardedRendererTest {
       /*fullyWatched=*/ true,
     )
 
-    verify(rewardedAdCallback).onUserEarnedReward()
-    verify(rewardedAdCallback).onVideoComplete()
+    assertThat(rewardedAdCallback.isUserEarnedReward).isTrue()
+    assertThat(rewardedAdCallback.isVideoCompleted).isTrue()
   }
 
   @Test
@@ -177,8 +166,8 @@ class AppLovinRewardedRendererTest {
       /*fullyWatched=*/ false,
     )
 
-    verify(rewardedAdCallback, never()).onUserEarnedReward()
-    verify(rewardedAdCallback, never()).onVideoComplete()
+    assertThat(rewardedAdCallback.isUserEarnedReward).isFalse()
+    assertThat(rewardedAdCallback.isVideoCompleted).isFalse()
   }
 
   @Test
@@ -189,12 +178,7 @@ class AppLovinRewardedRendererTest {
       /*fullyWatched=*/ true,
     )
 
-    verify(rewardedAdCallback, never()).onUserEarnedReward()
-    verify(rewardedAdCallback, never()).onVideoComplete()
-  }
-
-  companion object {
-    private const val TEST_CURRENCY = "TEST_CURRENCY"
-    private const val TEST_AMOUNT = "10.0"
+    assertThat(rewardedAdCallback.isUserEarnedReward).isFalse()
+    assertThat(rewardedAdCallback.isVideoCompleted).isFalse()
   }
 }

@@ -1,1 +1,3 @@
 include ':pangle'
+include 'adaptertestkit'
+project(":adaptertestkit").projectDir = file("../adaptertestkit")

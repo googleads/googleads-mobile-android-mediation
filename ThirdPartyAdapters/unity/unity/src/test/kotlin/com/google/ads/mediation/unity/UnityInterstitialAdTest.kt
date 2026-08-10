@@ -4,10 +4,12 @@ import android.app.Activity
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.unity.UnityAdsAdapterUtils.getMediationErrorCode
 import com.google.ads.mediation.unity.UnityMediationAdapter.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
@@ -23,7 +25,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -45,10 +46,11 @@ class UnityInterstitialAdTest {
   private val interstitialAdConfiguration: MediationInterstitialAdConfiguration = mock {
     on { watermark } doReturn TEST_WATERMARK
   }
-  private val interstitialAdCallback: MediationInterstitialAdCallback = mock()
-  private val interstitialAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock()
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
+  private val interstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
   private val unityAdsLoader: UnityAdsLoader = mock()
   private val unityInitializer: UnityInitializer = spy(UnityInitializer.getInstance())
 
@@ -61,17 +63,13 @@ class UnityInterstitialAdTest {
         unityInitializer,
         unityAdsLoader,
       )
-
-    doReturn(interstitialAdCallback)
-      .whenever(interstitialAdLoadCallback)
-      .onSuccess(unityInterstitialAd)
   }
 
   @Test
   fun onUnityAdsAdLoaded_invokesOnSuccess() {
     unityInterstitialAd.onUnityAdsAdLoaded(PLACEMENT_ID)
 
-    verify(interstitialAdLoadCallback).onSuccess(unityInterstitialAd)
+    assertThat(interstitialAdLoadCallback).hasSucceededWith(unityInterstitialAd)
   }
 
   @Test
@@ -81,21 +79,18 @@ class UnityInterstitialAdTest {
     unityInterstitialAd.onUnityAdsFailedToLoad(PLACEMENT_ID, unityAdsLoadError, ERROR_MESSAGE)
 
     val errorCode = getMediationErrorCode(unityAdsLoadError)
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(interstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(errorCode)
-    assertThat(capturedError.message).isEqualTo(ERROR_MESSAGE)
-    assertThat(capturedError.domain).isEqualTo(SDK_ERROR_DOMAIN)
+    val expectedAdError = AdError(errorCode, ERROR_MESSAGE, SDK_ERROR_DOMAIN)
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
-  fun onUnityAdsShowStart_invokesOnAdOpened() {
+  fun onUnityAdsShowStart_invokesOnAdOpenedAndReportsAdImpression() {
     unityInterstitialAd.onUnityAdsAdLoaded(PLACEMENT_ID)
 
     unityInterstitialAd.onUnityAdsShowStart(PLACEMENT_ID)
 
-    verify(interstitialAdCallback).onAdOpened()
+    assertThat(interstitialAdCallback.isOpened).isTrue()
+    assertThat(interstitialAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -104,8 +99,8 @@ class UnityInterstitialAdTest {
 
     unityInterstitialAd.onUnityAdsShowClick(PLACEMENT_ID)
 
-    verify(interstitialAdCallback).reportAdClicked()
-    verify(interstitialAdCallback).onAdLeftApplication()
+    assertThat(interstitialAdCallback.isClicked).isTrue()
+    assertThat(interstitialAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -114,13 +109,12 @@ class UnityInterstitialAdTest {
 
     unityInterstitialAd.onUnityAdsShowComplete(PLACEMENT_ID, UnityAdsShowCompletionState.COMPLETED)
 
-    verify(interstitialAdCallback).onAdClosed()
+    assertThat(interstitialAdCallback.isClosed).isTrue()
   }
 
   @Test
   fun onUnityAdsShowFailure_invokesOnAdFailedToShow() {
     unityInterstitialAd.onUnityAdsAdLoaded(PLACEMENT_ID)
-    val errorCaptor = argumentCaptor<AdError>()
 
     unityInterstitialAd.onUnityAdsShowFailure(
       PLACEMENT_ID,
@@ -128,12 +122,14 @@ class UnityInterstitialAdTest {
       ERROR_MESSAGE,
     )
 
-    verify(interstitialAdCallback).onAdFailedToShow(errorCaptor.capture())
-    val capturedError = errorCaptor.firstValue
-    assertThat(capturedError.code)
-      .isEqualTo(getMediationErrorCode(UnityAdsShowError.INTERNAL_ERROR))
-    assertThat(capturedError.message).isEqualTo(ERROR_MESSAGE)
-    assertThat(capturedError.domain).isEqualTo(SDK_ERROR_DOMAIN)
+    val expectedAdError =
+      AdError(
+        getMediationErrorCode(UnityAdsShowError.INTERNAL_ERROR),
+        ERROR_MESSAGE,
+        SDK_ERROR_DOMAIN,
+      )
+    assertThat(interstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(interstitialAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test

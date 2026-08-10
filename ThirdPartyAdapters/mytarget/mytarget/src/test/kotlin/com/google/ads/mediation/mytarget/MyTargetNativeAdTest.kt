@@ -178,6 +178,7 @@ class MyTargetNativeAdTest {
     }
   }
 
+  @Test
   fun onLoad_withMissingBannerImageAsset_invokesFailure() {
     mockStatic(MyTargetSdkWrapper::class.java).use {
       val serverParameters = bundleOf(MyTargetTools.KEY_SLOT_ID to TEST_SLOT_ID)

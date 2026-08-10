@@ -21,6 +21,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.MEDIATION_PLATFORM_NAME
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.RequestConfiguration
@@ -28,22 +29,35 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
+import com.google.common.truth.Truth.assertThat
 import com.moloco.sdk.publisher.Banner
+import com.moloco.sdk.publisher.BannerAdSize
+import com.moloco.sdk.publisher.CreateBannerCallback
+import com.moloco.sdk.publisher.MediationInfo
+import com.moloco.sdk.publisher.Moloco
 import com.moloco.sdk.publisher.MolocoAdError
+import kotlin.test.assertIs
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.MockedStatic
+import org.mockito.Mockito.mockStatic
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class MolocoBannerAdTest {
-  // Subject of tests
+
   private lateinit var molocoBannerAd: MolocoBannerAd
   private lateinit var mediationAdConfiguration: MediationBannerAdConfiguration
+  private lateinit var mockMoloco: MockedStatic<Moloco>
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val adSize = AdSize.BANNER
@@ -55,7 +69,7 @@ class MolocoBannerAdTest {
 
   @Before
   fun setUp() {
-    // Properly initialize molocoBannerAd
+    mockMoloco = mockStatic(Moloco::class.java)
     mediationAdConfiguration = createMediationBannerAdConfiguration()
     MolocoBannerAd.newInstance(mediationAdConfiguration, mockMediationAdLoadCallback).onSuccess {
       molocoBannerAd = it
@@ -63,6 +77,147 @@ class MolocoBannerAdTest {
     whenever(mockMediationAdLoadCallback.onSuccess(molocoBannerAd)) doReturn mockMediationAdCallback
   }
 
+  @After
+  fun tearDown() {
+    mockMoloco.close()
+  }
+
+  // region newInstance Tests
+  @Test
+  fun newInstance_emptyAdUnitId_invokesOnFailureAndReturnsFailure() {
+    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to "")
+    val configuration = createMediationBannerAdConfiguration(serverParameters = serverParameters)
+    val callback = mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
+    val expectedAdError =
+      AdError(
+        MolocoMediationAdapter.ERROR_CODE_MISSING_AD_UNIT,
+        MolocoMediationAdapter.ERROR_MSG_MISSING_AD_UNIT,
+        MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+
+    val result = MolocoBannerAd.newInstance(configuration, callback)
+
+    assertThat(result.isFailure).isTrue()
+    verify(callback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun newInstance_validConfiguration_returnsSuccess() {
+    val configuration = createMediationBannerAdConfiguration()
+    val callback = mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
+
+    val result = MolocoBannerAd.newInstance(configuration, callback)
+
+    assertThat(result.isSuccess).isTrue()
+  }
+
+  // endregion
+
+  // region loadAd Tests
+  @Test
+  fun loadAd_createsBannerAndLoadsAd() {
+    val createBannerCaptor = argumentCaptor<CreateBannerCallback>()
+    val mediationInfoCaptor = argumentCaptor<MediationInfo>()
+
+    molocoBannerAd.loadAd(context)
+
+    mockMoloco.verify {
+      Moloco.createMolocoBanner(
+        mediationInfoCaptor.capture(),
+        eq(TEST_AD_UNIT),
+        eq(BannerAdSize.Standard),
+        eq(TEST_WATERMARK),
+        createBannerCaptor.capture(),
+      )
+    }
+    assertThat(mediationInfoCaptor.firstValue.name).isEqualTo(MEDIATION_PLATFORM_NAME)
+
+    val capturedCallback = createBannerCaptor.firstValue
+    capturedCallback.invoke(mockBannerAd, /* molocoError= */ null)
+
+    verify(mockBannerAd).adShowListener = molocoBannerAd
+    verify(mockBannerAd).load(eq(TEST_BID_RESPONSE), eq(molocoBannerAd))
+  }
+
+  @Test
+  fun loadAd_whenMolocoErrorIsReported_invokesOnFailure() {
+    val createBannerCaptor = argumentCaptor<CreateBannerCallback>()
+    val molocoError = MolocoAdError.AdCreateError.SDK_INIT_FAILED
+    val expectedAdError =
+      AdError(
+        MolocoAdError.AdCreateError.SDK_INIT_FAILED.errorCode,
+        MolocoAdError.AdCreateError.SDK_INIT_FAILED.description,
+        MolocoMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+
+    molocoBannerAd.loadAd(context)
+
+    mockMoloco.verify {
+      Moloco.createMolocoBanner(
+        any(),
+        eq(TEST_AD_UNIT),
+        eq(BannerAdSize.Standard),
+        eq(TEST_WATERMARK),
+        createBannerCaptor.capture(),
+      )
+    }
+    val capturedCallback = createBannerCaptor.firstValue
+    capturedCallback.invoke(/* banner= */ null, molocoError)
+
+    verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadAd_whenBannerIsNullAndNoMolocoErrorIsReported_invokesOnFailure() {
+    val createBannerCaptor = argumentCaptor<CreateBannerCallback>()
+    val expectedAdError =
+      AdError(
+        MolocoMediationAdapter.ERROR_CODE_AD_IS_NULL,
+        MolocoMediationAdapter.ERROR_MSG_AD_IS_NULL,
+        MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+
+    molocoBannerAd.loadAd(context)
+
+    mockMoloco.verify {
+      Moloco.createMolocoBanner(
+        any(),
+        eq(TEST_AD_UNIT),
+        eq(BannerAdSize.Standard),
+        eq(TEST_WATERMARK),
+        createBannerCaptor.capture(),
+      )
+    }
+    val capturedCallback = createBannerCaptor.firstValue
+    capturedCallback.invoke(/* banner= */ null, /* molocoError= */ null)
+
+    verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  // endregion
+
+  // region getView Tests
+  @Test
+  fun getView_returnsMolocoAd() {
+    val createBannerCaptor = argumentCaptor<CreateBannerCallback>()
+    molocoBannerAd.loadAd(context)
+    mockMoloco.verify {
+      Moloco.createMolocoBanner(
+        any(),
+        eq(TEST_AD_UNIT),
+        eq(BannerAdSize.Standard),
+        eq(TEST_WATERMARK),
+        createBannerCaptor.capture(),
+      )
+    }
+    createBannerCaptor.firstValue.invoke(mockBannerAd, /* molocoError= */ null)
+
+    assertThat(molocoBannerAd.view).isEqualTo(mockBannerAd)
+  }
+
+  // endregion
+
+  // region Callback Tests
   @Test
   fun onAdLoadFailed_invokesOnFailure() {
     val testError =
@@ -87,12 +242,13 @@ class MolocoBannerAdTest {
   }
 
   @Test
-  fun onAdClicked_invokesReportAdClicked() {
+  fun onAdClicked_invokesReportAdClickedAndOnAdLeftApplication() {
     molocoBannerAd.onAdLoadSuccess(mock())
 
     molocoBannerAd.onAdClicked(mock())
 
     verify(mockMediationAdCallback).reportAdClicked()
+    verify(mockMediationAdCallback).onAdLeftApplication()
   }
 
   @Test
@@ -105,7 +261,7 @@ class MolocoBannerAdTest {
   }
 
   @Test
-  fun onAdShowFailed_invokesOnAdFailedToShow() {
+  fun onAdShowFailed_invokesOnFailure() {
     molocoBannerAd.onAdLoadSuccess(mock())
     val testError =
       MolocoAdError("testNetwork", "testAdUnit", MolocoAdError.ErrorType.UNKNOWN, "testDesc")
@@ -131,8 +287,86 @@ class MolocoBannerAdTest {
     verify(mockMediationAdCallback).reportAdImpression()
   }
 
-  private fun createMediationBannerAdConfiguration(): MediationBannerAdConfiguration {
-    val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+  // endregion
+
+  // region resolveBannerAdSize Tests
+  @Test
+  fun resolveBannerAdSize_heightZero_returnsInlineAdaptive() {
+    val size = AdSize(320, 0)
+
+    val resolved = MolocoBannerAd.resolveBannerAdSize(context, size)
+
+    val inline = assertIs<BannerAdSize.InlineAdaptive>(resolved)
+    assertThat(inline.availableWidth).isEqualTo(320)
+  }
+
+  @Test
+  fun resolveBannerAdSize_standardBanner_returnsStandard() {
+    val resolved = MolocoBannerAd.resolveBannerAdSize(context, AdSize.BANNER)
+
+    assertIs<BannerAdSize.Standard>(resolved)
+  }
+
+  @Test
+  fun resolveBannerAdSize_mediumRectangle_returnsMREC() {
+    val resolved = MolocoBannerAd.resolveBannerAdSize(context, AdSize.MEDIUM_RECTANGLE)
+
+    assertIs<BannerAdSize.MREC>(resolved)
+  }
+
+  @Test
+  fun resolveBannerAdSize_leaderboard_returnsTablet() {
+    val resolved = MolocoBannerAd.resolveBannerAdSize(context, AdSize.LEADERBOARD)
+
+    assertIs<BannerAdSize.Tablet>(resolved)
+  }
+
+  @Test
+  fun resolveBannerAdSize_currentOrientationAnchoredAdaptive_returnsAnchoredAdaptive() {
+    val size = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, 320)
+
+    val resolved = MolocoBannerAd.resolveBannerAdSize(context, size)
+
+    val anchored = assertIs<BannerAdSize.AnchoredAdaptive>(resolved)
+    assertThat(anchored.availableWidth).isEqualTo(320)
+  }
+
+  @Test
+  fun resolveBannerAdSize_portraitAnchoredAdaptive_returnsAnchoredAdaptive() {
+    val size = AdSize.getPortraitAnchoredAdaptiveBannerAdSize(context, 320)
+
+    val resolved = MolocoBannerAd.resolveBannerAdSize(context, size)
+
+    val anchored = assertIs<BannerAdSize.AnchoredAdaptive>(resolved)
+    assertThat(anchored.availableWidth).isEqualTo(320)
+  }
+
+  @Test
+  fun resolveBannerAdSize_landscapeAnchoredAdaptive_returnsAnchoredAdaptive() {
+    val size = AdSize.getLandscapeAnchoredAdaptiveBannerAdSize(context, 320)
+
+    val resolved = MolocoBannerAd.resolveBannerAdSize(context, size)
+
+    val anchored = assertIs<BannerAdSize.AnchoredAdaptive>(resolved)
+    assertThat(anchored.availableWidth).isEqualTo(320)
+  }
+
+  @Test
+  fun resolveBannerAdSize_customNonStandardSize_returnsInlineAdaptive() {
+    val size = AdSize(123, 456)
+
+    val resolved = MolocoBannerAd.resolveBannerAdSize(context, size)
+
+    val inline = assertIs<BannerAdSize.InlineAdaptive>(resolved)
+    assertThat(inline.availableWidth).isEqualTo(123)
+  }
+
+  // endregion
+
+  private fun createMediationBannerAdConfiguration(
+    serverParameters: android.os.Bundle =
+      bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to TEST_AD_UNIT)
+  ): MediationBannerAdConfiguration {
     return MediationBannerAdConfiguration(
       context,
       TEST_BID_RESPONSE,

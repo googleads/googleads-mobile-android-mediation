@@ -1,6 +1,22 @@
 ## Moloco Android Mediation Adapter Changelog
 
-#### Version 4.10.1.0 (In progress)
+#### Version 4.11.0.0 (In progress)
+
+#### Version 4.10.1.1 (In progress)
+- Adds adaptive banner support to the Moloco mediation adapter.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.3.0.
+- Moloco SDK version 4.10.1.
+
+#### Version 4.10.1.0
+- Verified compatibility with Moloco SDK 4.10.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.2.1.
+- Moloco SDK version 4.10.1.
 
 #### Version 4.10.0.0
 - Maps `AgeRestrictedTreatment` to Moloco's age restricted settings.

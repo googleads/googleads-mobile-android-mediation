@@ -116,9 +116,8 @@ class VungleRtbAppOpenAdTest {
   }
 
   @Test
-  fun showAd_ifLiftoffCannotPlayAd_callsOnAdFailedToShow() {
-    renderAdAndMockLoadSuccess()
-    whenever(vungleAppOpenAd.canPlayAd()) doReturn false
+  fun showAd_ifAppOpenAdIsNull_callsOnAdFailedToShow() {
+    adapterRtbAppOpenAd.onAdLoaded(vungleAppOpenAd)
 
     adapterRtbAppOpenAd.showAd(context)
 

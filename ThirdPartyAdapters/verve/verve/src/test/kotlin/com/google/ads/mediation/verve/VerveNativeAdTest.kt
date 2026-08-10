@@ -5,12 +5,13 @@ import android.graphics.Bitmap
 import android.view.View
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationNativeAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_CODE_AD_LOAD_FAILED_TO_LOAD
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.common.truth.Truth.assertThat
@@ -19,8 +20,6 @@ import net.pubnative.lite.sdk.request.HyBidNativeAdRequest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -46,17 +45,14 @@ class VerveNativeAdTest {
       on { iconUrl } doReturn TEST_ICON_URL
       on { bannerBitmap } doReturn mockBitmap
     }
-  private val mockNativeAdCallback: MediationNativeAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockNativeAdCallback
-    }
+  private val nativeAdCallback = FakeMediationNativeAdCallback()
+  private val nativeAdLoadCallback =
+    FakeMediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>(nativeAdCallback)
 
   @Before
   fun setUp() {
     verveNativeAd =
-      VerveNativeAd(context, mockAdLoadCallback, TEST_BID_RESPONSE, mockHyBidNativeAdRequest)
+      VerveNativeAd(context, nativeAdLoadCallback, TEST_BID_RESPONSE, mockHyBidNativeAdRequest)
   }
 
   @Test
@@ -71,7 +67,7 @@ class VerveNativeAdTest {
   fun onRequestSuccess_invokesOnSuccess() {
     verveNativeAd.onRequestSuccess(mockHyBidNativeAd)
 
-    verify(mockAdLoadCallback).onSuccess(eq(verveNativeAd))
+    assertThat(nativeAdLoadCallback).hasSucceededWith(verveNativeAd)
     assertThat(verveNativeAd.headline).isEqualTo(TEST_TITLE)
     assertThat(verveNativeAd.body).isEqualTo(TEST_DESCRIPTION)
     assertThat(verveNativeAd.adChoicesContent).isEqualTo(testView)
@@ -90,7 +86,7 @@ class VerveNativeAdTest {
 
     verveNativeAd.onRequestSuccess(null)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -105,7 +101,7 @@ class VerveNativeAdTest {
 
     verveNativeAd.onRequestFail(testError)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -114,8 +110,8 @@ class VerveNativeAdTest {
 
     verveNativeAd.onAdImpression(mockHyBidNativeAd, view = null)
 
-    verify(mockNativeAdCallback).onAdOpened()
-    verify(mockNativeAdCallback).reportAdImpression()
+    assertThat(nativeAdCallback.isOpened).isTrue()
+    assertThat(nativeAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -124,8 +120,8 @@ class VerveNativeAdTest {
 
     verveNativeAd.onAdClick(mockHyBidNativeAd, view = null)
 
-    verify(mockNativeAdCallback).reportAdClicked()
-    verify(mockNativeAdCallback).onAdLeftApplication()
+    assertThat(nativeAdCallback.isClicked).isTrue()
+    assertThat(nativeAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -157,8 +153,8 @@ class VerveNativeAdTest {
     verveNativeAd.handleClick(testView)
 
     verify(mockHyBidNativeAd).onNativeClick(testView)
-    verify(mockNativeAdCallback).reportAdClicked()
-    verify(mockNativeAdCallback).onAdOpened()
+    assertThat(nativeAdCallback.isClicked).isTrue()
+    assertThat(nativeAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -174,8 +170,8 @@ class VerveNativeAdTest {
     clickableView.performClick()
 
     verify(mockHyBidNativeAd).onNativeClick(clickableView)
-    verify(mockNativeAdCallback).reportAdClicked()
-    verify(mockNativeAdCallback).onAdOpened()
+    assertThat(nativeAdCallback.isClicked).isTrue()
+    assertThat(nativeAdCallback.isOpened).isTrue()
   }
 
   private companion object {

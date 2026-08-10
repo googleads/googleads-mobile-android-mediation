@@ -15,6 +15,8 @@ import com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION
 import com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID
 import com.google.ads.mediation.vungle.VungleFactory
 import com.google.ads.mediation.vungle.VungleInitializer
+import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_CANNOT_PLAY_AD
+import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.vungle.VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -111,6 +113,22 @@ class VungleRtbInterstitialAdTest {
     adapterRtbInterstitialAd.showAd(context)
 
     verify(vungleInterstitialAd).play(context)
+  }
+
+  @Test
+  fun showAd_whenInterstitialAdIsNull_invokesOnAdFailedToShow() {
+    adapterRtbInterstitialAd.onAdLoaded(vungleInterstitialAd)
+
+    adapterRtbInterstitialAd.showAd(context)
+
+    val expectedError =
+      AdError(
+        ERROR_CANNOT_PLAY_AD,
+        "Failed to show interstitial ad from Liftoff Monetize.",
+        ERROR_DOMAIN,
+      )
+    verify(interstitialAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedError)))
+    verifyNoMoreInteractions(interstitialAdCallback)
   }
 
   private fun renderAdAndMockLoadSuccess() {

@@ -1,5 +1,13 @@
 ## Verve Android Mediation Adapter Changelog
 
+#### Version 3.9.1.0
+- Verified compatibility with Verve HyBid SDK version 3.9.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.3.1.
+- Verve HyBid SDK version 3.9.1.
+
 #### Version 3.9.0.0
 - Filter age-restricted requests for Verve SDK when new `AgeRestrictedTreatment` is set to `CHILD`.
 - Verified compatibility with Verve HyBid SDK version 3.9.0.

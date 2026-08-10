@@ -82,11 +82,11 @@ public class UnityInitializer {
     ConsentResult consentResult =
         UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID);
     if (consentResult == ConsentResult.TRUE) {
-      MetaData privacyMetaData = new MetaData(context);
+      MetaData privacyMetaData = unityAdsWrapper.getMetaData(context);
       privacyMetaData.set("gdpr.consent", true);
       privacyMetaData.commit();
     } else if (consentResult == ConsentResult.FALSE) {
-      MetaData privacyMetaData = new MetaData(context);
+      MetaData privacyMetaData = unityAdsWrapper.getMetaData(context);
       privacyMetaData.set("gdpr.consent", false);
       privacyMetaData.commit();
     }

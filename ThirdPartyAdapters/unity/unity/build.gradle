@@ -131,6 +131,7 @@ dependencies {
         implementation 'com.google.android.gms:play-services-ads:25.4.0'
     }
 
+    testImplementation project(':adaptertestkit')
     testImplementation 'androidx.core:core-ktx:1.8.0'
     testImplementation 'androidx.test:core:1.6.1'
     testImplementation 'androidx.test.espresso:espresso-core:3.6.1'

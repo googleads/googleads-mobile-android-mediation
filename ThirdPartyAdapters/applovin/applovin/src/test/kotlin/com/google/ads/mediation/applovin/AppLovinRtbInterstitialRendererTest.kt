@@ -12,7 +12,8 @@ import com.applovin.sdk.AppLovinAd
 import com.applovin.sdk.AppLovinAdService
 import com.applovin.sdk.AppLovinSdk
 import com.applovin.sdk.AppLovinSdkSettings
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
@@ -58,10 +59,11 @@ class AppLovinRtbInterstitialRendererTest {
     on { serverParameters } doReturn serverParameters
     on { mediationExtras } doReturn mediationExtras
   }
-  private val interstitialAdCallback: MediationInterstitialAdCallback = mock()
-  private val interstitialAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock()
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
+  private val interstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
 
   @Before
   fun setUp() {

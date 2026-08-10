@@ -74,23 +74,81 @@ class DTExchangeWaterfallBannerAdTest {
         ),
     )
   private lateinit var mockInneractiveAdManager: MockedStatic<InneractiveAdManager>
-  private lateinit var mockFyberFactory: MockedStatic<FyberFactory>
   private lateinit var mockMediationUtils: MockedStatic<MediationUtils>
 
   @Before
   fun setUp() {
     dtExchangeWaterfallBannerAd = DTExchangeWaterfallBannerAd(mockAdLoadCallback)
     mockInneractiveAdManager = mockStatic(InneractiveAdManager::class.java)
-    mockFyberFactory = mockStatic(FyberFactory::class.java)
     mockMediationUtils = mockStatic(MediationUtils::class.java)
   }
 
   @After
   fun tearDown() {
     mockInneractiveAdManager.close()
-    mockFyberFactory.close()
     mockMediationUtils.close()
   }
+
+  // region Parameter validation and initialization tests
+  @Test
+  fun loadAd_withNullOrEmptyAppId_invokesOnFailure() {
+    val invalidAdConfiguration =
+      createMediationBannerAdConfiguration(
+        context = context,
+        serverParameters = bundleOf(FyberMediationAdapter.KEY_SPOT_ID to "test_spot_id"),
+      )
+    val expectedAdError =
+      AdError(
+        DTExchangeErrorCodes.ERROR_INVALID_SERVER_PARAMETERS,
+        "App ID is null or empty.",
+        DTExchangeErrorCodes.ERROR_DOMAIN,
+      )
+
+    dtExchangeWaterfallBannerAd.loadAd(invalidAdConfiguration)
+
+    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadAd_withNullOrEmptySpotId_invokesOnFailure() {
+    val invalidAdConfiguration =
+      createMediationBannerAdConfiguration(
+        context = context,
+        serverParameters = bundleOf(FyberMediationAdapter.KEY_APP_ID to "test_app_id"),
+      )
+    val expectedAdError =
+      AdError(
+        DTExchangeErrorCodes.ERROR_INVALID_SERVER_PARAMETERS,
+        "Cannot render banner ad. Please define a valid spot id on the AdMob UI.",
+        DTExchangeErrorCodes.ERROR_DOMAIN,
+      )
+
+    dtExchangeWaterfallBannerAd.loadAd(invalidAdConfiguration)
+
+    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun loadAd_whenFyberMarketplaceInitializationFails_invokesOnFailure() {
+    dtExchangeWaterfallBannerAd.loadAd(adConfiguration)
+    val initListenerCaptor = argumentCaptor<OnFyberMarketplaceInitializedListener>()
+    mockInneractiveAdManager.verify {
+      InneractiveAdManager.initialize(any(), any(), initListenerCaptor.capture())
+    }
+    initListenerCaptor.firstValue.onFyberMarketplaceInitialized(
+      OnFyberMarketplaceInitializedListener.FyberInitStatus.FAILED
+    )
+
+    val expectedAdError =
+      AdError(
+        202,
+        "DT Exchange failed to initialize with reason: FAILED",
+        DTExchangeErrorCodes.ERROR_DOMAIN,
+      )
+    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  // endregion
 
   // region InneractiveAdSpot.RequestListener implementation tests
   @Test

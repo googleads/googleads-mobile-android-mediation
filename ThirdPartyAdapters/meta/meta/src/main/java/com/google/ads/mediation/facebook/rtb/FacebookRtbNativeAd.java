@@ -18,7 +18,6 @@ import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_C
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_MAPPING_NATIVE_ASSETS;
-import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_NULL_CONTEXT;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_WRONG_NATIVE_TYPE;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.KEY_ID;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.KEY_SOCIAL_CONTEXT_ASSET;
@@ -26,7 +25,6 @@ import static com.google.ads.mediation.facebook.FacebookMediationAdapter.TAG;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.getAdError;
 import static com.google.ads.mediation.facebook.FacebookMediationAdapter.setMixedAudience;
 
-import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -38,13 +36,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdListener;
-import com.facebook.ads.AdOptionsView;
 import com.facebook.ads.ExtraHints;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.MediaViewListener;
 import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAdBase;
+import com.facebook.ads.NativeAdBase.MediaCacheFlag;
+import com.facebook.ads.NativeAdBase.NativeAdLoadConfigBuilder;
 import com.facebook.ads.NativeAdListener;
+import com.facebook.ads.NativeAdOptionsViewPosition;
 import com.facebook.ads.NativeBannerAd;
 import com.google.ads.mediation.facebook.FacebookMediationAdapter;
 import com.google.ads.mediation.facebook.MetaFactory;
@@ -55,7 +55,7 @@ import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
 import com.google.android.gms.ads.mediation.NativeAdMapper;
 import com.google.android.gms.ads.nativead.NativeAd.Image;
-import java.lang.ref.WeakReference;
+import com.google.android.gms.ads.nativead.NativeAdOptions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +66,7 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
   private NativeAdBase nativeAdBase;
   private MediationNativeAdCallback nativeAdCallback;
   private MediaView mediaView;
+  private NativeAdOptions nativeAdOptions;
 
   private final MetaFactory metaFactory;
 
@@ -93,7 +94,7 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
 
     try {
       nativeAdBase =
-          NativeAdBase.fromBidPayload(
+          metaFactory.createNativeAdFromBidPayload(
               adConfiguration.getContext(), placementID, adConfiguration.getBidResponse());
     } catch (Exception ex) {
       AdError error = new AdError(ERROR_CREATE_NATIVE_AD_FROM_BID_PAYLOAD,
@@ -108,29 +109,27 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
           new ExtraHints.Builder().mediationData(adConfiguration.getWatermark()).build());
     }
 
+    nativeAdOptions = adConfiguration.getNativeAdOptions();
+
     nativeAdBase.loadAd(
         nativeAdBase
             .buildLoadAdConfig()
-            .withAdListener(new NativeListener(adConfiguration.getContext(), nativeAdBase))
+            .withAdListener(new NativeListener(nativeAdBase))
             .withBid(adConfiguration.getBidResponse())
-            .withMediaCacheFlag(NativeAdBase.MediaCacheFlag.ALL)
+            .withMediaCacheFlag(MediaCacheFlag.ALL)
             .withPreloadedIconView(
-                NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE,
-                NativeAdBase.NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE)
+                NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE,
+                NativeAdLoadConfigBuilder.UNKNOWN_IMAGE_SIZE)
             .build());
   }
 
   private class NativeListener implements AdListener, NativeAdListener {
 
-    /** Context required to create AdOptions View. */
-    private final WeakReference<Context> context;
-
     /** Meta Audience Network native ad instance. */
     private final NativeAdBase nativeAd;
 
-    NativeListener(Context mContext, NativeAdBase mNativeAd) {
+    NativeListener(NativeAdBase mNativeAd) {
       this.nativeAd = mNativeAd;
-      this.context = new WeakReference<>(mContext);
     }
 
     @Override
@@ -142,7 +141,7 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
 
     @Override
     public void onLoggingImpression(Ad ad) {
-      // Google Mobile Ads handles impression tracking.
+      nativeAdCallback.reportAdImpression();
     }
 
     @Override
@@ -155,16 +154,7 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
         return;
       }
 
-      Context context = this.context.get();
-      if (context == null) {
-        AdError error = new AdError(ERROR_NULL_CONTEXT, "Context is null.", ERROR_DOMAIN);
-        Log.e(TAG, error.getMessage());
-        FacebookRtbNativeAd.this.callback.onFailure(error);
-        return;
-      }
-
       FacebookRtbNativeAd.this.mapNativeAd(
-          context,
           new NativeAdMapperListener() {
             @Override
             public void onMappingSuccess() {
@@ -199,8 +189,7 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
    *
    * @param mapperListener used to send success/failure callbacks when mapping is done.
    */
-  private void mapNativeAd(
-      @NonNull Context context, @NonNull NativeAdMapperListener mapperListener) {
+  private void mapNativeAd(@NonNull NativeAdMapperListener mapperListener) {
     if (!containsRequiredFieldsForUnifiedNativeAd(nativeAdBase)) {
       AdError error = new AdError(ERROR_MAPPING_NATIVE_ASSETS,
           "Ad from Meta Audience Network doesn't have all required assets.", ERROR_DOMAIN);
@@ -291,8 +280,6 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
         KEY_SOCIAL_CONTEXT_ASSET, FacebookRtbNativeAd.this.nativeAdBase.getAdSocialContext());
     setExtras(extras);
 
-    AdOptionsView adOptionsView = new AdOptionsView(context, nativeAdBase, null);
-    setAdChoicesContent(adOptionsView);
     mapperListener.onMappingSuccess();
   }
 
@@ -344,9 +331,43 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
       }
 
       NativeBannerAd nativeBannerAd = (NativeBannerAd) nativeAdBase;
+      if (nativeAdOptions != null) {
+        switch (nativeAdOptions.getAdChoicesPlacement()) {
+          case NativeAdOptions.ADCHOICES_TOP_LEFT:
+            nativeBannerAd.setPreferredAdOptionsViewPosition(NativeAdOptionsViewPosition.TOP_LEFT);
+            break;
+          case NativeAdOptions.ADCHOICES_TOP_RIGHT:
+            nativeBannerAd.setPreferredAdOptionsViewPosition(NativeAdOptionsViewPosition.TOP_RIGHT);
+            break;
+          case NativeAdOptions.ADCHOICES_BOTTOM_RIGHT:
+            nativeBannerAd.setPreferredAdOptionsViewPosition(
+                NativeAdOptionsViewPosition.BOTTOM_RIGHT);
+            break;
+          case NativeAdOptions.ADCHOICES_BOTTOM_LEFT:
+            nativeBannerAd.setPreferredAdOptionsViewPosition(
+                NativeAdOptionsViewPosition.BOTTOM_LEFT);
+            break;
+        }
+      }
       nativeBannerAd.registerViewForInteraction(view, (ImageView) iconView, assetViews);
     } else if (nativeAdBase instanceof NativeAd) {
       NativeAd nativeAd = (NativeAd) nativeAdBase;
+      if (nativeAdOptions != null) {
+        switch (nativeAdOptions.getAdChoicesPlacement()) {
+          case NativeAdOptions.ADCHOICES_TOP_LEFT:
+            nativeAd.setPreferredAdOptionsViewPosition(NativeAdOptionsViewPosition.TOP_LEFT);
+            break;
+          case NativeAdOptions.ADCHOICES_TOP_RIGHT:
+            nativeAd.setPreferredAdOptionsViewPosition(NativeAdOptionsViewPosition.TOP_RIGHT);
+            break;
+          case NativeAdOptions.ADCHOICES_BOTTOM_RIGHT:
+            nativeAd.setPreferredAdOptionsViewPosition(NativeAdOptionsViewPosition.BOTTOM_RIGHT);
+            break;
+          case NativeAdOptions.ADCHOICES_BOTTOM_LEFT:
+            nativeAd.setPreferredAdOptionsViewPosition(NativeAdOptionsViewPosition.BOTTOM_LEFT);
+            break;
+        }
+      }
       if (iconView instanceof ImageView) {
         nativeAd.registerViewForInteraction(view, mediaView, (ImageView) iconView, assetViews);
       } else {
@@ -411,8 +432,7 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
      * Returns the native ad image drawable. This is purposefully set as {@link Nullable} even if
      * the overridden method is {@link NonNull}. The Google Mobile Ads SDK only supports loading
      * native ads of type {@link com.google.android.gms.ads.nativead.NativeAd}, which expose image
-     * assets of type {@link com.google.android.gms.ads.nativead.NativeAd.Image}, which allows a
-     * {@code null} drawable.
+     * assets of type {@link Image}, which allows a {@code null} drawable.
      *
      * @return the image drawable.
      */

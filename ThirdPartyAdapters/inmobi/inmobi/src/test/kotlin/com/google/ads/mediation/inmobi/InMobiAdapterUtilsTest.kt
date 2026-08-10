@@ -1,17 +1,25 @@
 package com.google.ads.mediation.inmobi
 
+import android.content.Context
 import android.os.Bundle
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.common.truth.Truth.assertThat
+import com.inmobi.ads.InMobiAdRequestStatus
 import com.inmobi.sdk.InMobiSdk
+import java.util.ArrayList
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -298,6 +306,112 @@ class InMobiAdapterUtilsTest {
       )
 
     assertThat(adError).isNull()
+  }
+
+  @Test
+  fun getMediationErrorCode_mapsAllStatusCodesCorrectly() {
+    val statusMap =
+      mapOf(
+        InMobiAdRequestStatus.StatusCode.NO_ERROR to 0,
+        InMobiAdRequestStatus.StatusCode.NETWORK_UNREACHABLE to 1,
+        InMobiAdRequestStatus.StatusCode.NO_FILL to 2,
+        InMobiAdRequestStatus.StatusCode.REQUEST_INVALID to 3,
+        InMobiAdRequestStatus.StatusCode.REQUEST_PENDING to 4,
+        InMobiAdRequestStatus.StatusCode.REQUEST_TIMED_OUT to 5,
+        InMobiAdRequestStatus.StatusCode.INTERNAL_ERROR to 6,
+        InMobiAdRequestStatus.StatusCode.SERVER_ERROR to 7,
+        InMobiAdRequestStatus.StatusCode.AD_ACTIVE to 8,
+        InMobiAdRequestStatus.StatusCode.EARLY_REFRESH_REQUEST to 9,
+        InMobiAdRequestStatus.StatusCode.AD_NO_LONGER_AVAILABLE to 10,
+        InMobiAdRequestStatus.StatusCode.MISSING_REQUIRED_DEPENDENCIES to 11,
+        InMobiAdRequestStatus.StatusCode.REPETITIVE_LOAD to 12,
+        InMobiAdRequestStatus.StatusCode.GDPR_COMPLIANCE_ENFORCED to 13,
+        InMobiAdRequestStatus.StatusCode.GET_SIGNALS_CALLED_WHILE_LOADING to 14,
+        InMobiAdRequestStatus.StatusCode.LOAD_WITH_RESPONSE_CALLED_WHILE_LOADING to 15,
+        InMobiAdRequestStatus.StatusCode.INVALID_RESPONSE_IN_LOAD to 16,
+        InMobiAdRequestStatus.StatusCode.MONETIZATION_DISABLED to 17,
+        InMobiAdRequestStatus.StatusCode.CALLED_FROM_WRONG_THREAD to 18,
+        InMobiAdRequestStatus.StatusCode.CONFIGURATION_ERROR to 19,
+        InMobiAdRequestStatus.StatusCode.LOW_MEMORY to 20,
+      )
+
+    for ((statusCode, expectedErrorCode) in statusMap) {
+      val status = InMobiAdRequestStatus(statusCode)
+      val errorCode = InMobiAdapterUtils.getMediationErrorCode(status)
+      assertThat(errorCode).isEqualTo(expectedErrorCode)
+    }
+  }
+
+  @Test
+  fun findClosestBannerSize_passesPotentialSizesToMediationUtils() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val adSize = AdSize(320, 50)
+    val mediationUtils = mock<MediationUtilsWrapper>()
+    val expectedClosestSize = AdSize(320, 50)
+    whenever(mediationUtils.findClosestSize(any(), any(), any())).thenReturn(expectedClosestSize)
+
+    val closestSize = InMobiAdapterUtils.findClosestBannerSize(context, adSize, mediationUtils)
+
+    val potentialsCaptor = argumentCaptor<ArrayList<AdSize>>()
+    verify(mediationUtils).findClosestSize(eq(context), eq(adSize), potentialsCaptor.capture())
+    assertThat(potentialsCaptor.firstValue)
+      .containsExactly(AdSize(320, 50), AdSize(300, 250), AdSize(728, 90))
+      .inOrder()
+    assertThat(closestSize).isEqualTo(expectedClosestSize)
+  }
+
+  @Test
+  fun configureGlobalTargeting_withAllTargetingParameters_setsTargetingOnInMobiSdk() {
+    val extras =
+      Bundle().apply {
+        putString(InMobiNetworkKeys.AREA_CODE, "123")
+        putString(InMobiNetworkKeys.AGE, "25")
+        putString(InMobiNetworkKeys.POSTAL_CODE, "94043")
+        putString(InMobiNetworkKeys.LANGUAGE, "en")
+        putString(InMobiNetworkKeys.CITY, "Mountain View")
+        putString(InMobiNetworkKeys.STATE, "CA")
+        putString(InMobiNetworkKeys.COUNTRY, "USA")
+        putString(InMobiNetworkKeys.AGE_GROUP, InMobiNetworkValues.BETWEEN_25_AND_29)
+        putString(InMobiNetworkKeys.EDUCATION, InMobiNetworkValues.EDUCATION_COLLEGEORGRADUATE)
+        putString(InMobiNetworkKeys.LOGLEVEL, InMobiNetworkValues.LOGLEVEL_DEBUG)
+        putString(InMobiNetworkKeys.INTERESTS, "tech,gaming")
+      }
+
+    mockStatic(InMobiSdk::class.java).use { mockedInMobiSdk ->
+      InMobiAdapterUtils.configureGlobalTargeting(extras)
+
+      mockedInMobiSdk.verify { InMobiSdk.setAreaCode("123") }
+      mockedInMobiSdk.verify { InMobiSdk.setAge(25) }
+      mockedInMobiSdk.verify { InMobiSdk.setPostalCode("94043") }
+      mockedInMobiSdk.verify { InMobiSdk.setLanguage("en") }
+      mockedInMobiSdk.verify {
+        InMobiSdk.setLocationWithCityStateCountry("Mountain View", "CA", "USA")
+      }
+      mockedInMobiSdk.verify { InMobiSdk.setAgeGroup(InMobiSdk.AgeGroup.BETWEEN_25_AND_29) }
+      mockedInMobiSdk.verify { InMobiSdk.setEducation(InMobiSdk.Education.COLLEGE_OR_GRADUATE) }
+      mockedInMobiSdk.verify { InMobiSdk.setLogLevel(InMobiSdk.LogLevel.DEBUG) }
+      mockedInMobiSdk.verify { InMobiSdk.setInterests("tech,gaming") }
+    }
+  }
+
+  @Test
+  fun configureGlobalTargeting_withNullExtras_doesNotInvokeInMobiSdkTargeting() {
+    mockStatic(InMobiSdk::class.java).use { mockedInMobiSdk ->
+      InMobiAdapterUtils.configureGlobalTargeting(null)
+
+      mockedInMobiSdk.verifyNoInteractions()
+    }
+  }
+
+  @Test
+  fun configureGlobalTargeting_withInvalidAge_doesNotSetAgeOnInMobiSdk() {
+    val extras = Bundle().apply { putString(InMobiNetworkKeys.AGE, "invalid_age") }
+
+    mockStatic(InMobiSdk::class.java).use { mockedInMobiSdk ->
+      InMobiAdapterUtils.configureGlobalTargeting(extras)
+
+      mockedInMobiSdk.verify({ InMobiSdk.setAge(any()) }, never())
+    }
   }
 
   private fun setCOPPAAndUnderAgeOnMobileAdsRequestConfiguration(

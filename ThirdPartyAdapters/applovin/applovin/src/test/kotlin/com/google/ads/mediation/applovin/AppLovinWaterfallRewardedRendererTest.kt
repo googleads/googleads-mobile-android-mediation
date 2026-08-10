@@ -11,13 +11,15 @@ import com.applovin.sdk.AppLovinAdService
 import com.applovin.sdk.AppLovinErrorCodes
 import com.applovin.sdk.AppLovinSdk
 import com.applovin.sdk.AppLovinSdkSettings
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.applovin.AppLovinInitializer.OnInitializeSuccessListener
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_AD_ALREADY_REQUESTED
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_PRESENTATION_AD_NOT_READY
 import com.google.ads.mediation.applovin.AppLovinRewardedRenderer.ERROR_MSG_AD_NOT_READY
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
@@ -28,11 +30,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -47,12 +47,11 @@ class AppLovinWaterfallRewardedRendererTest {
 
   private val appLovinAd: AppLovinAd = mock()
   private val rewardedAdConfiguration: MediationRewardedAdConfiguration = mock()
-  private val rewardedAdCallback: MediationRewardedAdCallback = mock()
-  private val rewardedAdLoadCallback:
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn rewardedAdCallback
-    }
+  private val rewardedAdCallback = FakeMediationRewardedAdCallback()
+  private val rewardedAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      rewardedAdCallback
+    )
   private val appLovinSdkSettings: AppLovinSdkSettings = mock()
   private val adService: AppLovinAdService = mock()
   private val appLovinSdk: AppLovinSdk = mock {
@@ -119,15 +118,13 @@ class AppLovinWaterfallRewardedRendererTest {
   @Test
   fun failedToReceiveAd_removesZoneIdToLetAnotherAdLoadWithSameZoneId() {
     mockInitializeSuccess()
-    val errorCaptor = argumentCaptor<AdError>()
     appLovinRewardedAd.loadAd(rewardedAdConfiguration)
 
     appLovinRewardedAd.failedToReceiveAd(AppLovinErrorCodes.NO_FILL)
     appLovinRewardedAd.loadAd(rewardedAdConfiguration)
 
-    verify(rewardedAdLoadCallback).onFailure(errorCaptor.capture())
-    val capturedError = errorCaptor.firstValue
-    assertThat(capturedError.code).isNotEqualTo(ERROR_AD_ALREADY_REQUESTED)
+    assertThat(rewardedAdLoadCallback).hasFailed()
+    assertThat(rewardedAdLoadCallback.error?.code).isNotEqualTo(ERROR_AD_ALREADY_REQUESTED)
     verify(appLovinIncentivizedInterstitial, times(2)).preload(appLovinRewardedAd)
   }
 
@@ -138,7 +135,7 @@ class AppLovinWaterfallRewardedRendererTest {
     appLovinRewardedAd.adHidden(appLovinAd)
     appLovinRewardedAd.loadAd(rewardedAdConfiguration)
 
-    verify(rewardedAdLoadCallback, never()).onFailure(any<AdError>())
+    assertThat(rewardedAdLoadCallback).hasNotFailed()
     verify(appLovinIncentivizedInterstitial, times(2)).preload(appLovinRewardedAd)
   }
 
@@ -157,15 +154,13 @@ class AppLovinWaterfallRewardedRendererTest {
   fun showAd_withoutLoadedAd_invokesOnAdFailedToShow() {
     doAnswer { false }.whenever(appLovinIncentivizedInterstitial).isAdReadyToDisplay()
     loadAndReceiveAd()
-    val errorCaptor = argumentCaptor<AdError>()
 
     appLovinRewardedAd.showAd(context)
 
-    verify(rewardedAdCallback).onAdFailedToShow(errorCaptor.capture())
-    val capturedError = errorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(ERROR_PRESENTATION_AD_NOT_READY)
-    assertThat(capturedError.message).isEqualTo(ERROR_MSG_AD_NOT_READY)
-    assertThat(capturedError.domain).isEqualTo(ERROR_DOMAIN)
+    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
+    val expectedError =
+      AdError(ERROR_PRESENTATION_AD_NOT_READY, ERROR_MSG_AD_NOT_READY, ERROR_DOMAIN)
+    assertThat(rewardedAdCallback.adFailedToShowError).isEqualTo(expectedError)
   }
 
   @Test
@@ -195,7 +190,5 @@ class AppLovinWaterfallRewardedRendererTest {
   companion object {
     private const val TEST_SDK_KEY = "sdkKey"
     private const val TEST_ZONE_ID = "zoneId"
-    private const val TEST_TRUE_VALUE = "true"
-    private const val TEST_FALSE_VALUE = "false"
   }
 }
