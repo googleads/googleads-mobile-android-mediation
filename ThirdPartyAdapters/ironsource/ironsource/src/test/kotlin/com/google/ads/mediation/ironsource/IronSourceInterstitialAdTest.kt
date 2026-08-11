@@ -2,12 +2,13 @@ package com.google.ads.mediation.ironsource
 
 import android.app.Activity
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.ads.mediation.ironsource.IronSourceInterstitialAd.getFromAvailableInstances
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.common.truth.Truth.assertThat
@@ -18,13 +19,6 @@ import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
-import org.mockito.kotlin.whenever
 import org.robolectric.Robolectric
 
 /** Tests for [IronSourceInterstitialAd]. */
@@ -34,12 +28,11 @@ class IronSourceInterstitialAdTest {
   private lateinit var ironSourceInterstitialAd: IronSourceInterstitialAd
 
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
-  private val mockInterstitialAdCallback = mock<MediationInterstitialAdCallback>()
-  private val interstitialAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockInterstitialAdCallback
-    }
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
+  private val interstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
 
   @After
   fun tearDown() {
@@ -54,7 +47,7 @@ class IronSourceInterstitialAdTest {
 
     ironSourceInterstitialAdListener.onInterstitialAdReady(/* instanceId= */ "0")
 
-    verify(interstitialAdLoadCallback).onSuccess(ironSourceInterstitialAd)
+    assertThat(interstitialAdLoadCallback).hasSucceededWith(ironSourceInterstitialAd)
   }
 
   @Test
@@ -64,7 +57,8 @@ class IronSourceInterstitialAdTest {
 
     ironSourceInterstitialAdListener.onInterstitialAdReady(/* instanceId= */ "0")
 
-    verifyNoInteractions(interstitialAdLoadCallback)
+    assertThat(interstitialAdLoadCallback).hasNotSucceeded()
+    assertThat(interstitialAdLoadCallback).hasNoFailure()
   }
 
   @Test
@@ -81,7 +75,7 @@ class IronSourceInterstitialAdTest {
 
     val expectedAdError =
       AdError(ERROR_CODE_DECRYPT_FAILED, "Decrypt failed.", IRONSOURCE_SDK_ERROR_DOMAIN)
-    verify(interstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
     assertThat(getFromAvailableInstances(/* instanceId= */ "0")).isNull()
   }
 
@@ -96,7 +90,8 @@ class IronSourceInterstitialAdTest {
       ironSourceError,
     )
 
-    verifyNoInteractions(interstitialAdLoadCallback)
+    assertThat(interstitialAdLoadCallback).hasNotSucceeded()
+    assertThat(interstitialAdLoadCallback).hasNoFailure()
   }
 
   @Test
@@ -125,7 +120,8 @@ class IronSourceInterstitialAdTest {
 
     val expectedAdError =
       AdError(ERROR_CODE_DECRYPT_FAILED, "Decrypt failed.", IRONSOURCE_SDK_ERROR_DOMAIN)
-    verify(mockInterstitialAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(interstitialAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
     assertThat(getFromAvailableInstances(/* instanceId= */ "0")).isNull()
   }
 
@@ -141,24 +137,22 @@ class IronSourceInterstitialAdTest {
       ironSourceError,
     )
 
-    verifyNoInteractions(mockInterstitialAdCallback)
+    assertThat(interstitialAdCallback.isFailedToShow).isFalse()
   }
 
   @Test
   fun onInterstitialAdShowFailed_withoutInterstitialAdCallbackInstance_verifyOnAdFailedToShow() {
     loadInterstitialAd()
-    whenever(interstitialAdLoadCallback.onSuccess(any())).thenReturn(null)
     val ironSourceInterstitialAdListener =
       IronSourceInterstitialAd.getIronSourceInterstitialListener()
     val ironSourceError = IronSourceError(ERROR_CODE_DECRYPT_FAILED, "Decrypt failed.")
-    ironSourceInterstitialAdListener.onInterstitialAdReady("0")
 
     ironSourceInterstitialAdListener.onInterstitialAdShowFailed(
       /* instanceId= */ "0",
       ironSourceError,
     )
 
-    verifyNoInteractions(mockInterstitialAdCallback)
+    assertThat(interstitialAdCallback.isFailedToShow).isFalse()
   }
 
   @Test
@@ -170,8 +164,8 @@ class IronSourceInterstitialAdTest {
 
     ironSourceInterstitialAdListener.onInterstitialAdOpened(/* instanceId= */ "0")
 
-    verify(mockInterstitialAdCallback).onAdOpened()
-    verify(mockInterstitialAdCallback).reportAdImpression()
+    assertThat(interstitialAdCallback.isOpened).isTrue()
+    assertThat(interstitialAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -183,7 +177,7 @@ class IronSourceInterstitialAdTest {
 
     ironSourceInterstitialAdListener.onInterstitialAdClosed(/* instanceId= */ "0")
 
-    verify(mockInterstitialAdCallback).onAdClosed()
+    assertThat(interstitialAdCallback.isClosed).isTrue()
     assertThat(getFromAvailableInstances(/* instanceId= */ "0")).isNull()
   }
 
@@ -196,7 +190,7 @@ class IronSourceInterstitialAdTest {
 
     ironSourceInterstitialAdListener.onInterstitialAdClicked(/* instanceId= */ "0")
 
-    verify(mockInterstitialAdCallback).reportAdClicked()
+    assertThat(interstitialAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -209,23 +203,27 @@ class IronSourceInterstitialAdTest {
     ironSourceInterstitialAdListener.onInterstitialAdClosed(/* instanceId= */ "1")
     ironSourceInterstitialAdListener.onInterstitialAdClicked(/* instanceId= */ "1")
 
-    verifyNoInteractions(mockInterstitialAdCallback)
+    assertThat(interstitialAdCallback.isOpened).isFalse()
+    assertThat(interstitialAdCallback.isImpressionReported).isFalse()
+    assertThat(interstitialAdCallback.isClosed).isFalse()
+    assertThat(interstitialAdCallback.isClicked).isFalse()
     assertThat(getFromAvailableInstances(/* instanceId= */ "0")).isEqualTo(ironSourceInterstitialAd)
   }
 
   @Test
   fun onAdEvents_withoutInterstitialAdCallbackInstance_verifyNoCallbacks() {
     loadInterstitialAd()
-    whenever(interstitialAdLoadCallback.onSuccess(any())).thenReturn(null)
     val ironSourceInterstitialAdListener =
       IronSourceInterstitialAd.getIronSourceInterstitialListener()
-    ironSourceInterstitialAdListener.onInterstitialAdReady("0")
 
     ironSourceInterstitialAdListener.onInterstitialAdOpened(/* instanceId= */ "0")
     ironSourceInterstitialAdListener.onInterstitialAdClicked(/* instanceId= */ "0")
     ironSourceInterstitialAdListener.onInterstitialAdClosed(/* instanceId= */ "0")
 
-    verifyNoInteractions(mockInterstitialAdCallback)
+    assertThat(interstitialAdCallback.isOpened).isFalse()
+    assertThat(interstitialAdCallback.isImpressionReported).isFalse()
+    assertThat(interstitialAdCallback.isClicked).isFalse()
+    assertThat(interstitialAdCallback.isClosed).isFalse()
   }
 
   private fun loadInterstitialAd() {
