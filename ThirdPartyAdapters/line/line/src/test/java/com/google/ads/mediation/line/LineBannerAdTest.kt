@@ -24,10 +24,13 @@ import com.five_corp.ad.BidData
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdCustomLayout
 import com.five_corp.ad.FiveAdErrorCode
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.RequestConfiguration
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
@@ -59,16 +62,15 @@ class LineBannerAdTest {
       on { logicalHeight } doReturn AdSize.BANNER.height
       on { context } doReturn context
     }
-  private val mockMediationAdCallback = mock<MediationBannerAdCallback>()
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
   private val sdkFactory =
     mock<SdkFactory> {
       on { createFiveAdConfig(any()) } doReturn mockFiveAdConfig
       on { createFiveAdCustomLayout(context, TEST_SLOT_ID, AdSize.BANNER.width) } doReturn
         mockFiveAdCustomLayout
     }
-  private val mediationAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
-    mock()
+  private val mediationAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
   private val mediationUtils: MediationUtilsWrapper = mock()
 
   @Before
@@ -81,7 +83,6 @@ class LineBannerAdTest {
       AdSize.BANNER
     LineBannerAd.newInstance(mediationAdConfiguration, mediationAdLoadCallback, mediationUtils)
       .onSuccess { lineBannerAd = it }
-    whenever(mediationAdLoadCallback.onSuccess(lineBannerAd)) doReturn mockMediationAdCallback
   }
 
   // region newInstance Tests
@@ -98,16 +99,17 @@ class LineBannerAdTest {
   fun newInstance_withMissingAppId_invokesOnFailureAndReturnsFailure() {
     val serverParameters = bundleOf(LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID)
     val config = createMediationBannerAdConfiguration(serverParameters = serverParameters)
-    val adErrorCaptor = argumentCaptor<AdError>()
 
     val result = LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils)
 
+    val expectedError =
+      AdError(
+        LineMediationAdapter.ERROR_CODE_MISSING_APP_ID,
+        LineMediationAdapter.ERROR_MSG_MISSING_APP_ID,
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
     assertThat(result.isFailure).isTrue()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_APP_ID)
-    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_APP_ID)
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -118,16 +120,17 @@ class LineBannerAdTest {
         LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID,
       )
     val config = createMediationBannerAdConfiguration(serverParameters = serverParameters)
-    val adErrorCaptor = argumentCaptor<AdError>()
 
     val result = LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils)
 
+    val expectedError =
+      AdError(
+        LineMediationAdapter.ERROR_CODE_MISSING_APP_ID,
+        LineMediationAdapter.ERROR_MSG_MISSING_APP_ID,
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
     assertThat(result.isFailure).isTrue()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_APP_ID)
-    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_APP_ID)
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   // endregion
@@ -137,17 +140,18 @@ class LineBannerAdTest {
   fun loadAd_withNullSlotId_invokesOnFailure() {
     val serverParameters = bundleOf(LineMediationAdapter.KEY_APP_ID to TEST_APP_ID)
     val config = createMediationBannerAdConfiguration(serverParameters = serverParameters)
-    val adErrorCaptor = argumentCaptor<AdError>()
     var ad: LineBannerAd? = null
     LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess { ad = it }
 
     ad?.loadAd(context)
 
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID)
-    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID)
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+    val expectedError =
+      AdError(
+        LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
+        LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -158,17 +162,18 @@ class LineBannerAdTest {
         LineMediationAdapter.KEY_SLOT_ID to "",
       )
     val config = createMediationBannerAdConfiguration(serverParameters = serverParameters)
-    val adErrorCaptor = argumentCaptor<AdError>()
     var ad: LineBannerAd? = null
     LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess { ad = it }
 
     ad?.loadAd(context)
 
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID)
-    assertThat(capturedError.message).isEqualTo(LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID)
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+    val expectedError =
+      AdError(
+        LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
+        LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -220,7 +225,7 @@ class LineBannerAdTest {
         )
       callbackCaptor.firstValue.onLoad(mockFiveAdCustomLayout)
       verify(mockFiveAdCustomLayout).setEventListener(rtbBannerAd!!)
-      verify(mediationAdLoadCallback).onSuccess(rtbBannerAd!!)
+      assertThat(mediationAdLoadCallback).hasSucceededWith(rtbBannerAd!!)
     }
   }
 
@@ -245,12 +250,13 @@ class LineBannerAdTest {
           callbackCaptor.capture(),
         )
       callbackCaptor.firstValue.onError(FiveAdErrorCode.INTERNAL_ERROR)
-      val adErrorCaptor = argumentCaptor<AdError>()
-      verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-      val capturedError = adErrorCaptor.firstValue
-      assertThat(capturedError.code).isEqualTo(FiveAdErrorCode.INTERNAL_ERROR.value)
-      assertThat(capturedError.message).isEqualTo(FiveAdErrorCode.INTERNAL_ERROR.name)
-      assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.SDK_ERROR_DOMAIN)
+      val expectedError =
+        AdError(
+          FiveAdErrorCode.INTERNAL_ERROR.value,
+          FiveAdErrorCode.INTERNAL_ERROR.name,
+          LineMediationAdapter.SDK_ERROR_DOMAIN,
+        )
+      assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
     }
   }
 
@@ -266,8 +272,7 @@ class LineBannerAdTest {
 
       rtbBannerAd?.loadRtbAd(context)
 
-      verify(mediationAdLoadCallback, never()).onSuccess(any())
-      verify(mediationAdLoadCallback, never()).onFailure(any())
+      verify(mockFiveAdCustomLayout, never()).loadAdAsync()
     }
   }
 
@@ -344,7 +349,6 @@ class LineBannerAdTest {
 
   @Test
   fun onFiveAdLoad_withUnexpectedAdSize_invokesOnFailure() {
-    val adErrorCaptor = argumentCaptor<AdError>()
     val differentBannerAd =
       mock<FiveAdCustomLayout> {
         on { logicalWidth } doReturn AdSize.LARGE_BANNER.width
@@ -355,11 +359,13 @@ class LineBannerAdTest {
 
     lineBannerAd.onFiveAdLoad(differentBannerAd)
 
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(LineBannerAd.ERROR_CODE_MISMATCH_AD_SIZE)
-    assertThat(capturedError.message).startsWith("Unexpected ad size loaded.")
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+    val expectedError =
+      AdError(
+        LineBannerAd.ERROR_CODE_MISMATCH_AD_SIZE,
+        "Unexpected ad size loaded. Expected 320x50 but received 320x100.",
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -369,21 +375,20 @@ class LineBannerAdTest {
     lineBannerAd.onFiveAdLoad(mockFiveAdCustomLayout)
 
     verify(mockFiveAdCustomLayout).setEventListener(lineBannerAd)
-    verify(mediationAdLoadCallback).onSuccess(lineBannerAd)
+    assertThat(mediationAdLoadCallback).hasSucceededWith(lineBannerAd)
   }
 
   @Test
   fun onFiveAdLoadError_invokesOnFailure() {
-    val adErrorCaptor = argumentCaptor<AdError>()
-
     lineBannerAd.onFiveAdLoadError(mockFiveAdCustomLayout, FiveAdErrorCode.INTERNAL_ERROR)
 
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(FiveAdErrorCode.INTERNAL_ERROR.value)
-    assertThat(capturedError.message)
-      .isEqualTo("FiveAd SDK returned a load error with code INTERNAL_ERROR.")
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.SDK_ERROR_DOMAIN)
+    val expectedError =
+      AdError(
+        FiveAdErrorCode.INTERNAL_ERROR.value,
+        "FiveAd SDK returned a load error with code INTERNAL_ERROR.",
+        LineMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -393,8 +398,8 @@ class LineBannerAdTest {
 
     lineBannerAd.onClick(mockFiveAdCustomLayout)
 
-    verify(mockMediationAdCallback).reportAdClicked()
-    verify(mockMediationAdCallback).onAdLeftApplication()
+    assertThat(bannerAdCallback.isClicked).isTrue()
+    assertThat(bannerAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -404,7 +409,7 @@ class LineBannerAdTest {
 
     lineBannerAd.onImpression(mockFiveAdCustomLayout)
 
-    verify(mockMediationAdCallback).reportAdImpression()
+    assertThat(bannerAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -463,6 +468,5 @@ class LineBannerAdTest {
     const val TEST_APP_ID = "testAppId"
     const val TEST_SLOT_ID = "testSlotId"
     const val TEST_WATERMARK = "testWatermark"
-    const val TEST_BID_RESPONSE = "testBidResponse"
   }
 }
