@@ -6,11 +6,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_AD_UNIT
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAppOpenAdCallback
 import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfiguration
 import com.google.ads.mediation.mintegral.MintegralConstants.AD_UNIT_ID
 import com.google.ads.mediation.mintegral.MintegralConstants.PLACEMENT_ID
 import com.google.ads.mediation.mintegral.rtb.MintegralRtbAppOpenAd
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAd
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
 import org.junit.Before
@@ -34,19 +35,16 @@ class MintegralRtbAppOpenAdTest {
   private val serverParameters =
     bundleOf(AD_UNIT_ID to TEST_AD_UNIT, PLACEMENT_ID to TEST_PLACEMENT_ID)
   private val mockSplashAdWrapper: MintegralSplashAdWrapper = mock()
-  private val mockAdCallback: MediationAppOpenAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockAdCallback
-    }
+  private val appOpenAdCallback = FakeMediationAppOpenAdCallback()
+  private val appOpenAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>(appOpenAdCallback)
   private val flagValueGetter: FlagValueGetter = mock {
     on { shouldRestrictMultipleAdLoads() } doReturn false
   }
 
   @Before
   fun setUp() {
-    mintegralAppOpenAd = MintegralRtbAppOpenAd(mockAdLoadCallback, flagValueGetter)
+    mintegralAppOpenAd = MintegralRtbAppOpenAd(appOpenAdLoadCallback, flagValueGetter)
   }
 
   @Test

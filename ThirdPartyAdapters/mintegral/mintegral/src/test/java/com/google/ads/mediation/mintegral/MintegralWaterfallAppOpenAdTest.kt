@@ -17,25 +17,27 @@ package com.google.ads.mediation.mintegral
 import android.app.Activity
 import androidx.core.os.bundleOf
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_AD_UNIT
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_ERROR_MESSAGE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAppOpenAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfiguration
 import com.google.ads.mediation.mintegral.MintegralConstants.AD_UNIT_ID
+import com.google.ads.mediation.mintegral.MintegralConstants.ERROR_MINTEGRAL_SDK
 import com.google.ads.mediation.mintegral.MintegralConstants.MINTEGRAL_SDK_ERROR_DOMAIN
 import com.google.ads.mediation.mintegral.MintegralConstants.PLACEMENT_ID
 import com.google.ads.mediation.mintegral.waterfall.MintegralWaterfallAppOpenAd
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAd
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -51,19 +53,16 @@ class MintegralWaterfallAppOpenAdTest {
   private val serverParameters =
     bundleOf(AD_UNIT_ID to TEST_AD_UNIT, PLACEMENT_ID to TEST_PLACEMENT_ID)
   private val mockSplashAdWrapper: MintegralSplashAdWrapper = mock()
-  private val mockAdCallback: MediationAppOpenAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockAdCallback
-    }
+  private val appOpenAdCallback = FakeMediationAppOpenAdCallback()
+  private val appOpenAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>(appOpenAdCallback)
   private val flagValueGetter: FlagValueGetter = mock {
     on { shouldRestrictMultipleAdLoads() } doReturn false
   }
 
   @Before
   fun setUp() {
-    mintegralAppOpenAd = MintegralWaterfallAppOpenAd(mockAdLoadCallback, flagValueGetter)
+    mintegralAppOpenAd = MintegralWaterfallAppOpenAd(appOpenAdLoadCallback, flagValueGetter)
   }
 
   @Test
@@ -76,7 +75,7 @@ class MintegralWaterfallAppOpenAdTest {
     )
 
     val expectedError = AdError(2, TEST_ERROR_MESSAGE, MINTEGRAL_SDK_ERROR_DOMAIN)
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(appOpenAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -88,7 +87,7 @@ class MintegralWaterfallAppOpenAdTest {
   fun onLoadSuccessed_invokesOnSuccess() {
     mintegralAppOpenAd.onLoadSuccessed(/* mBridgeIds= */ null, /* type= */ 1)
 
-    verify(mockAdLoadCallback).onSuccess(mintegralAppOpenAd)
+    assertThat(appOpenAdLoadCallback).hasSucceededWith(mintegralAppOpenAd)
   }
 
   @Test
@@ -97,8 +96,8 @@ class MintegralWaterfallAppOpenAdTest {
 
     mintegralAppOpenAd.onShowSuccessed(/* mBridgeIds= */ null)
 
-    verify(mockAdCallback).onAdOpened()
-    verify(mockAdCallback).reportAdImpression()
+    assertThat(appOpenAdCallback.isOpened).isTrue()
+    assertThat(appOpenAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -113,7 +112,8 @@ class MintegralWaterfallAppOpenAdTest {
         TEST_ERROR_MESSAGE,
         MINTEGRAL_SDK_ERROR_DOMAIN,
       )
-    verify(mockAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedError)))
+    assertThat(appOpenAdCallback.isFailedToShow).isTrue()
+    assertThat(appOpenAdCallback.adFailedToShowError).isEqualTo(expectedError)
   }
 
   @Test
@@ -139,7 +139,7 @@ class MintegralWaterfallAppOpenAdTest {
 
     mintegralAppOpenAd.onAdClicked(/* mBridgeIds= */ null)
 
-    verify(mockAdCallback).reportAdClicked()
+    assertThat(appOpenAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -156,7 +156,7 @@ class MintegralWaterfallAppOpenAdTest {
 
       mintegralAppOpenAd.onDismiss(/* mBridgeIds= */ null, /* type= */ 1)
 
-      verify(mockAdCallback).onAdClosed()
+      assertThat(appOpenAdCallback.isClosed).isTrue()
       verify(mockSplashAdWrapper).onDestroy()
     }
   }
