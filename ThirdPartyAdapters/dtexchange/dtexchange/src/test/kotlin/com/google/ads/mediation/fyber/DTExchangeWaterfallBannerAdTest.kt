@@ -26,14 +26,16 @@ import com.fyber.inneractive.sdk.external.InneractiveAdViewUnitController
 import com.fyber.inneractive.sdk.external.InneractiveErrorCode
 import com.fyber.inneractive.sdk.external.NativeAdUnitController
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.MediationUtils
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
+import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertIs
 import org.junit.After
 import org.junit.Before
@@ -42,10 +44,8 @@ import org.junit.runner.RunWith
 import org.mockito.MockedStatic
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -58,12 +58,9 @@ class DTExchangeWaterfallBannerAdTest {
   private lateinit var dtExchangeWaterfallBannerAd: DTExchangeWaterfallBannerAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val mockBannerAdCallback: MediationBannerAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockBannerAdCallback
-    }
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
+  private val bannerAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
   private val adConfiguration =
     createMediationBannerAdConfiguration(
       context = context,
@@ -78,7 +75,7 @@ class DTExchangeWaterfallBannerAdTest {
 
   @Before
   fun setUp() {
-    dtExchangeWaterfallBannerAd = DTExchangeWaterfallBannerAd(mockAdLoadCallback)
+    dtExchangeWaterfallBannerAd = DTExchangeWaterfallBannerAd(bannerAdLoadCallback)
     mockInneractiveAdManager = mockStatic(InneractiveAdManager::class.java)
     mockMediationUtils = mockStatic(MediationUtils::class.java)
   }
@@ -106,7 +103,7 @@ class DTExchangeWaterfallBannerAdTest {
 
     dtExchangeWaterfallBannerAd.loadAd(invalidAdConfiguration)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -125,7 +122,7 @@ class DTExchangeWaterfallBannerAdTest {
 
     dtExchangeWaterfallBannerAd.loadAd(invalidAdConfiguration)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -145,7 +142,7 @@ class DTExchangeWaterfallBannerAdTest {
         "DT Exchange failed to initialize with reason: FAILED",
         DTExchangeErrorCodes.ERROR_DOMAIN,
       )
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   // endregion
@@ -176,10 +173,12 @@ class DTExchangeWaterfallBannerAdTest {
       val expectedAdError =
         AdError(
           DTExchangeErrorCodes.ERROR_WRONG_CONTROLLER_TYPE,
-          /* message = */ "",
+          "Unexpected controller type. Expected: " +
+            "com.fyber.inneractive.sdk.external.InneractiveAdViewUnitController. Actual: " +
+            "com.fyber.inneractive.sdk.external.NativeAdUnitController",
           DTExchangeErrorCodes.ERROR_DOMAIN,
         )
-      verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+      assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
       verify(bannerSpot).destroy()
     }
   }
@@ -207,7 +206,7 @@ class DTExchangeWaterfallBannerAdTest {
       dtExchangeWaterfallBannerAd.onInneractiveSuccessfulAdRequest(mock())
 
       verify(mockAdViewController).bindView(any<RelativeLayout>())
-      verify(mockAdLoadCallback).onSuccess(eq(dtExchangeWaterfallBannerAd))
+      assertThat(bannerAdLoadCallback).hasSucceededWith(dtExchangeWaterfallBannerAd)
       assertIs<RelativeLayout>(dtExchangeWaterfallBannerAd.view)
     }
   }
@@ -237,10 +236,11 @@ class DTExchangeWaterfallBannerAdTest {
       val expectedAdError =
         AdError(
           DTExchangeErrorCodes.ERROR_BANNER_SIZE_MISMATCH,
-          /* message = */ "",
+          "The loaded ad size did not match the requested ad size. " +
+            "Requested ad size: 320x50. Loaded ad size: 0x0.",
           DTExchangeErrorCodes.ERROR_DOMAIN,
         )
-      verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+      assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
       verify(bannerSpot).destroy()
     }
   }
@@ -272,7 +272,7 @@ class DTExchangeWaterfallBannerAdTest {
 
       dtExchangeWaterfallBannerAd.onInneractiveFailedAdRequest(mock(), iErrorCode)
 
-      verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+      assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
       verify(bannerSpot).destroy()
     }
   }
@@ -305,7 +305,7 @@ class DTExchangeWaterfallBannerAdTest {
 
       dtExchangeWaterfallBannerAd.onAdImpression(mock())
 
-      verify(mockBannerAdCallback).reportAdImpression()
+      assertThat(bannerAdCallback.isImpressionReported).isTrue()
     }
   }
 
@@ -334,8 +334,8 @@ class DTExchangeWaterfallBannerAdTest {
 
       dtExchangeWaterfallBannerAd.onAdClicked(mock())
 
-      verify(mockBannerAdCallback).reportAdClicked()
-      verify(mockBannerAdCallback).onAdOpened()
+      assertThat(bannerAdCallback.isClicked).isTrue()
+      assertThat(bannerAdCallback.isOpened).isTrue()
     }
   }
 
@@ -364,12 +364,12 @@ class DTExchangeWaterfallBannerAdTest {
 
       dtExchangeWaterfallBannerAd.onAdWillCloseInternalBrowser(mock())
 
-      verify(mockBannerAdCallback).onAdClosed()
+      assertThat(bannerAdCallback.isClosed).isTrue()
     }
   }
 
   @Test
-  fun onAdWillOpenExternalApp_invokesOnAdOpenedAndOnAdLeftApplication() {
+  fun onAdWillOpenExternalApp_invokesOnAdLeftApplication() {
     mockStatic(InneractiveAdSpotManager::class.java).use {
       val mockAdViewController = mock<InneractiveAdViewUnitController>()
       val bannerSpot =
@@ -393,7 +393,7 @@ class DTExchangeWaterfallBannerAdTest {
 
       dtExchangeWaterfallBannerAd.onAdWillOpenExternalApp(mock())
 
-      verify(mockBannerAdCallback).onAdLeftApplication()
+      assertThat(bannerAdCallback.isLeftApplication).isTrue()
     }
   }
 

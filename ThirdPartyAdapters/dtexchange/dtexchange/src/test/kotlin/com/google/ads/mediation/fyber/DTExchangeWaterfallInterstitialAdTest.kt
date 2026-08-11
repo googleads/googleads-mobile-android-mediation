@@ -25,24 +25,24 @@ import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController
 import com.fyber.inneractive.sdk.external.InneractiveUnitController
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener.FyberInitStatus
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.ads.mediation.fyber.DTExchangeErrorCodes.ERROR_AD_FAILED_TO_DISPLAY
 import com.google.ads.mediation.fyber.DTExchangeErrorCodes.ERROR_AD_NOT_READY
 import com.google.ads.mediation.fyber.DTExchangeErrorCodes.ERROR_DOMAIN
 import com.google.ads.mediation.fyber.DTExchangeErrorCodes.ERROR_WRONG_CONTROLLER_TYPE
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.MockedStatic
 import org.mockito.Mockito.mockStatic
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -58,12 +58,11 @@ class DTExchangeWaterfallInterstitialAdTest {
   private lateinit var waterfallInterstitialAd: DTExchangeWaterfallInterstitialAd
 
   private val context = Robolectric.buildActivity(Activity::class.java).get()
-  private val mockInterstitialAdCallback: MediationInterstitialAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockInterstitialAdCallback
-    }
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
+  private val interstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
 
   private lateinit var mockInneractiveAdManager: MockedStatic<InneractiveAdManager>
 
@@ -104,7 +103,8 @@ class DTExchangeWaterfallInterstitialAdTest {
         "showInterstitial called, but wrong spot has been used (should not happen).",
         ERROR_DOMAIN,
       )
-    verify(mockInterstitialAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(interstitialAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
     verify(interstitialSpot).destroy()
   }
 
@@ -122,7 +122,8 @@ class DTExchangeWaterfallInterstitialAdTest {
 
     val expectedAdError =
       AdError(ERROR_AD_NOT_READY, "showInterstitial called, but the ad is not ready.", ERROR_DOMAIN)
-    verify(mockInterstitialAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(interstitialAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
     verify(interstitialSpot).destroy()
   }
 
@@ -160,7 +161,7 @@ class DTExchangeWaterfallInterstitialAdTest {
           serverParameters = serverParameters,
         )
       val listenerCaptor = argumentCaptor<OnFyberMarketplaceInitializedListener>()
-      waterfallInterstitialAd.loadAd(adConfiguration, mockAdLoadCallback)
+      waterfallInterstitialAd.loadAd(adConfiguration, interstitialAdLoadCallback)
       mockInneractiveAdManager.verify {
         InneractiveAdManager.initialize(eq(context), eq(TEST_APP_ID), listenerCaptor.capture())
       }
@@ -168,14 +169,10 @@ class DTExchangeWaterfallInterstitialAdTest {
 
       waterfallInterstitialAd.onInneractiveSuccessfulAdRequest(interstitialSpot)
 
-      verify(mockAdLoadCallback)
-        .onFailure(
-          argThat {
-            this.code == ERROR_WRONG_CONTROLLER_TYPE &&
-              this.domain == ERROR_DOMAIN &&
-              this.message.startsWith("Unexpected controller type.")
-          }
-        )
+      assertThat(interstitialAdLoadCallback)
+        .hasFailedWith(ERROR_WRONG_CONTROLLER_TYPE, ERROR_DOMAIN)
+      assertThat(interstitialAdLoadCallback.error?.message)
+        .startsWith("Unexpected controller type.")
       verify(interstitialSpot).destroy()
     }
   }
@@ -195,7 +192,7 @@ class DTExchangeWaterfallInterstitialAdTest {
           serverParameters = serverParameters,
         )
       val listenerCaptor = argumentCaptor<OnFyberMarketplaceInitializedListener>()
-      waterfallInterstitialAd.loadAd(adConfiguration, mockAdLoadCallback)
+      waterfallInterstitialAd.loadAd(adConfiguration, interstitialAdLoadCallback)
       mockInneractiveAdManager.verify {
         InneractiveAdManager.initialize(eq(context), eq(TEST_APP_ID), listenerCaptor.capture())
       }
@@ -204,7 +201,7 @@ class DTExchangeWaterfallInterstitialAdTest {
       waterfallInterstitialAd.onInneractiveSuccessfulAdRequest(interstitialSpot)
 
       verify(mockFullscreenController).eventsListener = waterfallInterstitialAd
-      verify(mockAdLoadCallback).onSuccess(waterfallInterstitialAd)
+      assertThat(interstitialAdLoadCallback).hasSucceededWith(waterfallInterstitialAd)
     }
   }
 
@@ -220,7 +217,7 @@ class DTExchangeWaterfallInterstitialAdTest {
           context = context,
           serverParameters = serverParameters,
         )
-      waterfallInterstitialAd.loadAd(adConfiguration, mockAdLoadCallback)
+      waterfallInterstitialAd.loadAd(adConfiguration, interstitialAdLoadCallback)
       val listenerCaptor = argumentCaptor<OnFyberMarketplaceInitializedListener>()
       mockInneractiveAdManager.verify {
         InneractiveAdManager.initialize(eq(context), eq(TEST_APP_ID), listenerCaptor.capture())
@@ -236,7 +233,7 @@ class DTExchangeWaterfallInterstitialAdTest {
           "DT Exchange failed to request ad with reason: Failed Due To load timeout",
           ERROR_DOMAIN,
         )
-      verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+      assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
       verify(interstitialSpot).destroy()
     }
   }
@@ -253,8 +250,8 @@ class DTExchangeWaterfallInterstitialAdTest {
 
     waterfallInterstitialAd.onAdImpression(interstitialSpot)
 
-    verify(mockInterstitialAdCallback).onAdOpened()
-    verify(mockInterstitialAdCallback).reportAdImpression()
+    assertThat(interstitialAdCallback.isOpened).isTrue()
+    assertThat(interstitialAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -266,7 +263,7 @@ class DTExchangeWaterfallInterstitialAdTest {
 
     waterfallInterstitialAd.onAdClicked(interstitialSpot)
 
-    verify(mockInterstitialAdCallback).reportAdClicked()
+    assertThat(interstitialAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -278,7 +275,7 @@ class DTExchangeWaterfallInterstitialAdTest {
 
     waterfallInterstitialAd.onAdWillOpenExternalApp(interstitialSpot)
 
-    verify(mockInterstitialAdCallback).onAdLeftApplication()
+    assertThat(interstitialAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -295,7 +292,8 @@ class DTExchangeWaterfallInterstitialAdTest {
     waterfallInterstitialAd.onAdEnteredErrorState(interstitialSpot, mockDisplayError)
 
     val expectedAdError = AdError(ERROR_AD_FAILED_TO_DISPLAY, "Mock display error", ERROR_DOMAIN)
-    verify(mockInterstitialAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(interstitialAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
     verify(interstitialSpot).destroy()
   }
 
@@ -309,7 +307,8 @@ class DTExchangeWaterfallInterstitialAdTest {
     waterfallInterstitialAd.onAdEnteredErrorState(interstitialSpot, null)
 
     val expectedAdError = AdError(ERROR_AD_FAILED_TO_DISPLAY, "", ERROR_DOMAIN)
-    verify(mockInterstitialAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(interstitialAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
     verify(interstitialSpot).destroy()
   }
 
@@ -322,7 +321,7 @@ class DTExchangeWaterfallInterstitialAdTest {
 
     waterfallInterstitialAd.onAdDismissed(interstitialSpot)
 
-    verify(mockInterstitialAdCallback).onAdClosed()
+    assertThat(interstitialAdCallback.isClosed).isTrue()
     verify(interstitialSpot).destroy()
   }
 
@@ -340,7 +339,7 @@ class DTExchangeWaterfallInterstitialAdTest {
           serverParameters = serverParameters,
         )
       val listenerCaptor = argumentCaptor<OnFyberMarketplaceInitializedListener>()
-      waterfallInterstitialAd.loadAd(adConfiguration, mockAdLoadCallback)
+      waterfallInterstitialAd.loadAd(adConfiguration, interstitialAdLoadCallback)
       mockInneractiveAdManager.verify {
         InneractiveAdManager.initialize(eq(context), eq(TEST_APP_ID), listenerCaptor.capture())
       }

@@ -22,23 +22,23 @@ import com.fyber.inneractive.sdk.external.InneractiveAdSpot
 import com.fyber.inneractive.sdk.external.InneractiveAdSpotManager
 import com.fyber.inneractive.sdk.external.InneractiveAdViewUnitController
 import com.fyber.inneractive.sdk.external.InneractiveErrorCode
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
+import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertIs
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -50,12 +50,9 @@ class DTExchangeRtbBannerAdTest {
   private lateinit var dtExchangeRtbBannerAd: DTExchangeRtbBannerAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val mockBannerAdCallback: MediationBannerAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockBannerAdCallback
-    }
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
+  private val bannerAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
   private val adConfiguration =
     createMediationBannerAdConfiguration(
       context = context,
@@ -65,7 +62,7 @@ class DTExchangeRtbBannerAdTest {
 
   @Before
   fun setUp() {
-    dtExchangeRtbBannerAd = DTExchangeRtbBannerAd(mockAdLoadCallback)
+    dtExchangeRtbBannerAd = DTExchangeRtbBannerAd(bannerAdLoadCallback)
   }
 
   @Test
@@ -85,7 +82,7 @@ class DTExchangeRtbBannerAdTest {
 
       dtExchangeRtbBannerAd.onInneractiveSuccessfulAdRequest(mock())
 
-      verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+      assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
       verify(mockAdSpot).destroy()
     }
   }
@@ -111,7 +108,7 @@ class DTExchangeRtbBannerAdTest {
 
       dtExchangeRtbBannerAd.onInneractiveSuccessfulAdRequest(mock())
 
-      verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+      assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
       verify(mockAdSpot).destroy()
     }
   }
@@ -134,7 +131,7 @@ class DTExchangeRtbBannerAdTest {
       val bannerView = dtExchangeRtbBannerAd.view
 
       verify(mockAdViewController).bindView(any<RelativeLayout>())
-      verify(mockAdLoadCallback).onSuccess(eq(dtExchangeRtbBannerAd))
+      assertThat(bannerAdLoadCallback).hasSucceededWith(dtExchangeRtbBannerAd)
       assertIs<RelativeLayout>(bannerView)
     }
   }
@@ -152,7 +149,7 @@ class DTExchangeRtbBannerAdTest {
 
     dtExchangeRtbBannerAd.onInneractiveFailedAdRequest(mockAdSpot, iErrorCode)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
     verify(mockAdSpot).destroy()
   }
 
@@ -173,7 +170,7 @@ class DTExchangeRtbBannerAdTest {
 
       dtExchangeRtbBannerAd.onAdImpression(mock())
 
-      verify(mockBannerAdCallback).reportAdImpression()
+      assertThat(bannerAdCallback.isImpressionReported).isTrue()
     }
   }
 
@@ -194,7 +191,7 @@ class DTExchangeRtbBannerAdTest {
 
       dtExchangeRtbBannerAd.onAdClicked(mock())
 
-      verify(mockBannerAdCallback).reportAdClicked()
+      assertThat(bannerAdCallback.isClicked).isTrue()
     }
   }
 
@@ -215,7 +212,7 @@ class DTExchangeRtbBannerAdTest {
 
       dtExchangeRtbBannerAd.onAdWillCloseInternalBrowser(mock())
 
-      verify(mockBannerAdCallback).onAdClosed()
+      assertThat(bannerAdCallback.isClosed).isTrue()
     }
   }
 
@@ -236,8 +233,8 @@ class DTExchangeRtbBannerAdTest {
 
       dtExchangeRtbBannerAd.onAdWillOpenExternalApp(mock())
 
-      verify(mockBannerAdCallback).onAdOpened()
-      verify(mockBannerAdCallback).onAdLeftApplication()
+      assertThat(bannerAdCallback.isOpened).isTrue()
+      assertThat(bannerAdCallback.isLeftApplication).isTrue()
     }
   }
 

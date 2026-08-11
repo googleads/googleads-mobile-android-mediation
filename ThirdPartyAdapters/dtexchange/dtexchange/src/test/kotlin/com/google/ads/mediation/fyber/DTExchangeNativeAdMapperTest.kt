@@ -30,11 +30,12 @@ import com.fyber.inneractive.sdk.external.NativeAdContent
 import com.fyber.inneractive.sdk.external.NativeAdUnitController
 import com.fyber.inneractive.sdk.external.NativeAdVideoContentController
 import com.fyber.inneractive.sdk.external.VideoContentListener
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationNativeAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfiguration
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.nativead.NativeAdAssetNames
@@ -46,7 +47,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -63,12 +63,9 @@ class DTExchangeNativeAdMapperTest {
   private lateinit var dtExchangeNativeAdMapper: DTExchangeNativeAdMapper
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val mockNativeAdCallback: MediationNativeAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockNativeAdCallback
-    }
+  private val nativeAdCallback = FakeMediationNativeAdCallback()
+  private val nativeAdLoadCallback =
+    FakeMediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>(nativeAdCallback)
   private val adConfiguration =
     createMediationNativeAdConfiguration(context = context, bidResponse = TEST_BID_RESPONSE)
   val mockContent =
@@ -85,7 +82,7 @@ class DTExchangeNativeAdMapperTest {
     whenever(mockFactory.createNativeAdUnitController()) doReturn mockNativeAdController
     whenever(mockFactory.createNativeAdVideoContentController()) doReturn
       mockNativeAdVideoController
-    dtExchangeNativeAdMapper = DTExchangeNativeAdMapper(mockAdLoadCallback)
+    dtExchangeNativeAdMapper = DTExchangeNativeAdMapper(nativeAdLoadCallback)
   }
 
   @After
@@ -112,7 +109,7 @@ class DTExchangeNativeAdMapperTest {
 
       requestListenerCaptor.firstValue.onInneractiveSuccessfulNativeAdRequest(mock(), null)
 
-      verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+      assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
       verify(mockAdSpot).destroy()
     }
   }
@@ -143,7 +140,7 @@ class DTExchangeNativeAdMapperTest {
         InneractiveErrorCode.SDK_INTERNAL_ERROR,
       )
 
-      verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+      assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
       verify(mockAdSpot).destroy()
     }
   }
@@ -166,7 +163,7 @@ class DTExchangeNativeAdMapperTest {
 
       requestListenerCaptor.firstValue.onInneractiveSuccessfulNativeAdRequest(mock(), mockContent)
 
-      verify(mockAdLoadCallback).onSuccess(eq(dtExchangeNativeAdMapper))
+      assertThat(nativeAdLoadCallback).hasSucceededWith(dtExchangeNativeAdMapper)
     }
   }
 
@@ -191,8 +188,8 @@ class DTExchangeNativeAdMapperTest {
 
       eventListenerCaptor.firstValue.onAdImpression(mock())
 
-      verify(mockNativeAdCallback).onAdOpened()
-      verify(mockNativeAdCallback).reportAdImpression()
+      assertThat(nativeAdCallback.isOpened).isTrue()
+      assertThat(nativeAdCallback.isImpressionReported).isTrue()
     }
   }
 
@@ -217,8 +214,8 @@ class DTExchangeNativeAdMapperTest {
 
       eventListenerCaptor.firstValue.onAdClicked(mock())
 
-      verify(mockNativeAdCallback).reportAdClicked()
-      verify(mockNativeAdCallback).onAdOpened()
+      assertThat(nativeAdCallback.reportAdClickedInvokeCount).isEqualTo(1)
+      assertThat(nativeAdCallback.onAdOpenedInvokeCount).isEqualTo(1)
     }
   }
 
@@ -266,7 +263,7 @@ class DTExchangeNativeAdMapperTest {
 
       eventListenerCaptor.firstValue.onAdWillOpenExternalApp(mock())
 
-      verify(mockNativeAdCallback).onAdLeftApplication()
+      assertThat(nativeAdCallback.isLeftApplication).isTrue()
     }
   }
 
@@ -291,7 +288,7 @@ class DTExchangeNativeAdMapperTest {
 
       videoContentListenerCaptor.firstValue.onCompleted()
 
-      verify(mockNativeAdCallback).onVideoComplete()
+      assertThat(nativeAdCallback.isVideoCompleted).isTrue()
     }
   }
 

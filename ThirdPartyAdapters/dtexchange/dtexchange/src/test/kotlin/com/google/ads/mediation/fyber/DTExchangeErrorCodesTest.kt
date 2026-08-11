@@ -17,7 +17,7 @@ package com.google.ads.mediation.fyber
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.fyber.inneractive.sdk.external.InneractiveErrorCode
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener.FyberInitStatus
-import com.google.common.truth.Truth.assertThat
+import com.google.ads.mediation.adaptertestkit.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -36,9 +36,9 @@ class DTExchangeErrorCodesTest {
 
     for ((status, expectedCode) in statusToExpectedCode) {
       val adError = DTExchangeErrorCodes.getAdError(status)
-      assertThat(adError.code).isEqualTo(expectedCode)
-      assertThat(adError.message).isEqualTo("DT Exchange failed to initialize with reason: $status")
-      assertThat(adError.domain).isEqualTo(DTExchangeErrorCodes.ERROR_DOMAIN)
+      assertThat(adError).hasCode(expectedCode)
+      assertThat(adError).hasMessage("DT Exchange failed to initialize with reason: $status")
+      assertThat(adError).hasDomain(DTExchangeErrorCodes.ERROR_DOMAIN)
     }
   }
 
@@ -69,18 +69,17 @@ class DTExchangeErrorCodesTest {
 
     for ((errorCode, expectedCode) in inneractiveErrorCodeToExpectedCode) {
       val adError = DTExchangeErrorCodes.getAdError(errorCode)
-      assertThat(adError.code).isEqualTo(expectedCode)
-      assertThat(adError.message)
-        .isEqualTo("DT Exchange failed to request ad with reason: $errorCode")
-      assertThat(adError.domain).isEqualTo(DTExchangeErrorCodes.ERROR_DOMAIN)
+      assertThat(adError).hasCode(expectedCode)
+      assertThat(adError).hasMessage("DT Exchange failed to request ad with reason: $errorCode")
+      assertThat(adError).hasDomain(DTExchangeErrorCodes.ERROR_DOMAIN)
     }
   }
 
   @Test
   fun getAdError_forNullInneractiveErrorCode_returnsFallbackError() {
     val adError = DTExchangeErrorCodes.getAdError(null as InneractiveErrorCode?)
-    assertThat(adError.code).isEqualTo(399)
-    assertThat(adError.message).isEqualTo("DT Exchange failed to request ad with reason: null")
-    assertThat(adError.domain).isEqualTo(DTExchangeErrorCodes.ERROR_DOMAIN)
+    assertThat(adError).hasCode(399)
+    assertThat(adError).hasMessage("DT Exchange failed to request ad with reason: null")
+    assertThat(adError).hasDomain(DTExchangeErrorCodes.ERROR_DOMAIN)
   }
 }
