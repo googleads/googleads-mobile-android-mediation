@@ -1,1 +1,3 @@
 include ':inmobi'
+include ':adaptertestkit'
+project(":adaptertestkit").projectDir = file("../adaptertestkit")
