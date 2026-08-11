@@ -8,8 +8,10 @@ import com.facebook.ads.Ad
 import com.facebook.ads.AdError.AD_PRESENTATION_ERROR
 import com.facebook.ads.AdError.NO_FILL
 import com.facebook.ads.InterstitialAd
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_AD_UNIT
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FAILED_TO_PRESENT_AD
@@ -17,15 +19,14 @@ import com.google.ads.mediation.facebook.FacebookMediationAdapter.FACEBOOK_SDK_E
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.RTB_PLACEMENT_PARAMETER
 import com.google.ads.mediation.facebook.MetaFactory
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
@@ -40,12 +41,11 @@ class FacebookRtbInterstitialAdTest {
   private val serverParameters = bundleOf(RTB_PLACEMENT_PARAMETER to TEST_AD_UNIT)
   private val mediationInterstitialAdConfig: MediationInterstitialAdConfiguration =
     createMediationInterstitialAdConfiguration(context, serverParameters = serverParameters)
-  private val mediationInterstitialAdCallback: MediationInterstitialAdCallback = mock()
-  private val mediationAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mediationInterstitialAdCallback
-    }
+  private val mediationInterstitialAdCallback = FakeMediationInterstitialAdCallback()
+  private val mediationAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      mediationInterstitialAdCallback
+    )
   private val metaInterstitialAdLoadConfigBuilder: InterstitialAd.InterstitialAdLoadConfigBuilder =
     mock {
       on { withBid(any()) } doReturn this.mock
@@ -85,8 +85,8 @@ class FacebookRtbInterstitialAdTest {
         AD_PRESENTATION_ERROR.errorMessage,
         FACEBOOK_SDK_ERROR_DOMAIN,
       )
-    verify(mediationInterstitialAdCallback)
-      .onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(mediationInterstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(mediationInterstitialAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
     verify(metaInterstitialAd).destroy()
   }
 
@@ -99,7 +99,7 @@ class FacebookRtbInterstitialAdTest {
 
     val expectedAdError =
       AdError(NO_FILL.errorCode, NO_FILL.errorMessage, FACEBOOK_SDK_ERROR_DOMAIN)
-    verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -114,8 +114,8 @@ class FacebookRtbInterstitialAdTest {
     // invoke the showAd callback
     adapterInterstitialAd.showAd(context)
 
-    verify(mediationInterstitialAdCallback)
-      .onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(mediationInterstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(mediationInterstitialAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
@@ -124,7 +124,7 @@ class FacebookRtbInterstitialAdTest {
 
     adapterInterstitialAd.onInterstitialDisplayed(metaAd)
 
-    verify(mediationInterstitialAdCallback).onAdOpened()
+    assertThat(mediationInterstitialAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -133,7 +133,7 @@ class FacebookRtbInterstitialAdTest {
 
     adapterInterstitialAd.onInterstitialDismissed(metaAd)
 
-    verify(mediationInterstitialAdCallback).onAdClosed()
+    assertThat(mediationInterstitialAdCallback.isClosed).isTrue()
     verify(metaInterstitialAd).destroy()
   }
 
@@ -146,7 +146,7 @@ class FacebookRtbInterstitialAdTest {
     // make a second dismissed call.
     adapterInterstitialAd.onInterstitialDismissed(metaAd)
 
-    verify(mediationInterstitialAdCallback, times(1)).onAdClosed()
+    assertThat(mediationInterstitialAdCallback.onAdClosedInvokeCount).isEqualTo(1)
     verify(metaInterstitialAd, times(2)).destroy()
   }
 
@@ -156,8 +156,8 @@ class FacebookRtbInterstitialAdTest {
 
     adapterInterstitialAd.onAdClicked(metaAd)
 
-    verify(mediationInterstitialAdCallback).reportAdClicked()
-    verify(mediationInterstitialAdCallback).onAdLeftApplication()
+    assertThat(mediationInterstitialAdCallback.isClicked).isTrue()
+    assertThat(mediationInterstitialAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -166,7 +166,7 @@ class FacebookRtbInterstitialAdTest {
 
     adapterInterstitialAd.onLoggingImpression(metaAd)
 
-    verify(mediationInterstitialAdCallback).reportAdImpression()
+    assertThat(mediationInterstitialAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -175,7 +175,7 @@ class FacebookRtbInterstitialAdTest {
 
     adapterInterstitialAd.onInterstitialActivityDestroyed()
 
-    verify(mediationInterstitialAdCallback).onAdClosed()
+    assertThat(mediationInterstitialAdCallback.isClosed).isTrue()
     verify(metaInterstitialAd).destroy()
   }
 
@@ -188,7 +188,7 @@ class FacebookRtbInterstitialAdTest {
     // make a second destroyed call
     adapterInterstitialAd.onInterstitialActivityDestroyed()
 
-    verify(mediationInterstitialAdCallback, times(1)).onAdClosed()
+    assertThat(mediationInterstitialAdCallback.onAdClosedInvokeCount).isEqualTo(1)
     verify(metaInterstitialAd, times(2)).destroy()
   }
 
