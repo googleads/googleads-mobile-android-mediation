@@ -16,10 +16,10 @@ package com.google.ads.mediation.imobile
 
 import android.app.Activity
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationNativeAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.imobile.IMobileMediationAdapter.ERROR_EMPTY_NATIVE_ADS_LIST
-import com.google.ads.mediation.imobile.IMobileMediationAdapter.IMOBILE_SDK_ERROR_DOMAIN
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.common.truth.Truth.assertThat
@@ -28,7 +28,6 @@ import jp.co.imobile.sdkads.android.ImobileSdkAdsNativeAdData
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -38,8 +37,9 @@ import org.robolectric.Robolectric
 @RunWith(AndroidJUnit4::class)
 class NativeAdDataListenerTest {
 
-  private val adLoadCallback: MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> =
-    mock()
+  private val nativeAdCallback = FakeMediationNativeAdCallback()
+  private val adLoadCallback =
+    FakeMediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>(nativeAdCallback)
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
   private val nativeAdDataListener = NativeAdDataListener(adLoadCallback, activity)
 
@@ -47,22 +47,16 @@ class NativeAdDataListenerTest {
   fun onNativeAdDataReciveCompleted_ifAdDataListIsNull_invokesLoadFailure() {
     nativeAdDataListener.onNativeAdDataReciveCompleted(null)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(adLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_EMPTY_NATIVE_ADS_LIST)
-    assertThat(adError.domain).isEqualTo(IMobileMediationAdapter.ERROR_DOMAIN)
+    assertThat(adLoadCallback)
+      .hasFailedWith(ERROR_EMPTY_NATIVE_ADS_LIST, IMobileMediationAdapter.ERROR_DOMAIN)
   }
 
   @Test
   fun onNativeAdDataReciveCompleted_ifAdDataListIsEmpty_invokesLoadFailure() {
     nativeAdDataListener.onNativeAdDataReciveCompleted(mutableListOf())
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(adLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_EMPTY_NATIVE_ADS_LIST)
-    assertThat(adError.domain).isEqualTo(IMobileMediationAdapter.ERROR_DOMAIN)
+    assertThat(adLoadCallback)
+      .hasFailedWith(ERROR_EMPTY_NATIVE_ADS_LIST, IMobileMediationAdapter.ERROR_DOMAIN)
   }
 
   @Test
@@ -76,11 +70,10 @@ class NativeAdDataListenerTest {
 
   @Test
   fun onFailed_invokesLoadFailure() {
+    val expectedError = AdapterHelper.getAdError(FailNotificationReason.RESPONSE)
+
     nativeAdDataListener.onFailed(FailNotificationReason.RESPONSE)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(adLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.domain).isEqualTo(IMOBILE_SDK_ERROR_DOMAIN)
+    assertThat(adLoadCallback).hasFailedWith(expectedError)
   }
 }
