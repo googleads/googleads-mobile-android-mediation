@@ -1,6 +1,6 @@
 ## myTarget Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 5.51.2.0 (In progress)
 - Adapter now automatically forwards GDPR consent found inside `IABTCF_AddtlConsent` to the myTarget SDK if GDPR applies.
 
 #### Version 5.47.1.1
