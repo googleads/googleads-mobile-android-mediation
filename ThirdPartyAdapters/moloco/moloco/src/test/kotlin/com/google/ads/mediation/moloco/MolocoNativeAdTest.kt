@@ -227,6 +227,9 @@ class MolocoNativeAdTest {
     verify(mockMolocoNativeAd).interactionListener = interactionListenerCaptor.capture()
     val capturedListener = interactionListenerCaptor.firstValue
 
+    capturedListener.onImpressionHandled()
+    assertThat(nativeAdCallback.isImpressionReported).isTrue()
+
     capturedListener.onGeneralClickHandled()
     assertThat(nativeAdCallback.isClicked).isTrue()
 

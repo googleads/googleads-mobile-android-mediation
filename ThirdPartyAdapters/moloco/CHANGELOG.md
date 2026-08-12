@@ -1,5 +1,9 @@
 ## Moloco Android Mediation Adapter Changelog
 
+#### Next version
+
+- Updated to report ad impression when native ad is displayed.
+
 #### Version 4.11.0.0
 - Adds adaptive banner support to the Moloco mediation adapter.
 - Verified compatibility with Moloco SDK 4.11.0.
