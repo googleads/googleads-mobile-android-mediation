@@ -1,6 +1,6 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 13.6.4.0 (In progress)
 
 - Removed the old API implementation for loading Waterfall Banner ads. Adapter
   will now use the new API implementation in `AppLovinMediationAdapter` for
