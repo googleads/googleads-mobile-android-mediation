@@ -3,12 +3,14 @@ package com.google.ads.mediation.ironsource
 import android.app.Activity
 import androidx.core.view.size
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.ironsource.IronSourceBannerAd.getFromAvailableInstances
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.common.truth.Truth.assertThat
@@ -29,7 +31,6 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.robolectric.Robolectric
 
@@ -41,8 +42,9 @@ class IronSourceBannerAdTest {
 
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
 
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
   private val bannerAdLoadCallback =
-    mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
 
   private val mediationUtils: MediationUtilsWrapper = mock()
 
@@ -59,7 +61,7 @@ class IronSourceBannerAdTest {
       ironSourceBannerListener.onBannerAdLoaded(/* instanceId= */ "0")
 
       assertThat(ironSourceBannerAd.ironSourceAdView.size).isEqualTo(1)
-      verify(bannerAdLoadCallback).onSuccess(ironSourceBannerAd)
+      assertThat(bannerAdLoadCallback).hasSucceededWith(ironSourceBannerAd)
     }
   }
 
@@ -72,7 +74,8 @@ class IronSourceBannerAdTest {
       ironSourceBannerListener.onBannerAdLoaded(/* instanceId= */ "0")
 
       assertThat(ironSourceBannerAd.ironSourceAdView.size).isEqualTo(0)
-      verifyNoInteractions(bannerAdLoadCallback)
+      assertThat(bannerAdLoadCallback).hasNotSucceeded()
+      assertThat(bannerAdLoadCallback).hasNoFailure()
     }
   }
 
@@ -84,13 +87,9 @@ class IronSourceBannerAdTest {
 
       ironSourceBannerListener.onBannerAdLoadFailed(/* instanceId= */ "0", ironSourceError)
 
-      val adErrorCaptor = argumentCaptor<AdError>()
-      verify(bannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-      with(adErrorCaptor.firstValue) {
-        assertThat(code).isEqualTo(ERROR_CODE_DECRYPT_FAILED)
-        assertThat(message).isEqualTo("Decrypt failed.")
-        assertThat(domain).isEqualTo(IRONSOURCE_SDK_ERROR_DOMAIN)
-      }
+      val expectedError =
+        AdError(ERROR_CODE_DECRYPT_FAILED, "Decrypt failed.", IRONSOURCE_SDK_ERROR_DOMAIN)
+      assertThat(bannerAdLoadCallback).hasFailedWith(expectedError)
       assertThat(getFromAvailableInstances(/* instanceId= */ "0")).isNull()
     }
   }
@@ -103,13 +102,9 @@ class IronSourceBannerAdTest {
 
       ironSourceBannerListener.onBannerAdLoadFailed(/* instanceId= */ "0", ironSourceError)
 
-      val adErrorCaptor = argumentCaptor<AdError>()
-      verify(bannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-      with(adErrorCaptor.firstValue) {
-        assertThat(code).isEqualTo(ERROR_DO_IS_LOAD_ALREADY_IN_PROGRESS)
-        assertThat(message).isEqualTo("Still Loading.")
-        assertThat(domain).isEqualTo(IRONSOURCE_SDK_ERROR_DOMAIN)
-      }
+      val expectedError =
+        AdError(ERROR_DO_IS_LOAD_ALREADY_IN_PROGRESS, "Still Loading.", IRONSOURCE_SDK_ERROR_DOMAIN)
+      assertThat(bannerAdLoadCallback).hasFailedWith(expectedError)
       assertThat(getFromAvailableInstances(/* instanceId= */ "0")).isEqualTo(ironSourceBannerAd)
     }
   }
@@ -122,13 +117,9 @@ class IronSourceBannerAdTest {
 
       ironSourceBannerListener.onBannerAdLoadFailed(/* instanceId= */ "0", ironSourceError)
 
-      val adErrorCaptor = argumentCaptor<AdError>()
-      verify(bannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-      with(adErrorCaptor.firstValue) {
-        assertThat(code).isEqualTo(ERROR_DO_BN_LOAD_ALREADY_IN_PROGRESS)
-        assertThat(message).isEqualTo("Still Loading.")
-        assertThat(domain).isEqualTo(IRONSOURCE_SDK_ERROR_DOMAIN)
-      }
+      val expectedError =
+        AdError(ERROR_DO_BN_LOAD_ALREADY_IN_PROGRESS, "Still Loading.", IRONSOURCE_SDK_ERROR_DOMAIN)
+      assertThat(bannerAdLoadCallback).hasFailedWith(expectedError)
       assertThat(getFromAvailableInstances(/* instanceId= */ "0")).isEqualTo(ironSourceBannerAd)
     }
   }
@@ -142,7 +133,8 @@ class IronSourceBannerAdTest {
 
       ironSourceBannerListener.onBannerAdLoadFailed(/* instanceId= */ "0", ironSourceError)
 
-      verifyNoInteractions(bannerAdLoadCallback)
+      assertThat(bannerAdLoadCallback).hasNotSucceeded()
+      assertThat(bannerAdLoadCallback).hasNoFailure()
     }
   }
 
@@ -150,14 +142,12 @@ class IronSourceBannerAdTest {
   fun onBannerAdShown_withValidBannerAd_expectReportAdImpression() {
     mockStatic(IronSource::class.java).use {
       val ironSourceBannerListener = loadBannerAd()
-      val mockBannerAdCallback = mock<MediationBannerAdCallback>()
-      whenever(bannerAdLoadCallback.onSuccess(ironSourceBannerAd)) doReturn mockBannerAdCallback
       ironSourceBannerListener.onBannerAdLoaded(/* instanceId= */ "0")
-      verify(bannerAdLoadCallback).onSuccess(ironSourceBannerAd)
+      assertThat(bannerAdLoadCallback).hasSucceededWith(ironSourceBannerAd)
 
       ironSourceBannerListener.onBannerAdShown(/* instanceId= */ "0")
 
-      verify(mockBannerAdCallback).reportAdImpression()
+      assertThat(bannerAdCallback.isImpressionReported).isTrue()
     }
   }
 
@@ -165,15 +155,13 @@ class IronSourceBannerAdTest {
   fun onBannerAdClicked_withValidBannerAd_expectOnBannerAdClickedCallbacks() {
     mockStatic(IronSource::class.java).use {
       val ironSourceBannerListener = loadBannerAd()
-      val mockBannerAdCallback = mock<MediationBannerAdCallback>()
-      whenever(bannerAdLoadCallback.onSuccess(ironSourceBannerAd)) doReturn mockBannerAdCallback
       ironSourceBannerListener.onBannerAdLoaded(/* instanceId= */ "0")
-      verify(bannerAdLoadCallback).onSuccess(ironSourceBannerAd)
+      assertThat(bannerAdLoadCallback).hasSucceededWith(ironSourceBannerAd)
 
       ironSourceBannerListener.onBannerAdClicked(/* instanceId= */ "0")
 
-      verify(mockBannerAdCallback).onAdOpened()
-      verify(mockBannerAdCallback).reportAdClicked()
+      assertThat(bannerAdCallback.isOpened).isTrue()
+      assertThat(bannerAdCallback.isClicked).isTrue()
     }
   }
 
@@ -181,14 +169,12 @@ class IronSourceBannerAdTest {
   fun onBannerAdLeftApplication_withValidBannerAd_expectOnAdLeftApplicationCallback() {
     mockStatic(IronSource::class.java).use {
       val ironSourceBannerListener = loadBannerAd()
-      val mockBannerAdCallback = mock<MediationBannerAdCallback>()
-      whenever(bannerAdLoadCallback.onSuccess(ironSourceBannerAd)) doReturn mockBannerAdCallback
       ironSourceBannerListener.onBannerAdLoaded(/* instanceId= */ "0")
-      verify(bannerAdLoadCallback).onSuccess(ironSourceBannerAd)
+      assertThat(bannerAdLoadCallback).hasSucceededWith(ironSourceBannerAd)
 
       ironSourceBannerListener.onBannerAdLeftApplication(/* instanceId= */ "0")
 
-      verify(mockBannerAdCallback).onAdLeftApplication()
+      assertThat(bannerAdCallback.isLeftApplication).isTrue()
     }
   }
 
@@ -196,17 +182,18 @@ class IronSourceBannerAdTest {
   fun onEventCallbacks_withoutBannerAd_expectNoEventCallbacks() {
     mockStatic(IronSource::class.java).use {
       val ironSourceBannerListener = loadBannerAd()
-      val mockBannerAdCallback = mock<MediationBannerAdCallback>()
-      whenever(bannerAdLoadCallback.onSuccess(ironSourceBannerAd)) doReturn mockBannerAdCallback
       ironSourceBannerListener.onBannerAdLoaded(/* instanceId= */ "0")
-      verify(bannerAdLoadCallback).onSuccess(ironSourceBannerAd)
+      assertThat(bannerAdLoadCallback).hasSucceededWith(ironSourceBannerAd)
       IronSourceBannerAd.removeFromAvailableInstances(/* instanceId= */ "0")
 
       ironSourceBannerListener.onBannerAdShown(/* instanceId= */ "0")
       ironSourceBannerListener.onBannerAdClicked(/* instanceId= */ "0")
       ironSourceBannerListener.onBannerAdLeftApplication(/* instanceId= */ "0")
 
-      verifyNoInteractions(mockBannerAdCallback)
+      assertThat(bannerAdCallback.isImpressionReported).isFalse()
+      assertThat(bannerAdCallback.isOpened).isFalse()
+      assertThat(bannerAdCallback.isClicked).isFalse()
+      assertThat(bannerAdCallback.isLeftApplication).isFalse()
     }
   }
 
@@ -214,16 +201,16 @@ class IronSourceBannerAdTest {
   fun onEventCallbacks_withoutBannerAdCallbackInstance_expectNoEventCallbacks() {
     mockStatic(IronSource::class.java).use {
       val ironSourceBannerListener = loadBannerAd()
-      val mockBannerAdCallback = mock<MediationBannerAdCallback>()
-      whenever(bannerAdLoadCallback.onSuccess(ironSourceBannerAd)).thenReturn(null)
-      ironSourceBannerListener.onBannerAdLoaded(/* instanceId= */ "0")
-      verify(bannerAdLoadCallback).onSuccess(ironSourceBannerAd)
+      ironSourceBannerAd.setBannerAdCallback(null)
 
       ironSourceBannerListener.onBannerAdShown(/* instanceId= */ "0")
       ironSourceBannerListener.onBannerAdClicked(/* instanceId= */ "0")
       ironSourceBannerListener.onBannerAdLeftApplication(/* instanceId= */ "0")
 
-      verifyNoInteractions(mockBannerAdCallback)
+      assertThat(bannerAdCallback.isImpressionReported).isFalse()
+      assertThat(bannerAdCallback.isOpened).isFalse()
+      assertThat(bannerAdCallback.isClicked).isFalse()
+      assertThat(bannerAdCallback.isLeftApplication).isFalse()
     }
   }
 
