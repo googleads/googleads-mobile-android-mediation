@@ -238,12 +238,13 @@ class MolocoBannerAdTest {
   }
 
   @Test
-  fun onAdClicked_invokesReportAdClickedAndOnAdLeftApplication() {
+  fun onAdClicked_reportsAdClickedAndInvokesOnAdOpenedAndOnAdLeftApplication() {
     molocoBannerAd.onAdLoadSuccess(mock())
 
     molocoBannerAd.onAdClicked(mock())
 
     assertThat(bannerAdCallback.isClicked).isTrue()
+    assertThat(bannerAdCallback.isOpened).isTrue()
     assertThat(bannerAdCallback.isLeftApplication).isTrue()
   }
 
@@ -274,12 +275,11 @@ class MolocoBannerAdTest {
   }
 
   @Test
-  fun onAdShowSuccess_invokesOnAdOpenedAndReportAdImpression() {
+  fun onAdShowSuccess_reportsAdImpression() {
     molocoBannerAd.onAdLoadSuccess(mock())
 
     molocoBannerAd.onAdShowSuccess(mock())
 
-    assertThat(bannerAdCallback.isOpened).isTrue()
     assertThat(bannerAdCallback.isImpressionReported).isTrue()
   }
 

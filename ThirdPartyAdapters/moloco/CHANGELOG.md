@@ -3,6 +3,7 @@
 #### Next version
 
 - Updated to report ad impression when native ad is displayed.
+- Fixed banner ads to invoke the `onAdOpened` callback when clicked instead of shown.
 
 #### Version 4.11.0.0
 - Adds adaptive banner support to the Moloco mediation adapter.

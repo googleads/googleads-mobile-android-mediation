@@ -105,6 +105,7 @@ private constructor(
   override fun onAdClicked(molocoAd: MolocoAd) {
     bannerAdCallback?.apply {
       reportAdClicked()
+      onAdOpened()
       onAdLeftApplication()
     }
   }
@@ -124,10 +125,7 @@ private constructor(
   }
 
   override fun onAdShowSuccess(molocoAd: MolocoAd) {
-    bannerAdCallback?.apply {
-      onAdOpened()
-      reportAdImpression()
-    }
+    bannerAdCallback?.apply { reportAdImpression() }
   }
 
   companion object {
