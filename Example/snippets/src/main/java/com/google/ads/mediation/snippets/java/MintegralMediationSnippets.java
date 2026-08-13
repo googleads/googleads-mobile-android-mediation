@@ -27,13 +27,6 @@ import com.mbridge.msdk.out.MBridgeSDKFactory;
  */
 public class MintegralMediationSnippets {
 
-  private void setUserConsent(Context context) {
-    // [START set_user_consent]
-    MBridgeSDK sdk = MBridgeSDKFactory.getMBridgeSDK();
-    sdk.setConsentStatus(context, MBridgeConstans.IS_SWITCH_ON);
-    // [END set_user_consent]
-  }
-
   private void setDoNotTrackStatus() {
     // [START set_do_not_track_status]
     MBridgeSDK mBridgeSDK = MBridgeSDKFactory.getMBridgeSDK();
