@@ -8,6 +8,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.adaptertestkit.FakeInitializationCompleteCallback
 import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeSignalCallbacks
+import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.unity.UnityAdsAdapterUtils.getMediationErrorCode
 import com.google.ads.mediation.unity.UnityInitializer.ADMOB
@@ -39,11 +41,11 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
-import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
 import com.unity3d.ads.IUnityAdsInitializationListener
 import com.unity3d.ads.IUnityAdsTokenListener
 import com.unity3d.ads.TokenConfiguration
+import com.unity3d.ads.UnityAds
 import com.unity3d.ads.UnityAds.UnityAdsInitializationError
 import com.unity3d.ads.UnityAdsLoadOptions
 import com.unity3d.ads.metadata.MediationMetaData
@@ -99,7 +101,7 @@ class UnityMediationAdapterTest {
   private val mediationMetadata: MediationMetaData = mock()
   private val unityBannerViewWrapper: UnityBannerViewWrapper = mock()
   private val unityBannerViewFactory: UnityBannerViewFactory = mock()
-  private val signalCallbacks: SignalCallbacks = mock()
+  private val signalCallbacks = FakeSignalCallbacks()
   private val mediationUtils: MediationUtilsWrapper = mock()
 
   @Before
@@ -126,6 +128,27 @@ class UnityMediationAdapterTest {
     whenever(unityAdsWrapper.getMetaData(any())) doReturn unityMetaData
     whenever(unityAdsWrapper.getMediationMetaData(any())) doReturn mediationMetadata
   }
+
+  // region Version tests
+  @Test
+  fun getSDKVersionInfo_valid3Digits_returnsVersionInfo() {
+    mockStatic(UnityAds::class.java).use {
+      whenever(UnityAds.version) doReturn "4.19.0"
+
+      unityMediationAdapter.assertGetSdkVersion(expectedValue = "4.19.0")
+    }
+  }
+
+  @Test
+  fun getSDKVersionInfo_invalidFormat_returnsZeros() {
+    mockStatic(UnityAds::class.java).use {
+      whenever(UnityAds.version) doReturn "4.19"
+
+      unityMediationAdapter.assertGetSdkVersion(expectedValue = "0.0.0")
+    }
+  }
+
+  // endregion
 
   @Test
   fun initialize_withEmptyParameters_callsOnInitializationFailed() {
@@ -299,12 +322,13 @@ class UnityMediationAdapterTest {
 
     unityMediationAdapter.collectSignals(rtbSignalData, signalCallbacks)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(signalCallbacks).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_CONTEXT_NOT_ACTIVITY)
-    assertThat(adError.domain).isEqualTo(ADAPTER_ERROR_DOMAIN)
-    verifyNoMoreInteractions(signalCallbacks)
+    val expectedAdError =
+      AdError(
+        ERROR_CONTEXT_NOT_ACTIVITY,
+        "Unity Ads RTB Banner ads require activity context",
+        ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(signalCallbacks).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -325,11 +349,10 @@ class UnityMediationAdapterTest {
 
     unityMediationAdapter.collectSignals(rtbSignalData, signalCallbacks)
 
-    verify(signalCallbacks).onSuccess(any())
+    assertThat(signalCallbacks).hasSucceededWith(TEST_TOKEN)
     val tokenConfigCaptor = argumentCaptor<TokenConfiguration>()
     verify(unityAdsWrapper).getToken(tokenConfigCaptor.capture(), any())
     assertEquals(com.unity3d.ads.AdFormat.BANNER, tokenConfigCaptor.firstValue.adFormat)
-    verifyNoMoreInteractions(signalCallbacks)
   }
 
   @Test
@@ -350,11 +373,10 @@ class UnityMediationAdapterTest {
 
     unityMediationAdapter.collectSignals(rtbSignalData, signalCallbacks)
 
-    verify(signalCallbacks).onSuccess(any())
+    assertThat(signalCallbacks).hasSucceededWith(TEST_TOKEN)
     val tokenConfigCaptor = argumentCaptor<TokenConfiguration>()
     verify(unityAdsWrapper).getToken(tokenConfigCaptor.capture(), any())
     assertEquals(com.unity3d.ads.AdFormat.INTERSTITIAL, tokenConfigCaptor.firstValue.adFormat)
-    verifyNoMoreInteractions(signalCallbacks)
   }
 
   @Test
@@ -375,11 +397,10 @@ class UnityMediationAdapterTest {
 
     unityMediationAdapter.collectSignals(rtbSignalData, signalCallbacks)
 
-    verify(signalCallbacks).onSuccess(any())
+    assertThat(signalCallbacks).hasSucceededWith(TEST_TOKEN)
     val tokenConfigCaptor = argumentCaptor<TokenConfiguration>()
     verify(unityAdsWrapper).getToken(tokenConfigCaptor.capture(), any())
     assertEquals(com.unity3d.ads.AdFormat.REWARDED, tokenConfigCaptor.firstValue.adFormat)
-    verifyNoMoreInteractions(signalCallbacks)
   }
 
   @Test
@@ -402,12 +423,11 @@ class UnityMediationAdapterTest {
 
     unityMediationAdapter.collectSignals(rtbSignalData, signalCallbacks)
 
-    verify(signalCallbacks).onSuccess(any())
+    assertThat(signalCallbacks).hasSucceededWith(TEST_TOKEN)
     val tokenConfigCaptor = argumentCaptor<TokenConfiguration>()
     verify(unityAdsWrapper).getToken(tokenConfigCaptor.capture(), any())
     // GMA's rewarded interstitial format is mapped to Unity Ads's rewarded format.
     assertEquals(com.unity3d.ads.AdFormat.REWARDED, tokenConfigCaptor.firstValue.adFormat)
-    verifyNoMoreInteractions(signalCallbacks)
   }
 
   @Test
@@ -428,8 +448,7 @@ class UnityMediationAdapterTest {
 
     unityMediationAdapter.collectSignals(rtbSignalData, signalCallbacks)
     verify(unityAdsWrapper).getToken(any())
-    verify(signalCallbacks).onSuccess(any())
-    verifyNoMoreInteractions(signalCallbacks)
+    assertThat(signalCallbacks).hasSucceededWith(TEST_TOKEN)
   }
 
   @Test

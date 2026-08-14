@@ -137,6 +137,7 @@ dependencies {
     testImplementation 'androidx.test.espresso:espresso-core:3.6.1'
     testImplementation 'androidx.test.ext:junit-ktx:1.2.1'
     testImplementation 'androidx.test.ext:truth:1.6.0'
+    testImplementation 'com.google.testparameterinjector:test-parameter-injector:1.18'
     testImplementation "com.google.truth:truth:1.2.0"
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.10'
