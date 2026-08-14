@@ -4,6 +4,9 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.inmobi.InMobiAdFactory
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils.KEY_ACCOUNT_ID
@@ -11,8 +14,6 @@ import com.google.ads.mediation.inmobi.InMobiAdapterUtils.KEY_PLACEMENT_ID
 import com.google.ads.mediation.inmobi.InMobiConstants
 import com.google.ads.mediation.inmobi.InMobiInitializer
 import com.google.ads.mediation.inmobi.InMobiInterstitialWrapper
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
@@ -22,7 +23,6 @@ import com.inmobi.ads.InMobiAdRequestStatus
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
@@ -36,21 +36,21 @@ class InMobiWaterfallRewardedAdTest {
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val rewardedAdConfiguration =
     mock<MediationRewardedAdConfiguration>() { on { context } doReturn context }
+  private val mediationRewardedAdCallback = FakeMediationRewardedAdCallback()
   private val mediationAdLoadCallback =
-    mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      mediationRewardedAdCallback
+    )
   private val inMobiInitializer = mock<InMobiInitializer>()
   private val inMobiAdFactory = mock<InMobiAdFactory>()
   private val inMobiRewardedWrapper = mock<InMobiInterstitialWrapper>()
-  private val mediationRewardedAdCallback = mock<MediationRewardedAdCallback>()
 
-  lateinit var waterfallRewardedAd: InMobiWaterfallRewardedAd
-  lateinit var adMetaInfo: AdMetaInfo
+  private lateinit var waterfallRewardedAd: InMobiWaterfallRewardedAd
+  private lateinit var adMetaInfo: AdMetaInfo
 
   @Before
   fun setUp() {
     adMetaInfo = AdMetaInfo("fake", null)
-    whenever(mediationAdLoadCallback.onSuccess(any())).thenReturn(mediationRewardedAdCallback)
-
     waterfallRewardedAd =
       InMobiWaterfallRewardedAd(mediationAdLoadCallback, inMobiInitializer, inMobiAdFactory)
   }
@@ -74,10 +74,13 @@ class InMobiWaterfallRewardedAdTest {
     waterfallRewardedAd.onAdLoadSucceeded(inMobiRewardedWrapper.inMobiInterstitial, adMetaInfo)
     waterfallRewardedAd.showAd(context)
 
-    val captor = argumentCaptor<AdError>()
-    verify(mediationRewardedAdCallback).onAdFailedToShow(captor.capture())
-    assertThat(captor.firstValue.code).isEqualTo(InMobiConstants.ERROR_AD_NOT_READY)
-    assertThat(captor.firstValue.domain).isEqualTo(InMobiConstants.ERROR_DOMAIN)
+    val expectedAdError =
+      InMobiConstants.createAdapterError(
+        InMobiConstants.ERROR_AD_NOT_READY,
+        "InMobi rewarded ad is not yet ready to be shown.",
+      )
+    assertThat(mediationRewardedAdCallback.isFailedToShow).isTrue()
+    assertThat(mediationRewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
@@ -106,8 +109,8 @@ class InMobiWaterfallRewardedAdTest {
     waterfallRewardedAd.onAdLoadSucceeded(inMobiRewardedWrapper.inMobiInterstitial, adMetaInfo)
     waterfallRewardedAd.onAdDisplayed(inMobiRewardedWrapper.inMobiInterstitial, adMetaInfo)
 
-    verify(mediationRewardedAdCallback).onAdOpened()
-    verify(mediationRewardedAdCallback).onVideoStart()
+    assertThat(mediationRewardedAdCallback.isOpened).isTrue()
+    assertThat(mediationRewardedAdCallback.isVideoStarted).isTrue()
   }
 
   @Test
@@ -116,10 +119,13 @@ class InMobiWaterfallRewardedAdTest {
     waterfallRewardedAd.onAdLoadSucceeded(inMobiRewardedWrapper.inMobiInterstitial, adMetaInfo)
     waterfallRewardedAd.onAdDisplayFailed(inMobiRewardedWrapper.inMobiInterstitial)
 
-    val captor = argumentCaptor<AdError>()
-    verify(mediationRewardedAdCallback).onAdFailedToShow(captor.capture())
-    assertThat(captor.firstValue.code).isEqualTo(InMobiConstants.ERROR_AD_DISPLAY_FAILED)
-    assertThat(captor.firstValue.domain).isEqualTo(InMobiConstants.ERROR_DOMAIN)
+    val expectedAdError =
+      InMobiConstants.createAdapterError(
+        InMobiConstants.ERROR_AD_DISPLAY_FAILED,
+        "InMobi rewarded ad failed to show.",
+      )
+    assertThat(mediationRewardedAdCallback.isFailedToShow).isTrue()
+    assertThat(mediationRewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
@@ -128,21 +134,21 @@ class InMobiWaterfallRewardedAdTest {
     waterfallRewardedAd.onAdLoadSucceeded(inMobiRewardedWrapper.inMobiInterstitial, adMetaInfo)
     waterfallRewardedAd.onAdDismissed(inMobiRewardedWrapper.inMobiInterstitial)
 
-    verify(mediationRewardedAdCallback).onAdClosed()
+    assertThat(mediationRewardedAdCallback.isClosed).isTrue()
   }
 
   @Test
   fun onRewardsUnlocked_invokesOnUserEarnedReward() {
     val expectedRewardType = "SecondReward"
     val expectedReward = "2"
-    var rewards = mapOf<Any, Any>("firstReward" to "", expectedRewardType to expectedReward)
+    val rewards = mapOf<Any, Any>("firstReward" to "", expectedRewardType to expectedReward)
 
     // mimic an ad load
     waterfallRewardedAd.onAdLoadSucceeded(inMobiRewardedWrapper.inMobiInterstitial, adMetaInfo)
     waterfallRewardedAd.onRewardsUnlocked(inMobiRewardedWrapper.inMobiInterstitial, rewards)
 
-    verify(mediationRewardedAdCallback).onVideoComplete()
-    verify(mediationRewardedAdCallback).onUserEarnedReward()
+    assertThat(mediationRewardedAdCallback.isVideoCompleted).isTrue()
+    assertThat(mediationRewardedAdCallback.isUserEarnedReward).isTrue()
   }
 
   @Test
@@ -151,7 +157,7 @@ class InMobiWaterfallRewardedAdTest {
     waterfallRewardedAd.onAdLoadSucceeded(inMobiRewardedWrapper.inMobiInterstitial, adMetaInfo)
     waterfallRewardedAd.onAdClicked(inMobiRewardedWrapper.inMobiInterstitial, null)
 
-    verify(mediationRewardedAdCallback).reportAdClicked()
+    assertThat(mediationRewardedAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -160,30 +166,31 @@ class InMobiWaterfallRewardedAdTest {
     waterfallRewardedAd.onAdLoadSucceeded(inMobiRewardedWrapper.inMobiInterstitial, adMetaInfo)
     waterfallRewardedAd.onAdImpression(inMobiRewardedWrapper.inMobiInterstitial)
 
-    verify(mediationRewardedAdCallback).reportAdImpression()
+    assertThat(mediationRewardedAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
   fun onAdLoadFailed_invokesOnFailureCallback() {
-    var inMobiAdRequestStatus =
+    val inMobiAdRequestStatus =
       InMobiAdRequestStatus(InMobiAdRequestStatus.StatusCode.INTERNAL_ERROR)
+    val expectedAdError =
+      InMobiConstants.createSdkError(
+        InMobiAdapterUtils.getMediationErrorCode(inMobiAdRequestStatus),
+        inMobiAdRequestStatus.message.orEmpty(),
+      )
 
     waterfallRewardedAd.onAdLoadFailed(
       inMobiRewardedWrapper.inMobiInterstitial,
       inMobiAdRequestStatus,
     )
 
-    val captor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(captor.capture())
-    assertThat(captor.firstValue.code)
-      .isEqualTo(InMobiAdapterUtils.getMediationErrorCode(inMobiAdRequestStatus))
-    assertThat(captor.firstValue.domain).isEqualTo(InMobiConstants.INMOBI_SDK_ERROR_DOMAIN)
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
   fun onAdLoadSucceeded_invokesOnSuccessCallback() {
     waterfallRewardedAd.onAdLoadSucceeded(inMobiRewardedWrapper.inMobiInterstitial, adMetaInfo)
 
-    verify(mediationAdLoadCallback).onSuccess(ArgumentMatchers.any(waterfallRewardedAd::class.java))
+    assertThat(mediationAdLoadCallback).hasSucceededWith(waterfallRewardedAd)
   }
 }

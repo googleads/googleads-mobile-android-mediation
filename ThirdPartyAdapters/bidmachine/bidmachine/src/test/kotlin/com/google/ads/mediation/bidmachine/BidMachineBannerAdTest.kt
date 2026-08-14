@@ -18,10 +18,12 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_AD_REQUEST_EXPIRED
@@ -30,7 +32,6 @@ import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.common.truth.Truth.assertThat
@@ -44,7 +45,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -59,12 +59,9 @@ class BidMachineBannerAdTest {
   private lateinit var bidMachineBannerAd: BidMachineBannerAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val mockBannerAdCallback: MediationBannerAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockBannerAdCallback
-    }
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
+  private val bannerAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
   private val mockBannerRequest = mock<BannerRequest> { on { isExpired } doReturn false }
   private val mockBannerView = mock<BannerView>()
   private val mediationUtils = mock<MediationUtilsWrapper>()
@@ -84,7 +81,7 @@ class BidMachineBannerAdTest {
       AdSize.BANNER
     BidMachineBannerAd.newInstance(
         adConfiguration,
-        mockAdLoadCallback,
+        bannerAdLoadCallback,
         isRtb = false,
         mediationUtils,
       )
@@ -166,7 +163,7 @@ class BidMachineBannerAdTest {
 
     bidMachineBannerAd.onRequestSuccess(mockBannerRequest, mock())
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
     verify(mockBannerRequest).destroy()
     verify(mockBannerView, never()).load(mockBannerRequest)
   }
@@ -178,7 +175,7 @@ class BidMachineBannerAdTest {
 
     bidMachineBannerAd.onRequestFailed(mockBannerRequest, bMError)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
     verify(mockBannerRequest).destroy()
   }
 
@@ -189,7 +186,7 @@ class BidMachineBannerAdTest {
 
     bidMachineBannerAd.onRequestExpired(mockBannerRequest)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
     verify(mockBannerRequest).destroy()
   }
 
@@ -197,7 +194,7 @@ class BidMachineBannerAdTest {
   fun onAdLoaded_invokesOnSuccess() {
     bidMachineBannerAd.onAdLoaded(mockBannerView)
 
-    verify(mockAdLoadCallback).onSuccess(bidMachineBannerAd)
+    assertThat(bannerAdLoadCallback).hasSucceededWith(bidMachineBannerAd)
   }
 
   @Test
@@ -208,7 +205,7 @@ class BidMachineBannerAdTest {
 
     bidMachineBannerAd.onAdLoadFailed(mockBannerView, bMError)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
     verify(mockBannerView).destroy()
   }
 
@@ -218,7 +215,7 @@ class BidMachineBannerAdTest {
 
     bidMachineBannerAd.onAdImpression(mockBannerView)
 
-    verify(mockBannerAdCallback).reportAdImpression()
+    assertThat(bannerAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -227,9 +224,9 @@ class BidMachineBannerAdTest {
 
     bidMachineBannerAd.onAdClicked(mockBannerView)
 
-    verify(mockBannerAdCallback).onAdOpened()
-    verify(mockBannerAdCallback).onAdLeftApplication()
-    verify(mockBannerAdCallback).reportAdClicked()
+    assertThat(bannerAdCallback.isOpened).isTrue()
+    assertThat(bannerAdCallback.isLeftApplication).isTrue()
+    assertThat(bannerAdCallback.isClicked).isTrue()
   }
 
   @Test

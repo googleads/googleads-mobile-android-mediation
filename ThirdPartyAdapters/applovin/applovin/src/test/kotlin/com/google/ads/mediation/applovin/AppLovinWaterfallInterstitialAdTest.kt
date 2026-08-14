@@ -11,10 +11,11 @@ import com.applovin.sdk.AppLovinAdService
 import com.applovin.sdk.AppLovinErrorCodes
 import com.applovin.sdk.AppLovinSdk
 import com.applovin.sdk.AppLovinSdkSettings
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.applovin.AppLovinInitializer.OnInitializeSuccessListener
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_AD_ALREADY_REQUESTED
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
@@ -24,7 +25,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -44,12 +44,11 @@ class AppLovinWaterfallInterstitialAdTest {
 
   private val appLovinAd: AppLovinAd = mock()
   private val interstitialAdConfiguration: MediationInterstitialAdConfiguration = mock()
-  private val interstitialAdCallback: MediationInterstitialAdCallback = mock()
-  private val interstitialAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn interstitialAdCallback
-    }
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
+  private val interstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
   private val appLovinSdkSettings: AppLovinSdkSettings = mock()
   private val adService: AppLovinAdService = mock()
   private val appLovinSdk: AppLovinSdk = mock {
@@ -108,15 +107,13 @@ class AppLovinWaterfallInterstitialAdTest {
   @Test
   fun failedToReceiveAd_invokesUnregisterToLetAnotherAdLoadWithSameZoneId() {
     mockInitializeSuccess()
-    val errorCaptor = argumentCaptor<AdError>()
     appLovinMediationInterstitialAd.loadAd(interstitialAdConfiguration)
 
     appLovinMediationInterstitialAd.failedToReceiveAd(AppLovinErrorCodes.NO_FILL)
     appLovinMediationInterstitialAd.loadAd(interstitialAdConfiguration)
 
-    verify(interstitialAdLoadCallback).onFailure(errorCaptor.capture())
-    val capturedError = errorCaptor.firstValue
-    assertThat(capturedError.code).isNotEqualTo(ERROR_AD_ALREADY_REQUESTED)
+    assertThat(interstitialAdLoadCallback).hasFailed()
+    assertThat(interstitialAdLoadCallback.error?.code).isNotEqualTo(ERROR_AD_ALREADY_REQUESTED)
     verify(adService, times(2)).loadNextAdForZoneId(eq(TEST_ZONE_ID), any())
   }
 
@@ -127,7 +124,7 @@ class AppLovinWaterfallInterstitialAdTest {
     appLovinMediationInterstitialAd.adHidden(appLovinAd)
     appLovinMediationInterstitialAd.loadAd(interstitialAdConfiguration)
 
-    verify(interstitialAdLoadCallback, never()).onFailure(any<AdError>())
+    assertThat(interstitialAdLoadCallback).hasNotFailed()
     verify(adService, times(2)).loadNextAdForZoneId(eq(TEST_ZONE_ID), any())
   }
 
@@ -195,7 +192,5 @@ class AppLovinWaterfallInterstitialAdTest {
   companion object {
     private const val TEST_SDK_KEY = "sdkKey"
     private const val TEST_ZONE_ID = "zoneId"
-    private const val TEST_TRUE_VALUE = "true"
-    private const val TEST_FALSE_VALUE = "false"
   }
 }

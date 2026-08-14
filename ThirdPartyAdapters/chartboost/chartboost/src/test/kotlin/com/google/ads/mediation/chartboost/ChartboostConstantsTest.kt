@@ -5,6 +5,7 @@ import com.chartboost.sdk.events.CacheError
 import com.chartboost.sdk.events.ClickError
 import com.chartboost.sdk.events.ShowError
 import com.chartboost.sdk.events.StartError
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.chartboost.ChartboostConstants.CHARTBOOST_SDK_ERROR_DOMAIN
 import com.google.ads.mediation.chartboost.ChartboostConstants.ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
@@ -33,9 +34,9 @@ class ChartboostConstantsTest {
   fun createAdapterError_returnsValidAdError() {
     adError = ChartboostConstants.createAdapterError(ERROR_CODE, ERROR_MESSAGE)
 
-    assertThat(adError.code).isEqualTo(ERROR_CODE)
-    assertThat(adError.message).isEqualTo(ERROR_MESSAGE)
-    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+    assertThat(adError).hasCode(ERROR_CODE)
+    assertThat(adError).hasMessage(ERROR_MESSAGE)
+    assertThat(adError).hasDomain(ERROR_DOMAIN)
   }
 
   @Test
@@ -83,9 +84,9 @@ class ChartboostConstantsTest {
   }
 
   private fun assertCommon(adError: AdError) {
-    assertThat(adError.code).isEqualTo(ERROR_CODE)
-    assertThat(adError.message).isEqualTo(ERROR_MESSAGE)
-    assertThat(adError.domain).isEqualTo(CHARTBOOST_SDK_ERROR_DOMAIN)
+    assertThat(adError).hasCode(ERROR_CODE)
+    assertThat(adError).hasMessage(ERROR_MESSAGE)
+    assertThat(adError).hasDomain(CHARTBOOST_SDK_ERROR_DOMAIN)
   }
 
   private companion object {

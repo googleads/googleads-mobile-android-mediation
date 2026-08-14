@@ -18,10 +18,12 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationNativeAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfiguration
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_AD_REQUEST_EXPIRED
@@ -29,7 +31,6 @@ import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.PLACEMENT_ID_KEY
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.common.truth.Truth.assertThat
@@ -42,7 +43,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -57,12 +57,9 @@ class BidMachineNativeAdTest {
   private lateinit var bidMachineNativeAd: BidMachineNativeAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val mockNativeAdCallback: MediationNativeAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockNativeAdCallback
-    }
+  private val nativeAdCallback = FakeMediationNativeAdCallback()
+  private val nativeAdLoadCallback =
+    FakeMediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>(nativeAdCallback)
   private val mockNativeRequest = mock<NativeRequest> { on { isExpired } doReturn false }
   private val nativePublicData =
     mock<NativePublicData> {
@@ -84,7 +81,7 @@ class BidMachineNativeAdTest {
         serverParameters = serverParams,
         watermark = TEST_WATERMARK,
       )
-    BidMachineNativeAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess {
+    BidMachineNativeAd.newInstance(adConfiguration, nativeAdLoadCallback).onSuccess {
       bidMachineNativeAd = it
     }
   }
@@ -139,7 +136,7 @@ class BidMachineNativeAdTest {
 
     bidMachineNativeAd.onRequestSuccess(mockNativeRequest, mock())
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
     verify(mockNativeRequest).destroy()
     verify(mockNativeAd, never()).load(mockNativeRequest)
   }
@@ -151,7 +148,7 @@ class BidMachineNativeAdTest {
 
     bidMachineNativeAd.onRequestFailed(mockNativeRequest, bMError)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
     verify(mockNativeRequest).destroy()
   }
 
@@ -162,7 +159,7 @@ class BidMachineNativeAdTest {
 
     bidMachineNativeAd.onRequestExpired(mockNativeRequest)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
     verify(mockNativeRequest).destroy()
   }
 
@@ -173,7 +170,7 @@ class BidMachineNativeAdTest {
 
     bidMachineNativeAd.onAdLoaded(mockNativeAd)
 
-    verify(mockAdLoadCallback).onSuccess(bidMachineNativeAd)
+    assertThat(nativeAdLoadCallback).hasSucceededWith(bidMachineNativeAd)
   }
 
   @Test
@@ -184,7 +181,7 @@ class BidMachineNativeAdTest {
 
     bidMachineNativeAd.onAdLoadFailed(mockNativeAd, bMError)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
     verify(mockNativeAd).destroy()
   }
 
@@ -196,7 +193,7 @@ class BidMachineNativeAdTest {
 
     bidMachineNativeAd.onAdImpression(mockNativeAd)
 
-    verify(mockNativeAdCallback).reportAdImpression()
+    assertThat(nativeAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -207,9 +204,9 @@ class BidMachineNativeAdTest {
 
     bidMachineNativeAd.onAdClicked(mockNativeAd)
 
-    verify(mockNativeAdCallback).onAdOpened()
-    verify(mockNativeAdCallback).onAdLeftApplication()
-    verify(mockNativeAdCallback).reportAdClicked()
+    assertThat(nativeAdCallback.isOpened).isTrue()
+    assertThat(nativeAdCallback.isLeftApplication).isTrue()
+    assertThat(nativeAdCallback.isClicked).isTrue()
   }
 
   @Test

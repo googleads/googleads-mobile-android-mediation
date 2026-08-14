@@ -1,5 +1,8 @@
 ## i-mobile Android Mediation Adapter Changelog
 
+#### Next Version
+- Fixed fall-through behavior on age-restricted failure branches during ad initialization and ad load requests.
+
 #### Version 2.3.2.4
 - Filter age-restricted requests for i-mobile SDK when new `AgeRestrictedTreatment` is set to `CHILD`.
 

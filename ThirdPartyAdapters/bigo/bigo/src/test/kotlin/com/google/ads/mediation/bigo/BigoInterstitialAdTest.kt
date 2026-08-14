@@ -18,20 +18,20 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SLOT_ID_KEY
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
@@ -47,15 +47,14 @@ class BigoInterstitialAdTest {
   private lateinit var bigoInterstitialAd: BigoInterstitialAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val mockInterstitialAdCallback: MediationInterstitialAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockInterstitialAdCallback
-    }
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
+  private val adLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
   private val mockInterstitialAdRequest = mock<InterstitialAdRequest>()
   private val mockInterstitialAdLoader = mock<BigoInterstitialAdLoaderWrapper>()
-  private var mockBigoFactory =
+  private val mockBigoFactory =
     mock<SdkFactory> {
       on {
         createInterstitialAdRequest(eq(TEST_BID_RESPONSE), eq(TEST_SLOT_ID), eq(TEST_WATERMARK))
@@ -74,7 +73,7 @@ class BigoInterstitialAdTest {
         watermark = TEST_WATERMARK,
       )
     BigoFactory.delegate = mockBigoFactory
-    BigoInterstitialAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess {
+    BigoInterstitialAd.newInstance(adConfiguration, adLoadCallback).onSuccess {
       bigoInterstitialAd = it
     }
   }
@@ -96,7 +95,7 @@ class BigoInterstitialAdTest {
     bigoInterstitialAd.onAdLoaded(mockInterstitialAd)
 
     verify(mockInterstitialAd).setAdInteractionListener(bigoInterstitialAd)
-    verify(mockAdLoadCallback).onSuccess(bigoInterstitialAd)
+    assertThat(adLoadCallback).hasSucceededWith(bigoInterstitialAd)
   }
 
   @Test
@@ -105,7 +104,7 @@ class BigoInterstitialAdTest {
 
     bigoInterstitialAd.onError(AdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(adLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -125,7 +124,8 @@ class BigoInterstitialAdTest {
 
     bigoInterstitialAd.onAdError(AdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
 
-    verify(mockInterstitialAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(interstitialAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
@@ -134,7 +134,7 @@ class BigoInterstitialAdTest {
 
     bigoInterstitialAd.onAdImpression()
 
-    verify(mockInterstitialAdCallback).reportAdImpression()
+    assertThat(interstitialAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -143,7 +143,7 @@ class BigoInterstitialAdTest {
 
     bigoInterstitialAd.onAdClicked()
 
-    verify(mockInterstitialAdCallback).reportAdClicked()
+    assertThat(interstitialAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -152,7 +152,7 @@ class BigoInterstitialAdTest {
 
     bigoInterstitialAd.onAdOpened()
 
-    verify(mockInterstitialAdCallback).onAdOpened()
+    assertThat(interstitialAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -161,7 +161,7 @@ class BigoInterstitialAdTest {
 
     bigoInterstitialAd.onAdClosed()
 
-    verify(mockInterstitialAdCallback).onAdClosed()
+    assertThat(interstitialAdCallback.isClosed).isTrue()
   }
 
   private companion object {

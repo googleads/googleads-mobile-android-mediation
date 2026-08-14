@@ -22,8 +22,10 @@ import com.facebook.ads.Ad
 import com.facebook.ads.AdError.AD_PRESENTATION_ERROR
 import com.facebook.ads.AdError.NO_FILL
 import com.facebook.ads.InterstitialAd
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_AD_UNIT
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAppOpenAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfiguration
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FAILED_TO_PRESENT_AD
@@ -31,19 +33,16 @@ import com.google.ads.mediation.facebook.FacebookMediationAdapter.FACEBOOK_SDK_E
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.RTB_PLACEMENT_PARAMETER
 import com.google.ads.mediation.facebook.MetaFactory
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAd
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 /** Unit tests for [MetaRtbAppOpenAd]. */
@@ -56,12 +55,11 @@ class MetaRtbAppOpenAdTest {
   private lateinit var mediationAppOpenAdConfig: MediationAppOpenAdConfiguration
   private val serverParameters = Bundle()
   private val context: Context = ApplicationProvider.getApplicationContext()
-  private val mediationAppOpenAdCallback: MediationAppOpenAdCallback = mock()
-  private val mediationAdLoadCallback:
-    MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mediationAppOpenAdCallback
-    }
+  private val mediationAppOpenAdCallback = FakeMediationAppOpenAdCallback()
+  private val mediationAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>(
+      mediationAppOpenAdCallback
+    )
   // Meta SDK uses InterstitialAd for displaying app open ads.
   private val metaAppOpenAdLoadConfigBuilder: InterstitialAd.InterstitialAdLoadConfigBuilder =
     mock {
@@ -102,7 +100,8 @@ class MetaRtbAppOpenAdTest {
         AD_PRESENTATION_ERROR.errorMessage,
         FACEBOOK_SDK_ERROR_DOMAIN,
       )
-    verify(mediationAppOpenAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(mediationAppOpenAdCallback.isFailedToShow).isTrue()
+    assertThat(mediationAppOpenAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
@@ -114,7 +113,7 @@ class MetaRtbAppOpenAdTest {
 
     val expectedAdError =
       AdError(NO_FILL.errorCode, NO_FILL.errorMessage, FACEBOOK_SDK_ERROR_DOMAIN)
-    verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -129,7 +128,8 @@ class MetaRtbAppOpenAdTest {
     // invoke the showAd callback
     adapterAppOpenAd.showAd(context)
 
-    verify(mediationAppOpenAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(mediationAppOpenAdCallback.isFailedToShow).isTrue()
+    assertThat(mediationAppOpenAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
@@ -138,7 +138,7 @@ class MetaRtbAppOpenAdTest {
 
     adapterAppOpenAd.onInterstitialDisplayed(metaAd)
 
-    verify(mediationAppOpenAdCallback).onAdOpened()
+    assertThat(mediationAppOpenAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -147,7 +147,7 @@ class MetaRtbAppOpenAdTest {
 
     adapterAppOpenAd.onInterstitialDismissed(metaAd)
 
-    verify(mediationAppOpenAdCallback).onAdClosed()
+    assertThat(mediationAppOpenAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -159,7 +159,7 @@ class MetaRtbAppOpenAdTest {
     // make a second dismissed call.
     adapterAppOpenAd.onInterstitialDismissed(metaAd)
 
-    verify(mediationAppOpenAdCallback, times(1)).onAdClosed()
+    assertThat(mediationAppOpenAdCallback.onAdClosedInvokeCount).isEqualTo(1)
   }
 
   @Test
@@ -168,7 +168,7 @@ class MetaRtbAppOpenAdTest {
 
     adapterAppOpenAd.onAdClicked(metaAd)
 
-    verify(mediationAppOpenAdCallback).reportAdClicked()
+    assertThat(mediationAppOpenAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -177,7 +177,7 @@ class MetaRtbAppOpenAdTest {
 
     adapterAppOpenAd.onLoggingImpression(metaAd)
 
-    verify(mediationAppOpenAdCallback).reportAdImpression()
+    assertThat(mediationAppOpenAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -186,7 +186,7 @@ class MetaRtbAppOpenAdTest {
 
     adapterAppOpenAd.onInterstitialActivityDestroyed()
 
-    verify(mediationAppOpenAdCallback).onAdClosed()
+    assertThat(mediationAppOpenAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -198,7 +198,7 @@ class MetaRtbAppOpenAdTest {
     // make a second destroyed call
     adapterAppOpenAd.onInterstitialActivityDestroyed()
 
-    verify(mediationAppOpenAdCallback, times(1)).onAdClosed()
+    assertThat(mediationAppOpenAdCallback.onAdClosedInvokeCount).isEqualTo(1)
   }
 
   /**

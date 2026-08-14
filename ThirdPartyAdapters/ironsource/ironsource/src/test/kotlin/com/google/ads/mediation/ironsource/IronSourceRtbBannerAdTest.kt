@@ -4,10 +4,12 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
@@ -18,12 +20,8 @@ import com.unity3d.ironsourceads.banner.BannerAdView
 import com.unity3d.ironsourceads.banner.BannerAdViewListener
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -34,19 +32,17 @@ class IronSourceRtbBannerAdTest {
   private val mockInterstitialAdConfig: MediationBannerAdConfiguration = mock {
     on { context } doReturn context
     on { serverParameters } doReturn bundle
-    on { getBidResponse() } doReturn AdapterTestKitConstants.TEST_BID_RESPONSE
-    on { getWatermark() } doReturn AdapterTestKitConstants.TEST_WATERMARK
+    on { bidResponse } doReturn AdapterTestKitConstants.TEST_BID_RESPONSE
+    on { watermark } doReturn AdapterTestKitConstants.TEST_WATERMARK
     on { adSize } doReturn AdSize.BANNER
   }
 
-  private val mockMediationBannerAdCallback: MediationBannerAdCallback = mock()
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
 
-  private val bannerAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
-    org.mockito.kotlin.mock { on { onSuccess(any()) } doReturn mockMediationBannerAdCallback }
+  private val bannerAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
   private val mockIsListener: BannerAdViewListener = mock()
-  private val mockBannerAd: BannerAdView =
-    org.mockito.kotlin.mock { on { listener } doReturn mockIsListener }
+  private val mockBannerAd: BannerAdView = mock { on { listener } doReturn mockIsListener }
   private val mediationUtils: MediationUtilsWrapper = mock()
 
   private val ironSourceRtbBannerAd = IronSourceRtbBannerAd(bannerAdLoadCallback)
@@ -60,7 +56,7 @@ class IronSourceRtbBannerAdTest {
     ironSourceRtbBannerAd.onBannerAdLoaded(mockBannerAd)
 
     // Then
-    verify(bannerAdLoadCallback).onSuccess(ironSourceRtbBannerAd)
+    assertThat(bannerAdLoadCallback).hasSucceededWith(ironSourceRtbBannerAd)
     assertThat(mockBannerAd.listener).isEqualTo(mockIsListener)
     assertThat(ironSourceRtbBannerAd.view).isNotNull()
   }
@@ -71,7 +67,8 @@ class IronSourceRtbBannerAdTest {
     ironSourceRtbBannerAd.loadRtbAd(mockInterstitialAdConfig, mediationUtils)
 
     // Then
-    verifyNoInteractions(bannerAdLoadCallback)
+    assertThat(bannerAdLoadCallback).hasNotSucceeded()
+    assertThat(bannerAdLoadCallback).hasNoFailure()
   }
 
   @Test
@@ -80,7 +77,8 @@ class IronSourceRtbBannerAdTest {
     ironSourceRtbBannerAd.onBannerAdLoaded(mockBannerAd)
 
     // Then
-    verifyNoInteractions(bannerAdLoadCallback)
+    assertThat(bannerAdLoadCallback).hasNotSucceeded()
+    assertThat(bannerAdLoadCallback).hasNoFailure()
   }
 
   @Test
@@ -88,18 +86,14 @@ class IronSourceRtbBannerAdTest {
     // Given
     ironSourceRtbBannerAd.loadRtbAd(mockInterstitialAdConfig, mediationUtils)
     val ironSourceError = IronSourceError(ERROR_CODE_DECRYPT_FAILED, "Decrypt failed.")
+
+    // When
     ironSourceRtbBannerAd.onBannerAdLoadFailed(ironSourceError)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    // When
-    verify(bannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-
     // Then
-    with(adErrorCaptor.firstValue) {
-      assertThat(code).isEqualTo(ERROR_CODE_DECRYPT_FAILED)
-      assertThat(message).isEqualTo("Decrypt failed.")
-      assertThat(domain).isEqualTo(IRONSOURCE_SDK_ERROR_DOMAIN)
-    }
+    val expectedError =
+      AdError(ERROR_CODE_DECRYPT_FAILED, "Decrypt failed.", IRONSOURCE_SDK_ERROR_DOMAIN)
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -112,7 +106,7 @@ class IronSourceRtbBannerAdTest {
     ironSourceRtbBannerAd.onBannerAdShown(mockBannerAd)
 
     // Then
-    verify(mockMediationBannerAdCallback).reportAdImpression()
+    assertThat(bannerAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -126,7 +120,7 @@ class IronSourceRtbBannerAdTest {
     ironSourceRtbBannerAd.onBannerAdClicked(mockBannerAd)
 
     // Then
-    verify(mockMediationBannerAdCallback).onAdOpened()
-    verify(mockMediationBannerAdCallback).reportAdClicked()
+    assertThat(bannerAdCallback.isOpened).isTrue()
+    assertThat(bannerAdCallback.isClicked).isTrue()
   }
 }

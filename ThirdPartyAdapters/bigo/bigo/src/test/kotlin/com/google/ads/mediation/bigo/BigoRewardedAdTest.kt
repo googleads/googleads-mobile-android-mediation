@@ -18,20 +18,20 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SLOT_ID_KEY
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
@@ -47,15 +47,14 @@ class BigoRewardedAdTest {
   private lateinit var bigoRewardedAd: BigoRewardedAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val mockRewardedAdCallback: MediationRewardedAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockRewardedAdCallback
-    }
+  private val rewardedAdCallback = FakeMediationRewardedAdCallback()
+  private val adLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      rewardedAdCallback
+    )
   private val mockRewardVideoAdRequest = mock<RewardVideoAdRequest>()
   private val mockRewardVideoAdLoader = mock<BigoRewardVideoAdLoaderWrapper>()
-  private var mockBigoFactory =
+  private val mockBigoFactory =
     mock<SdkFactory> {
       on {
         createRewardVideoAdRequest(eq(TEST_BID_RESPONSE), eq(TEST_SLOT_ID), eq(TEST_WATERMARK))
@@ -74,9 +73,7 @@ class BigoRewardedAdTest {
         watermark = TEST_WATERMARK,
       )
     BigoFactory.delegate = mockBigoFactory
-    BigoRewardedAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess {
-      bigoRewardedAd = it
-    }
+    BigoRewardedAd.newInstance(adConfiguration, adLoadCallback).onSuccess { bigoRewardedAd = it }
   }
 
   @Test
@@ -96,7 +93,7 @@ class BigoRewardedAdTest {
     bigoRewardedAd.onAdLoaded(mockRewardVideoAd)
 
     verify(mockRewardVideoAd).setAdInteractionListener(bigoRewardedAd)
-    verify(mockAdLoadCallback).onSuccess(bigoRewardedAd)
+    assertThat(adLoadCallback).hasSucceededWith(bigoRewardedAd)
   }
 
   @Test
@@ -105,7 +102,7 @@ class BigoRewardedAdTest {
 
     bigoRewardedAd.onError(AdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(adLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -124,7 +121,7 @@ class BigoRewardedAdTest {
 
     bigoRewardedAd.onAdRewarded()
 
-    verify(mockRewardedAdCallback).onUserEarnedReward()
+    assertThat(rewardedAdCallback.isUserEarnedReward).isTrue()
   }
 
   @Test
@@ -134,7 +131,8 @@ class BigoRewardedAdTest {
 
     bigoRewardedAd.onAdError(AdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
 
-    verify(mockRewardedAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
+    assertThat(rewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
@@ -143,7 +141,7 @@ class BigoRewardedAdTest {
 
     bigoRewardedAd.onAdImpression()
 
-    verify(mockRewardedAdCallback).reportAdImpression()
+    assertThat(rewardedAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -152,7 +150,7 @@ class BigoRewardedAdTest {
 
     bigoRewardedAd.onAdClicked()
 
-    verify(mockRewardedAdCallback).reportAdClicked()
+    assertThat(rewardedAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -161,7 +159,7 @@ class BigoRewardedAdTest {
 
     bigoRewardedAd.onAdOpened()
 
-    verify(mockRewardedAdCallback).onAdOpened()
+    assertThat(rewardedAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -170,7 +168,7 @@ class BigoRewardedAdTest {
 
     bigoRewardedAd.onAdClosed()
 
-    verify(mockRewardedAdCallback).onAdClosed()
+    assertThat(rewardedAdCallback.isClosed).isTrue()
   }
 
   private companion object {

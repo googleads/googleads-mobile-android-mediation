@@ -14,15 +14,17 @@ import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdData
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdInteractionListener
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeAdLoadListener
 import com.bytedance.sdk.openadsdk.api.nativeAd.PAGNativeRequest
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationNativeAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
+import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfiguration
 import com.google.ads.mediation.pangle.PangleConstants
-import com.google.ads.mediation.pangle.PangleConstants.PANGLE_SDK_ERROR_DOMAIN
 import com.google.ads.mediation.pangle.PangleFactory
 import com.google.ads.mediation.pangle.PangleInitializer
 import com.google.ads.mediation.pangle.PangleRequestHelper.ADMOB_WATERMARK_KEY
 import com.google.ads.mediation.pangle.PangleSdkWrapper
 import com.google.ads.mediation.pangle.renderer.PangleNativeAd.ASSET_ID_ADCHOICES_TEXT_VIEW
 import com.google.ads.mediation.pangle.renderer.PangleNativeAd.PANGLE_SDK_IMAGE_SCALE
-import com.google.ads.mediation.pangle.utils.AdErrorMatcher
 import com.google.ads.mediation.pangle.utils.TestConstants.APP_ID_VALUE
 import com.google.ads.mediation.pangle.utils.TestConstants.BID_RESPONSE
 import com.google.ads.mediation.pangle.utils.TestConstants.PANGLE_INIT_FAILURE_CODE
@@ -31,10 +33,8 @@ import com.google.ads.mediation.pangle.utils.TestConstants.PLACEMENT_ID_VALUE
 import com.google.ads.mediation.pangle.utils.TestConstants.WATERMARK
 import com.google.ads.mediation.pangle.utils.mockPangleSdkInitializationFailure
 import com.google.ads.mediation.pangle.utils.mockPangleSdkInitializationSuccess
-import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
 import com.google.android.gms.ads.RequestConfiguration.TagForChildDirectedTreatment
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
@@ -45,7 +45,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
@@ -53,7 +52,6 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestParameterInjector
 
@@ -66,12 +64,9 @@ class PangleNativeAdTest {
   private var serverParameters: Bundle = Bundle()
 
   private val context: Context = ApplicationProvider.getApplicationContext()
-  private val nativeAdCallback: MediationNativeAdCallback = mock()
-  private val mediationAdLoadCallback:
-    MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn nativeAdCallback
-    }
+  private val nativeAdCallback = FakeMediationNativeAdCallback()
+  private val mediationAdLoadCallback =
+    FakeMediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>(nativeAdCallback)
   private val pangleInitializer: PangleInitializer = mock()
   private val pangleSdkWrapper: PangleSdkWrapper = mock()
   private val pagNativeRequest: PAGNativeRequest = mock()
@@ -126,22 +121,20 @@ class PangleNativeAdTest {
 
   @Test
   fun render_withoutPlacementId_callsOnFailureOnCallbackWithProperErrorCode() {
-    // Given a mediation native ad configuration
-    serverParameters.remove(
-      PangleConstants.PLACEMENT_ID
-    ) // ... without serverParameters send in the Bundle
+    // Given a mediation native ad configuration without placement ID in serverParameters.
+    serverParameters.remove(PangleConstants.PLACEMENT_ID)
     initializeNativeAd()
 
     nativeAd.render(mediationNativeAdConfig)
 
     // The onFailure method of the mediationAdLoadCallback is called with the
     // ERROR_INVALID_SERVER_PARAMETERS code.
-    val adError: AdError =
+    val expectedAdError =
       PangleConstants.createAdapterError(
         PangleConstants.ERROR_INVALID_SERVER_PARAMETERS,
         "Failed to load native ad from Pangle. Missing or invalid Placement ID.",
       )
-    verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(adError)))
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -153,7 +146,7 @@ class PangleNativeAdTest {
     nativeAd.render(mediationNativeAdConfig)
 
     // No onFailure should be triggered.
-    verify(mediationAdLoadCallback, never()).onFailure(any<AdError>())
+    assertThat(mediationAdLoadCallback).hasNotFailed()
   }
 
   /**
@@ -211,7 +204,7 @@ class PangleNativeAdTest {
       assertThat(mediaView).isEqualTo(mediaView)
       assertThat(adChoicesContent).isEqualTo(adLogoView)
     }
-    verify(mediationAdLoadCallback).onSuccess(nativeAd)
+    assertThat(mediationAdLoadCallback).hasSucceededWith(nativeAd)
   }
 
   @Test
@@ -231,12 +224,12 @@ class PangleNativeAdTest {
 
     nativeAd.render(mediationNativeAdConfig)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(FAILURE_CODE_PANGLE_NATIVE_LOAD)
-    assertThat(adError.message).isEqualTo(FAILURE_MESSAGE_PANGLE_NATIVE_LOAD)
-    assertThat(adError.domain).isEqualTo(PANGLE_SDK_ERROR_DOMAIN)
+    val expectedAdError =
+      PangleConstants.createSdkError(
+        FAILURE_CODE_PANGLE_NATIVE_LOAD,
+        FAILURE_MESSAGE_PANGLE_NATIVE_LOAD,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -246,12 +239,9 @@ class PangleNativeAdTest {
 
     nativeAd.render(mediationNativeAdConfig)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(PANGLE_INIT_FAILURE_CODE)
-    assertThat(adError.message).isEqualTo(PANGLE_INIT_FAILURE_MESSAGE)
-    assertThat(adError.domain).isEqualTo(PANGLE_SDK_ERROR_DOMAIN)
+    val expectedAdError =
+      PangleConstants.createSdkError(PANGLE_INIT_FAILURE_CODE, PANGLE_INIT_FAILURE_MESSAGE)
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -293,7 +283,7 @@ class PangleNativeAdTest {
     // Mock that the ad is clicked.
     pagAdInteractionListenerCaptor.firstValue.onAdClicked()
 
-    verify(nativeAdCallback).reportAdClicked()
+    assertThat(nativeAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -313,7 +303,7 @@ class PangleNativeAdTest {
     // Mock that the ad is showed.
     pagAdInteractionListenerCaptor.firstValue.onAdShowed()
 
-    verify(nativeAdCallback).reportAdImpression()
+    assertThat(nativeAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -335,7 +325,11 @@ class PangleNativeAdTest {
 
     // Google Mobile Ads SDK doesn't have a matching event for onAdDismissed(). Therefore, nothing
     // should be reported through nativeAdCallback.
-    verifyNoInteractions(nativeAdCallback)
+    assertThat(nativeAdCallback.isClicked).isFalse()
+    assertThat(nativeAdCallback.isImpressionReported).isFalse()
+    assertThat(nativeAdCallback.isOpened).isFalse()
+    assertThat(nativeAdCallback.isClosed).isFalse()
+    assertThat(nativeAdCallback.isLeftApplication).isFalse()
   }
 
   @Test
@@ -368,20 +362,13 @@ class PangleNativeAdTest {
     bidResponse: String = BID_RESPONSE,
     watermark: String = WATERMARK,
   ) {
-    // Constructor of the MediationNativeAdConfiguration called by the GMA SDK
     mediationNativeAdConfig =
-      MediationNativeAdConfiguration(
-        context,
-        bidResponse,
-        serverParameters,
-        /*mediationExtras=*/ Bundle(),
-        /*isTesting=*/ true,
-        /*location=*/ null,
-        tagForChildDirectedTreatment,
-        /*taggedForUnderAgeTreatment=*/ -1,
-        /*maxAdContentRating=*/ null,
-        watermark,
-        /*nativeAdOptions=*/ null,
+      createMediationNativeAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+        bidResponse = bidResponse,
+        watermark = watermark,
+        taggedForChildDirectedTreatment = tagForChildDirectedTreatment,
       )
 
     nativeAd =

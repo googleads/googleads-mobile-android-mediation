@@ -4,11 +4,13 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_APP_ID
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAppOpenAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfiguration
 import com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID
 import com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION
@@ -19,9 +21,9 @@ import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_CANNOT_PLAY_
 import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.vungle.VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAd
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
+import com.google.common.truth.Truth.assertThat
 import com.vungle.ads.AdConfig.Companion.LANDSCAPE
 import com.vungle.ads.InterstitialAd
 import com.vungle.ads.VungleError
@@ -31,12 +33,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 
 /** Tests for [VungleWaterfallAppOpenAd]. */
@@ -47,11 +47,9 @@ class VungleWaterfallAppOpenAdTest {
   private lateinit var adapterWaterfallAppOpenAd: VungleWaterfallAppOpenAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val appOpenAdCallback = mock<MediationAppOpenAdCallback>()
+  private val appOpenAdCallback = FakeMediationAppOpenAdCallback()
   private val appOpenAdLoadCallback =
-    mock<MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>> {
-      on { onSuccess(any()) } doReturn appOpenAdCallback
-    }
+    FakeMediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>(appOpenAdCallback)
   private val vungleInitializer = mock<VungleInitializer>()
   private val vungleAppOpenAd = mock<InterstitialAd>()
   private val vungleFactory =
@@ -84,7 +82,7 @@ class VungleWaterfallAppOpenAdTest {
   fun onAdLoaded_callsLoadSuccess() {
     adapterWaterfallAppOpenAd.onAdLoaded(vungleAppOpenAd)
 
-    verify(appOpenAdLoadCallback).onSuccess(adapterWaterfallAppOpenAd)
+    assertThat(appOpenAdLoadCallback).hasSucceededWith(adapterWaterfallAppOpenAd)
   }
 
   @Test
@@ -99,7 +97,7 @@ class VungleWaterfallAppOpenAdTest {
 
     val expectedError =
       AdError(liftoffError.code, liftoffError.errorMessage, VUNGLE_SDK_ERROR_DOMAIN)
-    verify(appOpenAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(appOpenAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -116,9 +114,8 @@ class VungleWaterfallAppOpenAdTest {
   }
 
   @Test
-  fun showAd_ifLiftoffCannotPlayAd_callsOnAdFailedToShow() {
-    renderAdAndMockLoadSuccess()
-    whenever(vungleAppOpenAd.canPlayAd()) doReturn false
+  fun showAd_ifAppOpenAdIsNull_callsOnAdFailedToShow() {
+    adapterWaterfallAppOpenAd.onAdLoaded(vungleAppOpenAd)
 
     adapterWaterfallAppOpenAd.showAd(context)
 
@@ -128,8 +125,8 @@ class VungleWaterfallAppOpenAdTest {
         "Failed to show app open ad from Liftoff Monetize.",
         ERROR_DOMAIN,
       )
-    verify(appOpenAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedError)))
-    verifyNoMoreInteractions(appOpenAdCallback)
+    assertThat(appOpenAdCallback.isFailedToShow).isTrue()
+    assertThat(appOpenAdCallback.adFailedToShowError).isEqualTo(expectedError)
   }
 
   private fun renderAdAndMockLoadSuccess() {
@@ -146,8 +143,7 @@ class VungleWaterfallAppOpenAdTest {
 
     adapterWaterfallAppOpenAd.onAdStart(vungleAppOpenAd)
 
-    verify(appOpenAdCallback).onAdOpened()
-    verifyNoMoreInteractions(appOpenAdCallback)
+    assertThat(appOpenAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -156,8 +152,7 @@ class VungleWaterfallAppOpenAdTest {
 
     adapterWaterfallAppOpenAd.onAdEnd(vungleAppOpenAd)
 
-    verify(appOpenAdCallback).onAdClosed()
-    verifyNoMoreInteractions(appOpenAdCallback)
+    assertThat(appOpenAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -166,8 +161,7 @@ class VungleWaterfallAppOpenAdTest {
 
     adapterWaterfallAppOpenAd.onAdClicked(vungleAppOpenAd)
 
-    verify(appOpenAdCallback).reportAdClicked()
-    verifyNoMoreInteractions(appOpenAdCallback)
+    assertThat(appOpenAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -176,7 +170,10 @@ class VungleWaterfallAppOpenAdTest {
 
     adapterWaterfallAppOpenAd.onAdLeftApplication(vungleAppOpenAd)
 
-    verifyNoMoreInteractions(appOpenAdCallback)
+    assertThat(appOpenAdCallback.isOpened).isFalse()
+    assertThat(appOpenAdCallback.isClosed).isFalse()
+    assertThat(appOpenAdCallback.isClicked).isFalse()
+    assertThat(appOpenAdCallback.isImpressionReported).isFalse()
   }
 
   @Test
@@ -192,8 +189,8 @@ class VungleWaterfallAppOpenAdTest {
 
     val expectedError =
       AdError(liftoffError.code, liftoffError.errorMessage, VUNGLE_SDK_ERROR_DOMAIN)
-    verify(appOpenAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedError)))
-    verifyNoMoreInteractions(appOpenAdCallback)
+    assertThat(appOpenAdCallback.isFailedToShow).isTrue()
+    assertThat(appOpenAdCallback.adFailedToShowError).isEqualTo(expectedError)
   }
 
   @Test
@@ -202,7 +199,6 @@ class VungleWaterfallAppOpenAdTest {
 
     adapterWaterfallAppOpenAd.onAdImpression(vungleAppOpenAd)
 
-    verify(appOpenAdCallback).reportAdImpression()
-    verifyNoMoreInteractions(appOpenAdCallback)
+    assertThat(appOpenAdCallback.isImpressionReported).isTrue()
   }
 }

@@ -6,14 +6,19 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.FakeInitializationCompleteCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationNativeAdCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
+import com.google.ads.mediation.adaptertestkit.FakeSignalCallbacks
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.inmobi.InMobiInitializer.Listener
 import com.google.ads.mediation.inmobi.rtb.InMobiRtbBannerAd
 import com.google.ads.mediation.inmobi.waterfall.InMobiWaterfallBannerAd
-import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdConfiguration
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
@@ -28,7 +33,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
-import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
 import com.inmobi.ads.InMobiBanner
 import org.junit.Before
@@ -47,11 +51,11 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 class InMobiMediationAdapterTest {
 
-  val mediationConfiguration: MediationConfiguration = mock()
-  val initializationCompleteCallback: InitializationCompleteCallback = mock()
+  private val mediationConfiguration: MediationConfiguration = mock()
+  private val initializationCompleteCallback = FakeInitializationCompleteCallback()
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val rtbSignalData = mock<RtbSignalData>() { on { context } doReturn context }
-  private val signalCallbacks = mock<SignalCallbacks>()
+  private val signalCallbacks = FakeSignalCallbacks()
   private val inMobiInitializer = mock<InMobiInitializer>()
   private val inMobiAdFactory = mock<InMobiAdFactory>()
   private val bannerAdConfiguration = mock<MediationBannerAdConfiguration>()
@@ -63,18 +67,26 @@ class InMobiMediationAdapterTest {
   private val inMobiBannerWrapper = mock<InMobiBannerWrapper>()
   private val inMobiAdViewHolder = mock<InMobiAdViewHolder>()
   private val inMobiSdkWrapper = mock<InMobiSdkWrapper>()
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
   private val bannerAdLoadCallback =
-    mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
   private val interstitialAdConfiguration = mock<MediationInterstitialAdConfiguration>()
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
   private val interstitialAdLoadCallback =
-    mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
   private val inMobiInterstitialWrapper = mock<InMobiInterstitialWrapper>()
   private val rewardedAdConfiguration = mock<MediationRewardedAdConfiguration>()
+  private val rewardedAdCallback = FakeMediationRewardedAdCallback()
   private val rewardedAdLoadCallback =
-    mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      rewardedAdCallback
+    )
   private val nativeAdConfiguration = mock<MediationNativeAdConfiguration>()
+  private val nativeAdCallback = FakeMediationNativeAdCallback()
   private val nativeAdLoadCallback =
-    mock<MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>>()
+    FakeMediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>(nativeAdCallback)
   private val inMobiNativeWrapper = mock<InMobiNativeWrapper>()
   private val mediationUtils: MediationUtilsWrapper = mock()
 
@@ -174,7 +186,7 @@ class InMobiMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    verify(initializationCompleteCallback).onInitializationSucceeded()
+    assertThat(initializationCompleteCallback).hasSucceeded()
   }
 
   @Test
@@ -193,9 +205,7 @@ class InMobiMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    val captor = argumentCaptor<String>()
-    verify(initializationCompleteCallback).onInitializationFailed(captor.capture())
-    assertThat(captor.firstValue).isEqualTo(adError.toString())
+    assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
   }
 
   @Test
@@ -219,7 +229,7 @@ class InMobiMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    verify(initializationCompleteCallback).onInitializationSucceeded()
+    assertThat(initializationCompleteCallback).hasSucceeded()
   }
 
   @Test
@@ -239,7 +249,31 @@ class InMobiMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    verify(initializationCompleteCallback).onInitializationFailed(adError.toString())
+    assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
+  }
+
+  @Test
+  fun initialize_withMultipleAccountIds_invokesInitWithOneAccountId() {
+    whenever(inMobiSdkWrapper.isSDKInitialized).thenReturn(false)
+    val config1 = mock<MediationConfiguration>()
+    val bundle1 = Bundle().apply { putString(InMobiAdapterUtils.KEY_ACCOUNT_ID, "12345") }
+    whenever(config1.serverParameters).thenReturn(bundle1)
+
+    val config2 = mock<MediationConfiguration>()
+    val bundle2 = Bundle().apply { putString(InMobiAdapterUtils.KEY_ACCOUNT_ID, "67890") }
+    whenever(config2.serverParameters).thenReturn(bundle2)
+
+    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
+      val listener = it.arguments[2] as Listener
+      listener.onInitializeSuccess()
+    }
+
+    adapter.initialize(context, initializationCompleteCallback, listOf(config1, config2))
+
+    val accountIdCaptor = argumentCaptor<String>()
+    verify(inMobiInitializer).init(eq(context), accountIdCaptor.capture(), any())
+    assertThat(accountIdCaptor.firstValue).isIn(listOf("12345", "67890"))
+    assertThat(initializationCompleteCallback).hasSucceeded()
   }
 
   @Test
@@ -249,7 +283,7 @@ class InMobiMediationAdapterTest {
 
     adapter.collectSignals(rtbSignalData, signalCallbacks)
 
-    verify(signalCallbacks).onSuccess(biddingToken)
+    assertThat(signalCallbacks).hasSucceededWith(biddingToken)
   }
 
   @Test
@@ -312,7 +346,7 @@ class InMobiMediationAdapterTest {
 
     adapter.loadBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
 
-    verify(bannerAdLoadCallback).onFailure(error)
+    assertThat(bannerAdLoadCallback).hasFailedWith(error)
   }
 
   @Test
@@ -434,7 +468,7 @@ class InMobiMediationAdapterTest {
 
     adapter.loadInterstitialAd(interstitialAdConfiguration, interstitialAdLoadCallback)
 
-    verify(interstitialAdLoadCallback).onFailure(error)
+    assertThat(interstitialAdLoadCallback).hasFailedWith(error)
   }
 
   @Test
@@ -524,7 +558,7 @@ class InMobiMediationAdapterTest {
 
     adapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
-    verify(rewardedAdLoadCallback).onFailure(error)
+    assertThat(rewardedAdLoadCallback).hasFailedWith(error)
   }
 
   @Test
@@ -552,6 +586,96 @@ class InMobiMediationAdapterTest {
     whenever(rewardedAdConfiguration.bidResponse).thenReturn(biddingToken)
 
     adapter.loadRtbRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
+
+    verify(inMobiInterstitialWrapper).setWatermarkData(any())
+    val extrasCaptor = argumentCaptor<Map<String, String>>()
+    verify(inMobiInterstitialWrapper).setExtras(extrasCaptor.capture())
+    assertThat(extrasCaptor.firstValue["tp"]).isEqualTo(InMobiAdapterUtils.PROTOCOL_RTB)
+    verify(inMobiInterstitialWrapper).setKeywords(anyString())
+    val tokenCaptor = argumentCaptor<ByteArray>()
+    verify(inMobiInterstitialWrapper).load(tokenCaptor.capture())
+    assertThat(tokenCaptor.firstValue).isEqualTo(biddingToken.toByteArray())
+  }
+
+  @Test
+  fun loadRewardedInterstitialAd_withoutAccountId_invokesFailureCallback() {
+    serverParameters.remove(InMobiAdapterUtils.KEY_ACCOUNT_ID)
+
+    adapter.loadRewardedInterstitialAd(rewardedAdConfiguration, rewardedAdLoadCallback)
+
+    assertFailureCallbackAdError(
+      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
+      rewardedAdLoadCallback,
+    )
+  }
+
+  @Test
+  fun loadRewardedInterstitialAd_withoutPlacementId_invokesFailureCallback() {
+    serverParameters.remove(InMobiAdapterUtils.KEY_PLACEMENT_ID)
+
+    adapter.loadRewardedInterstitialAd(rewardedAdConfiguration, rewardedAdLoadCallback)
+
+    assertFailureCallbackAdError(
+      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
+      rewardedAdLoadCallback,
+    )
+  }
+
+  @Test
+  fun loadRewardedInterstitialAd_invalidPlacementId_invokesFailureCallback() {
+    serverParameters.putString(InMobiAdapterUtils.KEY_PLACEMENT_ID, "-12345")
+
+    adapter.loadRewardedInterstitialAd(rewardedAdConfiguration, rewardedAdLoadCallback)
+
+    assertFailureCallbackAdError(
+      InMobiConstants.ERROR_INVALID_SERVER_PARAMETERS,
+      rewardedAdLoadCallback,
+    )
+  }
+
+  @Test
+  fun loadRewardedInterstitialAd_InMobiSDKInitializationFailed_invokesFailureCallback() {
+    val error =
+      InMobiConstants.createAdapterError(
+        InMobiConstants.ERROR_INMOBI_FAILED_INITIALIZATION,
+        "InMobi SDK initialization failed",
+      )
+
+    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
+      val listener = it.arguments[2] as Listener
+      listener.onInitializeError(error)
+    }
+
+    adapter.loadRewardedInterstitialAd(rewardedAdConfiguration, rewardedAdLoadCallback)
+
+    assertThat(rewardedAdLoadCallback).hasFailedWith(error)
+  }
+
+  @Test
+  fun loadRewardedInterstitialAd_ifInMobiSDKInitialized_loadsRewardedInterstitialAd() {
+    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
+      val listener = it.arguments[2] as Listener
+      listener.onInitializeSuccess()
+    }
+
+    adapter.loadRewardedInterstitialAd(rewardedAdConfiguration, rewardedAdLoadCallback)
+
+    val extrasCaptor = argumentCaptor<Map<String, String>>()
+    verify(inMobiInterstitialWrapper).setExtras(extrasCaptor.capture())
+    assertThat(extrasCaptor.firstValue["tp"]).isEqualTo(InMobiAdapterUtils.PROTOCOL_WATERFALL)
+    verify(inMobiInterstitialWrapper).setKeywords(anyString())
+    verify(inMobiInterstitialWrapper).load()
+  }
+
+  @Test
+  fun loadRtbRewardedInterstitialAd_ifInMobiSDKInitialized_loadsRewardedInterstitialAd() {
+    whenever(inMobiInitializer.init(any(), any(), any())).doAnswer {
+      val listener = it.arguments[2] as Listener
+      listener.onInitializeSuccess()
+    }
+    whenever(rewardedAdConfiguration.bidResponse).thenReturn(biddingToken)
+
+    adapter.loadRtbRewardedInterstitialAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
     verify(inMobiInterstitialWrapper).setWatermarkData(any())
     val extrasCaptor = argumentCaptor<Map<String, String>>()
@@ -614,7 +738,7 @@ class InMobiMediationAdapterTest {
 
     adapter.loadNativeAd(nativeAdConfiguration, nativeAdLoadCallback)
 
-    verify(nativeAdLoadCallback).onFailure(error)
+    assertThat(nativeAdLoadCallback).hasFailedWith(error)
   }
 
   @Test
@@ -652,13 +776,11 @@ class InMobiMediationAdapterTest {
     assertThat(tokenCaptor.firstValue).isEqualTo(biddingToken.toByteArray())
   }
 
-  private fun <MediationAdT, MediationAdCallbackT> assertFailureCallbackAdError(
+  private fun <MediationAdT : Any, MediationAdCallbackT : Any> assertFailureCallbackAdError(
     error: Int,
-    adLoadCallback: MediationAdLoadCallback<MediationAdT, MediationAdCallbackT>,
+    adLoadCallback: FakeMediationAdLoadCallback<MediationAdT, MediationAdCallbackT>,
   ) {
-    val captor = argumentCaptor<AdError>()
-    verify(adLoadCallback).onFailure(captor.capture())
-    assertThat(captor.firstValue.code).isEqualTo(error)
+    assertThat(adLoadCallback).hasFailedWith(error, InMobiConstants.ERROR_DOMAIN)
   }
 
   companion object {

@@ -18,7 +18,9 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_MY_TARGET_SDK
 import com.google.ads.mediation.mytarget.MyTargetMediationAdapter.MY_TARGET_SDK_ERROR_DOMAIN
@@ -26,7 +28,6 @@ import com.google.ads.mediation.mytarget.MyTargetTools.PARAM_MEDIATION_KEY
 import com.google.ads.mediation.mytarget.MyTargetTools.PARAM_MEDIATION_VALUE
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.common.truth.Truth.assertThat
@@ -37,8 +38,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -51,17 +50,14 @@ class MyTargetBannerAdTest {
   private lateinit var myTargetBannerAd: MyTargetBannerAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val mockBannerAdCallback: MediationBannerAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockBannerAdCallback
-    }
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
+  private val adLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
   private val mockMyTargetView: MyTargetView = mock()
 
   @Before
   fun setUp() {
-    myTargetBannerAd = MyTargetBannerAd(mockAdLoadCallback)
+    myTargetBannerAd = MyTargetBannerAd(adLoadCallback)
   }
 
   @Test
@@ -76,7 +72,7 @@ class MyTargetBannerAdTest {
       )
 
     myTargetBannerAd.loadAd(adConfiguration)
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(adLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -98,7 +94,7 @@ class MyTargetBannerAdTest {
       )
 
     myTargetBannerAd.loadAd(adConfiguration)
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(adLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -149,7 +145,7 @@ class MyTargetBannerAdTest {
   fun onLoad_invokesSuccess() {
     myTargetBannerAd.onLoad(mockMyTargetView)
 
-    verify(mockAdLoadCallback).onSuccess(myTargetBannerAd)
+    assertThat(adLoadCallback).hasSucceededWith(myTargetBannerAd)
   }
 
   @Test
@@ -161,7 +157,7 @@ class MyTargetBannerAdTest {
 
     val expectedAdError =
       AdError(ERROR_MY_TARGET_SDK, TEST_MYTARGET_ERROR_MESSAGE, MY_TARGET_SDK_ERROR_DOMAIN)
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(adLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -169,7 +165,7 @@ class MyTargetBannerAdTest {
     myTargetBannerAd.onLoad(mockMyTargetView)
     myTargetBannerAd.onShow(mockMyTargetView)
 
-    verify(mockBannerAdCallback).reportAdImpression()
+    assertThat(bannerAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -177,9 +173,9 @@ class MyTargetBannerAdTest {
     myTargetBannerAd.onLoad(mockMyTargetView)
     myTargetBannerAd.onClick(mockMyTargetView)
 
-    verify(mockBannerAdCallback).reportAdClicked()
-    verify(mockBannerAdCallback).onAdOpened()
-    verify(mockBannerAdCallback).onAdLeftApplication()
+    assertThat(bannerAdCallback.isClicked).isTrue()
+    assertThat(bannerAdCallback.isOpened).isTrue()
+    assertThat(bannerAdCallback.isLeftApplication).isTrue()
   }
 
   private companion object {

@@ -18,16 +18,18 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationNativeAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfiguration
 import com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_MY_TARGET_SDK
 import com.google.ads.mediation.mytarget.MyTargetMediationAdapter.MY_TARGET_SDK_ERROR_DOMAIN
 import com.google.ads.mediation.mytarget.MyTargetTools.PARAM_MEDIATION_KEY
 import com.google.ads.mediation.mytarget.MyTargetTools.PARAM_MEDIATION_VALUE
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.NativeAdMapper
+import com.google.common.truth.Truth.assertThat
 import com.my.target.common.CustomParams
 import com.my.target.common.models.IAdLoadingError
 import com.my.target.nativeads.NativeAd
@@ -37,8 +39,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -52,17 +52,14 @@ class MyTargetNativeAdTest {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
 
-  private val mockNativeAdCallback: MediationNativeAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockNativeAdCallback
-    }
+  private val nativeAdCallback = FakeMediationNativeAdCallback()
+  private val adLoadCallback =
+    FakeMediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>(nativeAdCallback)
   private val mockMyTargetNativeAd: NativeAd = mock()
 
   @Before
   fun setUp() {
-    myTargetNativeAd = MyTargetNativeAd(mockAdLoadCallback)
+    myTargetNativeAd = MyTargetNativeAd(adLoadCallback)
   }
 
   @Test
@@ -77,7 +74,7 @@ class MyTargetNativeAdTest {
       )
 
     myTargetNativeAd.loadAd(adConfiguration)
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(adLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -122,7 +119,7 @@ class MyTargetNativeAdTest {
           "Loaded native ad object does not match the requested ad object.",
           MyTargetMediationAdapter.ERROR_DOMAIN,
         )
-      verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+      assertThat(adLoadCallback).hasFailedWith(expectedAdError)
     }
   }
 
@@ -147,7 +144,7 @@ class MyTargetNativeAdTest {
           "Native ad is missing one of the following required assets: image or icon.",
           MyTargetMediationAdapter.ERROR_DOMAIN,
         )
-      verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+      assertThat(adLoadCallback).hasFailedWith(expectedAdError)
     }
   }
 
@@ -174,10 +171,11 @@ class MyTargetNativeAdTest {
           "Native ad is missing one of the following required assets: image or icon.",
           MyTargetMediationAdapter.ERROR_DOMAIN,
         )
-      verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+      assertThat(adLoadCallback).hasFailedWith(expectedAdError)
     }
   }
 
+  @Test
   fun onLoad_withMissingBannerImageAsset_invokesFailure() {
     mockStatic(MyTargetSdkWrapper::class.java).use {
       val serverParameters = bundleOf(MyTargetTools.KEY_SLOT_ID to TEST_SLOT_ID)
@@ -200,7 +198,7 @@ class MyTargetNativeAdTest {
           "Native ad is missing one of the following required assets: image or icon.",
           MyTargetMediationAdapter.ERROR_DOMAIN,
         )
-      verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+      assertThat(adLoadCallback).hasFailedWith(expectedAdError)
     }
   }
 
@@ -208,7 +206,7 @@ class MyTargetNativeAdTest {
   fun onLoad_withValidAssets_invokesSuccess() {
     loadNativeAdSuccessfully()
 
-    verify(mockAdLoadCallback).onSuccess(myTargetNativeAd)
+    assertThat(adLoadCallback).hasSucceededWith(myTargetNativeAd)
   }
 
   @Test
@@ -220,7 +218,7 @@ class MyTargetNativeAdTest {
 
     val expectedAdError =
       AdError(ERROR_MY_TARGET_SDK, TEST_MYTARGET_ERROR_MESSAGE, MY_TARGET_SDK_ERROR_DOMAIN)
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(adLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -228,7 +226,7 @@ class MyTargetNativeAdTest {
     loadNativeAdSuccessfully()
     myTargetNativeAd.onShow(mockMyTargetNativeAd)
 
-    verify(mockNativeAdCallback).reportAdImpression()
+    assertThat(nativeAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -236,9 +234,9 @@ class MyTargetNativeAdTest {
     loadNativeAdSuccessfully()
     myTargetNativeAd.onClick(mock(), mockMyTargetNativeAd)
 
-    verify(mockNativeAdCallback).reportAdClicked()
-    verify(mockNativeAdCallback).onAdOpened()
-    verify(mockNativeAdCallback).onAdLeftApplication()
+    assertThat(nativeAdCallback.isClicked).isTrue()
+    assertThat(nativeAdCallback.isOpened).isTrue()
+    assertThat(nativeAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -246,9 +244,9 @@ class MyTargetNativeAdTest {
     loadNativeAdSuccessfully()
     myTargetNativeAd.onClick(mockMyTargetNativeAd)
 
-    verify(mockNativeAdCallback).reportAdClicked()
-    verify(mockNativeAdCallback).onAdOpened()
-    verify(mockNativeAdCallback).onAdLeftApplication()
+    assertThat(nativeAdCallback.isClicked).isTrue()
+    assertThat(nativeAdCallback.isOpened).isTrue()
+    assertThat(nativeAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -256,7 +254,7 @@ class MyTargetNativeAdTest {
     loadNativeAdSuccessfully()
     myTargetNativeAd.onVideoPlay(mockMyTargetNativeAd)
 
-    verify(mockNativeAdCallback).onVideoPlay()
+    assertThat(nativeAdCallback.isVideoPlaying).isTrue()
   }
 
   @Test
@@ -264,7 +262,7 @@ class MyTargetNativeAdTest {
     loadNativeAdSuccessfully()
     myTargetNativeAd.onVideoPause(mockMyTargetNativeAd)
 
-    verify(mockNativeAdCallback).onVideoPause()
+    assertThat(nativeAdCallback.isVideoPaused).isTrue()
   }
 
   @Test
@@ -272,7 +270,7 @@ class MyTargetNativeAdTest {
     loadNativeAdSuccessfully()
     myTargetNativeAd.onVideoComplete(mockMyTargetNativeAd)
 
-    verify(mockNativeAdCallback).onVideoComplete()
+    assertThat(nativeAdCallback.isVideoCompleted).isTrue()
   }
 
   // region Utility methods

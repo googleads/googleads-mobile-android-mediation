@@ -1,13 +1,14 @@
 package com.google.ads.mediation.inmobi.rtb
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.inmobi.InMobiAdFactory
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils
 import com.google.ads.mediation.inmobi.InMobiBannerWrapper
 import com.google.ads.mediation.inmobi.InMobiConstants
 import com.google.ads.mediation.inmobi.InMobiInitializer
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.common.truth.Truth.assertThat
@@ -16,11 +17,7 @@ import com.inmobi.ads.InMobiAdRequestStatus
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.any
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class InMobiRtbBannerAdTest {
@@ -28,19 +25,18 @@ class InMobiRtbBannerAdTest {
   private val inMobiInitializer = mock<InMobiInitializer>()
   private val inMobiAdFactory = mock<InMobiAdFactory>()
   private val inMobiBannerWrapper = mock<InMobiBannerWrapper>()
-  private val mediationBannerAdCallback = mock<MediationBannerAdCallback>()
+  private val mediationBannerAdCallback = FakeMediationBannerAdCallback()
   private val mediationAdLoadCallback =
-    mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(
+      mediationBannerAdCallback
+    )
 
-  lateinit var rtbBannerAd: InMobiRtbBannerAd
-  lateinit var adMetaInfo: AdMetaInfo
+  private lateinit var rtbBannerAd: InMobiRtbBannerAd
+  private lateinit var adMetaInfo: AdMetaInfo
 
   @Before
   fun setUp() {
-
     adMetaInfo = AdMetaInfo("fake", null)
-    whenever(mediationAdLoadCallback.onSuccess(any())).thenReturn(mediationBannerAdCallback)
-
     rtbBannerAd = InMobiRtbBannerAd(mediationAdLoadCallback, inMobiInitializer, inMobiAdFactory)
   }
 
@@ -51,63 +47,68 @@ class InMobiRtbBannerAdTest {
 
     rtbBannerAd.onUserLeftApplication(inMobiBannerWrapper.inMobiBanner)
 
-    verify(mediationBannerAdCallback).onAdLeftApplication()
+    assertThat(mediationBannerAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
   fun onAdLoadSucceeded_invokesOnSuccessCallback() {
     rtbBannerAd.onAdLoadSucceeded(inMobiBannerWrapper.inMobiBanner, adMetaInfo)
 
-    verify(mediationAdLoadCallback).onSuccess(rtbBannerAd)
+    assertThat(mediationAdLoadCallback).hasSucceededWith(rtbBannerAd)
   }
 
   @Test
   fun onAdLoadFailed_invokesOnFailureCallback() {
     val inMobiAdRequestStatus =
       InMobiAdRequestStatus(InMobiAdRequestStatus.StatusCode.INTERNAL_ERROR)
+    val expectedAdError =
+      InMobiConstants.createSdkError(
+        InMobiAdapterUtils.getMediationErrorCode(inMobiAdRequestStatus),
+        inMobiAdRequestStatus.message.orEmpty(),
+      )
 
     rtbBannerAd.onAdLoadFailed(inMobiBannerWrapper.inMobiBanner, inMobiAdRequestStatus)
 
-    val captor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(captor.capture())
-    assertThat(captor.firstValue.code)
-      .isEqualTo(InMobiAdapterUtils.getMediationErrorCode(inMobiAdRequestStatus))
-    assertThat(captor.firstValue.domain).isEqualTo(InMobiConstants.INMOBI_SDK_ERROR_DOMAIN)
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
   fun onAdDisplayed_invokesOnAdOpenedCallback() {
     // mimic an ad load first
     rtbBannerAd.onAdLoadSucceeded(inMobiBannerWrapper.inMobiBanner, adMetaInfo)
+
     rtbBannerAd.onAdDisplayed(inMobiBannerWrapper.inMobiBanner)
 
-    verify(mediationBannerAdCallback).onAdOpened()
+    assertThat(mediationBannerAdCallback.isOpened).isTrue()
   }
 
   @Test
   fun onAdDismissed_invokesOnAdClosedCallback() {
     // mimic an ad load first
     rtbBannerAd.onAdLoadSucceeded(inMobiBannerWrapper.inMobiBanner, adMetaInfo)
+
     rtbBannerAd.onAdDismissed(inMobiBannerWrapper.inMobiBanner)
 
-    verify(mediationBannerAdCallback).onAdClosed()
+    assertThat(mediationBannerAdCallback.isClosed).isTrue()
   }
 
   @Test
   fun onAdClicked_invokesReportAdClickedCallback() {
     // mimic an ad load first
     rtbBannerAd.onAdLoadSucceeded(inMobiBannerWrapper.inMobiBanner, adMetaInfo)
+
     rtbBannerAd.onAdClicked(inMobiBannerWrapper.inMobiBanner, null)
 
-    verify(mediationBannerAdCallback).reportAdClicked()
+    assertThat(mediationBannerAdCallback.isClicked).isTrue()
   }
 
   @Test
   fun onAdImpression_invokesReportAdImpressionCallback() {
     // mimic an ad load first
     rtbBannerAd.onAdLoadSucceeded(inMobiBannerWrapper.inMobiBanner, adMetaInfo)
+
     rtbBannerAd.onAdImpression(inMobiBannerWrapper.inMobiBanner)
 
-    verify(mediationBannerAdCallback).reportAdImpression()
+    assertThat(mediationBannerAdCallback.isImpressionReported).isTrue()
   }
 }

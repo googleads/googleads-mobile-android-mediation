@@ -1,1 +1,4 @@
 include ':unity', ':unity-ads-aar'
+include 'adaptertestkit'
+project(":adaptertestkit").projectDir = file("../adaptertestkit")
+

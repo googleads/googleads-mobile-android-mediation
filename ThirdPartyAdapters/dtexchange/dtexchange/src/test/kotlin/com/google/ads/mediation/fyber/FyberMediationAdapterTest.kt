@@ -24,17 +24,23 @@ import com.fyber.inneractive.sdk.external.InneractiveAdSpot
 import com.fyber.inneractive.sdk.external.InneractiveAdSpotManager
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController
 import com.fyber.inneractive.sdk.external.InneractiveMediationDefs
-import com.fyber.inneractive.sdk.external.InneractiveUserConfig
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener.FyberInitStatus
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_APP_ID
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeInitializationCompleteCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationNativeAdCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
+import com.google.ads.mediation.adaptertestkit.FakeSignalCallbacks
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
@@ -46,8 +52,6 @@ import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
-import com.google.android.gms.ads.mediation.InitializationCompleteCallback
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
@@ -57,7 +61,6 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
-import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Before
@@ -66,7 +69,6 @@ import org.junit.runner.RunWith
 import org.mockito.MockedStatic
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -89,19 +91,24 @@ class FyberMediationAdapterTest {
       FyberMediationAdapter.KEY_APP_ID to TEST_APP_ID,
       FyberMediationAdapter.KEY_SPOT_ID to TEST_PLACEMENT_ID,
     )
-  private val mockInitializationCompleteCallback: InitializationCompleteCallback = mock()
-  private val mockBannerAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
-    mock()
-  private val mockInterstitialAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock()
-  private val mockRewardedAdLoadCallback:
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
-    mock()
-  private val mockNativeAdLoadCallback:
-    MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> =
-    mock()
+  private val initializationCompleteCallback = FakeInitializationCompleteCallback()
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
+  private val bannerAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
+  private val interstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
+  private val rewardedAdCallback = FakeMediationRewardedAdCallback()
+  private val rewardedAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      rewardedAdCallback
+    )
+  private val nativeAdCallback = FakeMediationNativeAdCallback()
+  private val nativeAdLoadCallback =
+    FakeMediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>(nativeAdCallback)
+  private val signalCallbacks = FakeSignalCallbacks()
   private val mockSdkWrapper: SdkWrapper = mock { on { isInitialized() } doReturn false }
 
   private val activity = Robolectric.buildActivity(Activity::class.java).get()
@@ -187,11 +194,7 @@ class FyberMediationAdapterTest {
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
     val initializationParameters = createMediationConfiguration(AdFormat.BANNER, serverParameters)
-    adapter.initialize(
-      activity,
-      mockInitializationCompleteCallback,
-      listOf(initializationParameters),
-    )
+    adapter.initialize(activity, initializationCompleteCallback, listOf(initializationParameters))
 
     mockInneractiveAdManager.verify {
       InneractiveAdManager.currentAudienceAppliesToCoppa()
@@ -211,11 +214,7 @@ class FyberMediationAdapterTest {
         .build()
     MobileAds.setRequestConfiguration(requestConfiguration)
     val initializationParameters = createMediationConfiguration(AdFormat.BANNER, serverParameters)
-    adapter.initialize(
-      activity,
-      mockInitializationCompleteCallback,
-      listOf(initializationParameters),
-    )
+    adapter.initialize(activity, initializationCompleteCallback, listOf(initializationParameters))
 
     mockInneractiveAdManager.verify {
       InneractiveAdManager.currentAudienceAppliesToCoppa()
@@ -227,11 +226,7 @@ class FyberMediationAdapterTest {
   fun initialize_invokesOnInitializationSucceeded() {
     val listener = argumentCaptor<OnFyberMarketplaceInitializedListener>()
     val initializationParameters = createMediationConfiguration(AdFormat.BANNER, serverParameters)
-    adapter.initialize(
-      activity,
-      mockInitializationCompleteCallback,
-      listOf(initializationParameters),
-    )
+    adapter.initialize(activity, initializationCompleteCallback, listOf(initializationParameters))
 
     mockInneractiveAdManager.verify(
       { InneractiveAdManager.currentAudienceAppliesToCoppa() },
@@ -245,18 +240,14 @@ class FyberMediationAdapterTest {
       )
     }
     listener.firstValue.onFyberMarketplaceInitialized(FyberInitStatus.SUCCESSFULLY)
-    verify(mockInitializationCompleteCallback).onInitializationSucceeded()
+    assertThat(initializationCompleteCallback).hasSucceeded()
   }
 
   @Test
   fun initialize_withFyberFailedStatus_invokesOnInitializationFailed() {
     val listener = argumentCaptor<OnFyberMarketplaceInitializedListener>()
     val initializationParameters = createMediationConfiguration(AdFormat.BANNER, serverParameters)
-    adapter.initialize(
-      activity,
-      mockInitializationCompleteCallback,
-      listOf(initializationParameters),
-    )
+    adapter.initialize(activity, initializationCompleteCallback, listOf(initializationParameters))
 
     mockInneractiveAdManager.verify {
       InneractiveAdManager.initialize(
@@ -267,10 +258,8 @@ class FyberMediationAdapterTest {
     }
 
     listener.firstValue.onFyberMarketplaceInitialized(FyberInitStatus.FAILED)
-    verify(mockInitializationCompleteCallback)
-      .onInitializationFailed(
-        "DT Exchange failed to initialize with reason: ${FyberInitStatus.FAILED}"
-      )
+    assertThat(initializationCompleteCallback)
+      .hasFailedWith("DT Exchange failed to initialize with reason: ${FyberInitStatus.FAILED}")
   }
 
   @Test
@@ -278,13 +267,9 @@ class FyberMediationAdapterTest {
     whenever(mockSdkWrapper.isInitialized()) doReturn true
 
     val initializationParameters = createMediationConfiguration(AdFormat.BANNER, serverParameters)
-    adapter.initialize(
-      activity,
-      mockInitializationCompleteCallback,
-      listOf(initializationParameters),
-    )
+    adapter.initialize(activity, initializationCompleteCallback, listOf(initializationParameters))
 
-    verify(mockInitializationCompleteCallback).onInitializationSucceeded()
+    assertThat(initializationCompleteCallback).hasSucceeded()
   }
 
   @Test
@@ -292,14 +277,10 @@ class FyberMediationAdapterTest {
     val invalidServerParameters = bundleOf(FyberMediationAdapter.KEY_APP_ID to "")
     val initializationParameters =
       createMediationConfiguration(AdFormat.BANNER, invalidServerParameters)
-    adapter.initialize(
-      activity,
-      mockInitializationCompleteCallback,
-      listOf(initializationParameters),
-    )
+    adapter.initialize(activity, initializationCompleteCallback, listOf(initializationParameters))
 
-    verify(mockInitializationCompleteCallback)
-      .onInitializationFailed("DT Exchange SDK requires an appId to be configured on the AdMob UI.")
+    assertThat(initializationCompleteCallback)
+      .hasFailedWith("DT Exchange SDK requires an appId to be configured on the AdMob UI.")
   }
 
   @Test
@@ -317,7 +298,7 @@ class FyberMediationAdapterTest {
     val listener = argumentCaptor<OnFyberMarketplaceInitializedListener>()
     adapter.initialize(
       activity,
-      mockInitializationCompleteCallback,
+      initializationCompleteCallback,
       listOf(initializationParameters1, initializationParameters2),
     )
 
@@ -332,7 +313,7 @@ class FyberMediationAdapterTest {
     )
 
     listener.firstValue.onFyberMarketplaceInitialized(FyberInitStatus.SUCCESSFULLY)
-    verify(mockInitializationCompleteCallback).onInitializationSucceeded()
+    assertThat(initializationCompleteCallback).hasSucceeded()
   }
 
   // endregion
@@ -342,12 +323,11 @@ class FyberMediationAdapterTest {
   fun collectSignals_invokesOnSuccessWithGeneratedToken() {
     mockStatic(BidTokenProvider::class.java).use {
       val mockSignalData = mock<RtbSignalData>()
-      val mockSignalCallback = mock<SignalCallbacks>()
       whenever(BidTokenProvider.getBidderToken()) doReturn TEST_BID_RESPONSE
 
-      adapter.collectSignals(mockSignalData, mockSignalCallback)
+      adapter.collectSignals(mockSignalData, signalCallbacks)
 
-      verify(mockSignalCallback).onSuccess(TEST_BID_RESPONSE)
+      assertThat(signalCallbacks).hasSucceededWith(TEST_BID_RESPONSE)
     }
   }
 
@@ -355,12 +335,11 @@ class FyberMediationAdapterTest {
   fun collectSignals_withNullToken_invokesOnSuccessEmptyString() {
     mockStatic(BidTokenProvider::class.java).use {
       val mockSignalData = mock<RtbSignalData>()
-      val mockSignalCallback = mock<SignalCallbacks>()
       whenever(BidTokenProvider.getBidderToken()) doReturn null
 
-      adapter.collectSignals(mockSignalData, mockSignalCallback)
+      adapter.collectSignals(mockSignalData, signalCallbacks)
 
-      verify(mockSignalCallback).onSuccess("")
+      assertThat(signalCallbacks).hasSucceededWith("")
     }
   }
 
@@ -372,14 +351,11 @@ class FyberMediationAdapterTest {
   fun loadBannerAd_ifAppIdIsMissing_fails() {
     adapter.loadBannerAd(
       createMediationBannerAdConfiguration(context = activity),
-      mockBannerAdLoadCallback,
+      bannerAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mockBannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_INVALID_SERVER_PARAMETERS)
-    assertThat(adError.domain).isEqualTo(DTExchangeErrorCodes.ERROR_DOMAIN)
+    assertThat(bannerAdLoadCallback)
+      .hasFailedWith(ERROR_INVALID_SERVER_PARAMETERS, DTExchangeErrorCodes.ERROR_DOMAIN)
   }
 
   @Test
@@ -389,14 +365,11 @@ class FyberMediationAdapterTest {
         context = activity,
         serverParameters = bundleOf(FyberMediationAdapter.KEY_APP_ID to TEST_APP_ID_1),
       ),
-      mockBannerAdLoadCallback,
+      bannerAdLoadCallback,
     )
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mockBannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_INVALID_SERVER_PARAMETERS)
-    assertThat(adError.domain).isEqualTo(DTExchangeErrorCodes.ERROR_DOMAIN)
+    assertThat(bannerAdLoadCallback)
+      .hasFailedWith(ERROR_INVALID_SERVER_PARAMETERS, DTExchangeErrorCodes.ERROR_DOMAIN)
   }
 
   @Test
@@ -410,7 +383,7 @@ class FyberMediationAdapterTest {
             FyberMediationAdapter.KEY_SPOT_ID to TEST_SPOT_ID,
           ),
       ),
-      mockBannerAdLoadCallback,
+      bannerAdLoadCallback,
     )
 
     mockInneractiveAdManager.verify {
@@ -433,7 +406,7 @@ class FyberMediationAdapterTest {
             FyberMediationAdapter.KEY_SPOT_ID to TEST_SPOT_ID,
           ),
       ),
-      mockBannerAdLoadCallback,
+      bannerAdLoadCallback,
     )
     val initListenerCaptor = argumentCaptor<OnFyberMarketplaceInitializedListener>()
     mockInneractiveAdManager.verify {
@@ -447,7 +420,7 @@ class FyberMediationAdapterTest {
         "DT Exchange failed to initialize with reason: ${FyberInitStatus.FAILED}",
         DTExchangeErrorCodes.ERROR_DOMAIN,
       )
-    verify(mockBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -472,7 +445,7 @@ class FyberMediationAdapterTest {
               FyberMediationAdapter.KEY_MUTE_VIDEO to true,
             ),
         ),
-        mockBannerAdLoadCallback,
+        bannerAdLoadCallback,
       )
       val initListenerCaptor = argumentCaptor<OnFyberMarketplaceInitializedListener>()
       mockInneractiveAdManager.verify {
@@ -508,7 +481,7 @@ class FyberMediationAdapterTest {
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
       whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
 
-      adapter.loadRtbBannerAd(bannerAdConfiguration, mockBannerAdLoadCallback)
+      adapter.loadRtbBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
 
       mockInneractiveAdManager.verify {
         InneractiveAdManager.setMediationName(eq(FyberMediationAdapter.MEDIATOR_NAME))
@@ -531,7 +504,7 @@ class FyberMediationAdapterTest {
         serverParameters = invalidServerParameters,
       )
 
-    adapter.loadInterstitialAd(adConfiguration, mockInterstitialAdLoadCallback)
+    adapter.loadInterstitialAd(adConfiguration, interstitialAdLoadCallback)
 
     val expectedAdError =
       AdError(
@@ -539,7 +512,7 @@ class FyberMediationAdapterTest {
         "App ID is null or empty.",
         DTExchangeErrorCodes.ERROR_DOMAIN,
       )
-    verify(mockInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -551,7 +524,7 @@ class FyberMediationAdapterTest {
         serverParameters = invalidServerParameters,
       )
 
-    adapter.loadInterstitialAd(adConfiguration, mockInterstitialAdLoadCallback)
+    adapter.loadInterstitialAd(adConfiguration, interstitialAdLoadCallback)
 
     val expectedAdError =
       AdError(
@@ -559,7 +532,7 @@ class FyberMediationAdapterTest {
         "Cannot render interstitial ad. Please define a valid spot id on the AdMob UI.",
         DTExchangeErrorCodes.ERROR_DOMAIN,
       )
-    verify(mockInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -570,7 +543,7 @@ class FyberMediationAdapterTest {
         serverParameters = serverParameters,
       )
 
-    adapter.loadInterstitialAd(adConfiguration, mockInterstitialAdLoadCallback)
+    adapter.loadInterstitialAd(adConfiguration, interstitialAdLoadCallback)
 
     mockInneractiveAdManager.verify {
       InneractiveAdManager.setMediationName(FyberMediationAdapter.MEDIATOR_NAME)
@@ -590,7 +563,7 @@ class FyberMediationAdapterTest {
       )
     val listenerCaptor = argumentCaptor<OnFyberMarketplaceInitializedListener>()
 
-    adapter.loadInterstitialAd(adConfiguration, mockInterstitialAdLoadCallback)
+    adapter.loadInterstitialAd(adConfiguration, interstitialAdLoadCallback)
     mockInneractiveAdManager.verify {
       InneractiveAdManager.initialize(eq(activity), eq(TEST_APP_ID), listenerCaptor.capture())
     }
@@ -602,7 +575,7 @@ class FyberMediationAdapterTest {
         "DT Exchange failed to initialize with reason: FAILED",
         DTExchangeErrorCodes.ERROR_DOMAIN,
       )
-    verify(mockInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -619,7 +592,7 @@ class FyberMediationAdapterTest {
         )
       val listenerCaptor = argumentCaptor<OnFyberMarketplaceInitializedListener>()
 
-      adapter.loadInterstitialAd(adConfiguration, mockInterstitialAdLoadCallback)
+      adapter.loadInterstitialAd(adConfiguration, interstitialAdLoadCallback)
       mockInneractiveAdManager.verify {
         InneractiveAdManager.initialize(eq(activity), eq(TEST_APP_ID), listenerCaptor.capture())
       }
@@ -650,7 +623,7 @@ class FyberMediationAdapterTest {
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
       whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
 
-      adapter.loadRtbInterstitialAd(interstitialAdConfiguration, mockInterstitialAdLoadCallback)
+      adapter.loadRtbInterstitialAd(interstitialAdConfiguration, interstitialAdLoadCallback)
 
       mockInneractiveAdManager.verify {
         InneractiveAdManager.setMediationName(eq(FyberMediationAdapter.MEDIATOR_NAME))
@@ -672,7 +645,7 @@ class FyberMediationAdapterTest {
       )
 
     val listener = argumentCaptor<OnFyberMarketplaceInitializedListener>()
-    adapter.loadRewardedAd(rewardedAdParameters, mockRewardedAdLoadCallback)
+    adapter.loadRewardedAd(rewardedAdParameters, rewardedAdLoadCallback)
 
     mockInneractiveAdManager.verify {
       InneractiveAdManager.setMediationName(FyberMediationAdapter.MEDIATOR_NAME)
@@ -700,7 +673,7 @@ class FyberMediationAdapterTest {
         serverParameters = invalidServerParameters,
       )
 
-    adapter.loadRewardedAd(rewardedAdParameters, mockRewardedAdLoadCallback)
+    adapter.loadRewardedAd(rewardedAdParameters, rewardedAdLoadCallback)
 
     val expectedAdError =
       AdError(
@@ -708,7 +681,7 @@ class FyberMediationAdapterTest {
         "App ID is null or empty.",
         DTExchangeErrorCodes.ERROR_DOMAIN,
       )
-    verify(mockRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -720,7 +693,7 @@ class FyberMediationAdapterTest {
       )
 
     val listener = argumentCaptor<OnFyberMarketplaceInitializedListener>()
-    adapter.loadRewardedAd(rewardedAdParameters, mockRewardedAdLoadCallback)
+    adapter.loadRewardedAd(rewardedAdParameters, rewardedAdLoadCallback)
 
     mockInneractiveAdManager.verify {
       InneractiveAdManager.initialize(
@@ -739,7 +712,7 @@ class FyberMediationAdapterTest {
         "DT Exchange failed to initialize with reason: $fyberErrorCodeMessage",
         DTExchangeErrorCodes.ERROR_DOMAIN,
       )
-    verify(mockRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -756,7 +729,7 @@ class FyberMediationAdapterTest {
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
       whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
 
-      adapter.loadRtbRewardedAd(rewardedAdParameters, mockRewardedAdLoadCallback)
+      adapter.loadRtbRewardedAd(rewardedAdParameters, rewardedAdLoadCallback)
 
       mockInneractiveAdManager.verify {
         InneractiveAdManager.setMediationName(eq(FyberMediationAdapter.MEDIATOR_NAME))
@@ -783,7 +756,7 @@ class FyberMediationAdapterTest {
         mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
       whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
 
-      adapter.loadRtbNativeAdMapper(nativeAdParameters, mockNativeAdLoadCallback)
+      adapter.loadRtbNativeAdMapper(nativeAdParameters, nativeAdLoadCallback)
 
       mockInneractiveAdManager.verify {
         InneractiveAdManager.setMediationName(eq(FyberMediationAdapter.MEDIATOR_NAME))

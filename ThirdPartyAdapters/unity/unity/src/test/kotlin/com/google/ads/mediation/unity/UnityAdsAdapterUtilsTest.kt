@@ -23,6 +23,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -406,6 +407,18 @@ class UnityAdsAdapterUtilsTest {
   }
 
   @Test
+  fun hasACConsent_withEmptyConsent_returnsUnknown() {
+    sharedPreferences.stub {
+      on { getInt(eq("IABTCF_gdprApplies"), any()) } doReturn 1
+      on { getString(eq("IABTCF_AddtlConsent"), any()) } doReturn ""
+    }
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.UNKNOWN)
+  }
+
+  @Test
   fun hasACConsent_withUnknownSpecVersion_returnsUnknown() {
     whenever(sharedPreferences.getInt(eq("IABTCF_gdprApplies"), any())).thenReturn(1)
     whenever(sharedPreferences.getString(eq("IABTCF_AddtlConsent"), any()))
@@ -531,6 +544,30 @@ class UnityAdsAdapterUtilsTest {
     val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
 
     assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withVersionTwoSpec_withEmptyConsentedPartners_returnsUnknown() {
+    sharedPreferences.stub {
+      on { getInt(eq("IABTCF_gdprApplies"), any()) } doReturn 1
+      on { getString(eq("IABTCF_AddtlConsent"), any()) } doReturn "2~~dv.3.4"
+    }
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.UNKNOWN)
+  }
+
+  @Test
+  fun hasACConsent_withVersionTwoSpec_withEmptyConsentedPartners_withUnityDisclosed_returnsFalse() {
+    sharedPreferences.stub {
+      on { getInt(eq("IABTCF_gdprApplies"), any()) } doReturn 1
+      on { getString(eq("IABTCF_AddtlConsent"), any()) } doReturn "2~~dv.3234.3"
+    }
+
+    val consentResult = UnityAdsAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
+
+    assertThat(consentResult).isEqualTo(UnityAdsAdapterUtils.ConsentResult.FALSE)
   }
   // endregion
 }

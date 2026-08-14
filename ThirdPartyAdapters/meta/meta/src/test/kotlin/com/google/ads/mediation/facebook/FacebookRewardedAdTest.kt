@@ -6,19 +6,20 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.facebook.ads.Ad
 import com.facebook.ads.RewardedVideoAd
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
@@ -35,12 +36,11 @@ class FacebookRewardedAdTest {
     )
   private val mediationRewardedAdConfiguration =
     createMediationRewardedAdConfiguration(context = context, serverParameters = serverParameters)
-  private val mediationRewardedAdCallback = mock<MediationRewardedAdCallback>()
-  private val mediationAdLoadCallback:
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mediationRewardedAdCallback
-    }
+  private val mediationRewardedAdCallback = FakeMediationRewardedAdCallback()
+  private val mediationAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      mediationRewardedAdCallback
+    )
   private val metaRewardedAdLoadConfig: RewardedVideoAd.RewardedVideoLoadAdConfig = mock()
   private val metaRewardedAdLoadConfigBuilder: RewardedVideoAd.RewardedVideoAdLoadConfigBuilder =
     mock {
@@ -69,7 +69,7 @@ class FacebookRewardedAdTest {
   fun onAdLoaded_invokesMediationAdLoadCallback() {
     adapterRewardedAd.onAdLoaded(facebookAd)
 
-    verify(mediationAdLoadCallback).onSuccess(ArgumentMatchers.any(FacebookRewardedAd::class.java))
+    assertThat(mediationAdLoadCallback).hasSucceededWith(adapterRewardedAd)
   }
 
   @Test
@@ -87,7 +87,8 @@ class FacebookRewardedAdTest {
     // invoke the showAd callback
     adapterRewardedAd.showAd(context)
 
-    verify(mediationRewardedAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(mediationRewardedAdCallback.isFailedToShow).isTrue()
+    assertThat(mediationRewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
     verify(facebookRewardedAd).destroy()
   }
 
@@ -100,8 +101,8 @@ class FacebookRewardedAdTest {
     // invoke the showAd callback
     adapterRewardedAd.showAd(context)
 
-    verify(mediationRewardedAdCallback).onVideoStart()
-    verify(mediationRewardedAdCallback).onAdOpened()
+    assertThat(mediationRewardedAdCallback.isVideoStarted).isTrue()
+    assertThat(mediationRewardedAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -112,8 +113,8 @@ class FacebookRewardedAdTest {
     // invoke the onRewardedVideoCompleted callback
     adapterRewardedAd.onRewardedVideoCompleted()
 
-    verify(mediationRewardedAdCallback).onVideoComplete()
-    verify(mediationRewardedAdCallback).onUserEarnedReward()
+    assertThat(mediationRewardedAdCallback.isVideoCompleted).isTrue()
+    assertThat(mediationRewardedAdCallback.isUserEarnedReward).isTrue()
   }
 
   @Test
@@ -121,10 +122,10 @@ class FacebookRewardedAdTest {
     // simulate a successful render and show
     renderAndLoadSuccessfully()
 
-    // invoke the onRewardedVideoClpsed callback
+    // invoke the onRewardedVideoClosed callback
     adapterRewardedAd.onRewardedVideoClosed()
 
-    verify(mediationRewardedAdCallback).onAdClosed()
+    assertThat(mediationRewardedAdCallback.isClosed).isTrue()
     verify(facebookRewardedAd).destroy()
   }
 
@@ -133,12 +134,12 @@ class FacebookRewardedAdTest {
     // simulate a successful render and show
     renderAndLoadSuccessfully()
 
-    // invoke the onRewardedVideoClpsed callback
+    // invoke the onRewardedVideoClosed callback
     adapterRewardedAd.onRewardedVideoClosed()
     // make a second callback
     adapterRewardedAd.onRewardedVideoClosed()
 
-    verify(mediationRewardedAdCallback, times(1)).onAdClosed()
+    assertThat(mediationRewardedAdCallback.onAdClosedInvokeCount).isEqualTo(1)
     verify(facebookRewardedAd, times(2)).destroy()
   }
 
@@ -150,7 +151,7 @@ class FacebookRewardedAdTest {
     // invoke the onRewardedVideoActivity destroyed callback
     adapterRewardedAd.onRewardedVideoActivityDestroyed()
 
-    verify(mediationRewardedAdCallback).onAdClosed()
+    assertThat(mediationRewardedAdCallback.isClosed).isTrue()
     verify(facebookRewardedAd).destroy()
   }
 
@@ -164,7 +165,7 @@ class FacebookRewardedAdTest {
     // make a second callback
     adapterRewardedAd.onRewardedVideoActivityDestroyed()
 
-    verify(mediationRewardedAdCallback, times(1)).onAdClosed()
+    assertThat(mediationRewardedAdCallback.onAdClosedInvokeCount).isEqualTo(1)
     verify(facebookRewardedAd, times(2)).destroy()
   }
 
@@ -176,7 +177,7 @@ class FacebookRewardedAdTest {
     // invoke the Ad clicked callback
     adapterRewardedAd.onAdClicked(facebookAd)
 
-    verify(mediationRewardedAdCallback).reportAdClicked()
+    assertThat(mediationRewardedAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -187,7 +188,7 @@ class FacebookRewardedAdTest {
     // invoke the logging impression callback
     adapterRewardedAd.onLoggingImpression(facebookAd)
 
-    verify(mediationRewardedAdCallback).reportAdImpression()
+    assertThat(mediationRewardedAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -209,7 +210,8 @@ class FacebookRewardedAdTest {
     // invoke onError callback
     adapterRewardedAd.onError(facebookAd, metaAdError)
 
-    verify(mediationRewardedAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(mediationRewardedAdCallback.isFailedToShow).isTrue()
+    assertThat(mediationRewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
@@ -227,7 +229,7 @@ class FacebookRewardedAdTest {
     // invoke onError callback
     adapterRewardedAd.onError(facebookAd, metaAdError)
 
-    verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   private fun renderAndLoadSuccessfully() {

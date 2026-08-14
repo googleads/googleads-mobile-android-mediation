@@ -5,17 +5,16 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.applovin.adview.AppLovinAdView
 import com.applovin.mediation.AppLovinUtils
-import com.applovin.mediation.AppLovinUtils.ERROR_MSG_REASON_PREFIX
 import com.applovin.sdk.AppLovinAd
 import com.applovin.sdk.AppLovinAdService
 import com.applovin.sdk.AppLovinAdSize
 import com.applovin.sdk.AppLovinErrorCodes
 import com.applovin.sdk.AppLovinSdk
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.applovin.AppLovinInitializer.OnInitializeSuccessListener
-import com.google.ads.mediation.applovin.AppLovinMediationAdapter.APPLOVIN_SDK_ERROR_DOMAIN
-import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
@@ -24,7 +23,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -46,10 +44,9 @@ class AppLovinBannerAdTest {
     on { serverParameters } doReturn bundleOf(AppLovinUtils.ServerParameterKeys.SDK_KEY to SDK_KEY)
     on { adSize } doReturn AdSize.BANNER
   }
-  private val bannerAdCallback: MediationBannerAdCallback = mock()
-  private val bannerAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
-    mock()
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
+  private val bannerAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
   private val appLovinAdService: AppLovinAdService = mock()
   private val appLovinSdk: AppLovinSdk = mock { on { getAdService() } doReturn appLovinAdService }
   private val appLovinSdkWrapper: AppLovinSdkWrapper = mock {
@@ -74,8 +71,6 @@ class AppLovinBannerAdTest {
     appLovinInitializer = spy(AppLovinInitializer(appLovinSdkWrapper))
     appLovinBannerAd =
       AppLovinBannerAd.newInstance(bannerAdLoadCallback, appLovinInitializer, appLovinAdFactory)
-
-    whenever(bannerAdLoadCallback.onSuccess(appLovinBannerAd)) doReturn bannerAdCallback
   }
 
   private fun loadAndReceiveAd() {
@@ -94,20 +89,15 @@ class AppLovinBannerAdTest {
     loadAndReceiveAd()
 
     verify(appLovinAdViewWrapper).renderAd(appLovinAd)
-    verify(bannerAdLoadCallback).onSuccess(appLovinBannerAd)
+    assertThat(bannerAdLoadCallback).hasSucceededWith(appLovinBannerAd)
   }
 
   @Test
   fun failedToReceiveAd_invokesOnFailure() {
-    val adErrorCaptor = argumentCaptor<AdError>()
-
     appLovinBannerAd.failedToReceiveAd(AppLovinErrorCodes.NO_FILL)
 
-    verify(bannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(AppLovinErrorCodes.NO_FILL)
-    assertThat(capturedError.message).startsWith(ERROR_MSG_REASON_PREFIX)
-    assertThat(capturedError.domain).isEqualTo(APPLOVIN_SDK_ERROR_DOMAIN)
+    val expectedError = AppLovinUtils.getAdError(AppLovinErrorCodes.NO_FILL)
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -116,7 +106,7 @@ class AppLovinBannerAdTest {
 
     appLovinBannerAd.adDisplayed(appLovinAd)
 
-    verify(bannerAdCallback).onAdOpened()
+    assertThat(bannerAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -125,7 +115,7 @@ class AppLovinBannerAdTest {
 
     appLovinBannerAd.adClicked(appLovinAd)
 
-    verify(bannerAdCallback).reportAdClicked()
+    assertThat(bannerAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -134,7 +124,7 @@ class AppLovinBannerAdTest {
 
     appLovinBannerAd.adOpenedFullscreen(appLovinAd, appLovinAdView)
 
-    verify(bannerAdCallback).onAdOpened()
+    assertThat(bannerAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -143,7 +133,7 @@ class AppLovinBannerAdTest {
 
     appLovinBannerAd.adClosedFullscreen(appLovinAd, appLovinAdView)
 
-    verify(bannerAdCallback).onAdClosed()
+    assertThat(bannerAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -152,7 +142,7 @@ class AppLovinBannerAdTest {
 
     appLovinBannerAd.adLeftApplication(appLovinAd, appLovinAdView)
 
-    verify(bannerAdCallback).onAdLeftApplication()
+    assertThat(bannerAdCallback.isLeftApplication).isTrue()
   }
 
   companion object {

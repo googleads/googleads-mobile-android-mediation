@@ -17,16 +17,18 @@ package com.google.ads.mediation.verve
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_CODE_AD_LOAD_FAILED_TO_LOAD
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
+import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertIs
 import net.pubnative.lite.sdk.views.HyBidAdView
 import net.pubnative.lite.sdk.views.HyBidBannerAdView
@@ -35,9 +37,6 @@ import net.pubnative.lite.sdk.views.HyBidMRectAdView
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -49,17 +48,14 @@ class VerveBannerAdTest {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val mockHyBidAdView = mock<HyBidAdView>()
-  private val mockBannerAdCallback: MediationBannerAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockBannerAdCallback
-    }
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
+  private val bannerAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
 
   @Before
   fun setUp() {
     verveBannerAd =
-      VerveBannerAd(mockAdLoadCallback, TEST_BID_RESPONSE, mockHyBidAdView, AdSize.BANNER)
+      VerveBannerAd(bannerAdLoadCallback, TEST_BID_RESPONSE, mockHyBidAdView, AdSize.BANNER)
   }
 
   @Test
@@ -70,7 +66,9 @@ class VerveBannerAdTest {
         bidResponse = TEST_BID_RESPONSE,
         adSize = AdSize.BANNER,
       )
-    VerveBannerAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess { verveBannerAd = it }
+    VerveBannerAd.newInstance(adConfiguration, bannerAdLoadCallback).onSuccess {
+      verveBannerAd = it
+    }
 
     assertIs<HyBidBannerAdView>(verveBannerAd.view)
   }
@@ -83,7 +81,9 @@ class VerveBannerAdTest {
         bidResponse = TEST_BID_RESPONSE,
         adSize = AdSize.MEDIUM_RECTANGLE,
       )
-    VerveBannerAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess { verveBannerAd = it }
+    VerveBannerAd.newInstance(adConfiguration, bannerAdLoadCallback).onSuccess {
+      verveBannerAd = it
+    }
 
     assertIs<HyBidMRectAdView>(verveBannerAd.view)
   }
@@ -96,7 +96,9 @@ class VerveBannerAdTest {
         bidResponse = TEST_BID_RESPONSE,
         adSize = AdSize.LEADERBOARD,
       )
-    VerveBannerAd.newInstance(adConfiguration, mockAdLoadCallback).onSuccess { verveBannerAd = it }
+    VerveBannerAd.newInstance(adConfiguration, bannerAdLoadCallback).onSuccess {
+      verveBannerAd = it
+    }
 
     assertIs<HyBidLeaderboardAdView>(verveBannerAd.view)
   }
@@ -112,7 +114,7 @@ class VerveBannerAdTest {
   fun onAdLoaded_invokesOnSuccess() {
     verveBannerAd.onAdLoaded()
 
-    verify(mockAdLoadCallback).onSuccess(eq(verveBannerAd))
+    assertThat(bannerAdLoadCallback).hasSucceededWith(verveBannerAd)
   }
 
   @Test
@@ -127,7 +129,7 @@ class VerveBannerAdTest {
 
     verveBannerAd.onAdLoadFailed(testError)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -136,7 +138,7 @@ class VerveBannerAdTest {
 
     verveBannerAd.onAdImpression()
 
-    verify(mockBannerAdCallback).reportAdImpression()
+    assertThat(bannerAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -145,8 +147,8 @@ class VerveBannerAdTest {
 
     verveBannerAd.onAdClick()
 
-    verify(mockBannerAdCallback).reportAdClicked()
-    verify(mockBannerAdCallback).onAdOpened()
-    verify(mockBannerAdCallback).onAdLeftApplication()
+    assertThat(bannerAdCallback.isClicked).isTrue()
+    assertThat(bannerAdCallback.isOpened).isTrue()
+    assertThat(bannerAdCallback.isLeftApplication).isTrue()
   }
 }

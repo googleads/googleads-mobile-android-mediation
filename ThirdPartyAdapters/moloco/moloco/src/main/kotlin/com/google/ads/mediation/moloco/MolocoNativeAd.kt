@@ -104,7 +104,7 @@ private constructor(
     val showCallback = mediationNativeAdLoadCallback.onSuccess(this)
     nativeAd?.interactionListener =
       object : NativeAd.InteractionListener {
-        override fun onImpressionHandled() {}
+        override fun onImpressionHandled() = showCallback.reportAdImpression()
 
         override fun onGeneralClickHandled() = showCallback.reportAdClicked()
       }

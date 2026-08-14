@@ -5,12 +5,15 @@ import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeInitializationCompleteCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
-import com.google.ads.mediation.adaptertestkit.mediationAdapterInitializeVerifySuccess
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.mytarget.MyTargetAdapterUtils.adapterVersion
+import com.google.ads.mediation.mytarget.MyTargetMediationAdapter.AD_TECHNOLOGY_PROVIDER_ID
 import com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_AD_FAILED_TO_SHOW
 import com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS
@@ -25,11 +28,10 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
-import com.google.android.gms.ads.mediation.InitializationCompleteCallback
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
+import com.google.common.truth.Truth.assertThat
 import com.my.target.ads.Reward
 import com.my.target.ads.RewardedAd
 import com.my.target.common.CustomParams
@@ -38,15 +40,16 @@ import com.my.target.common.models.IAdLoadingError
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Answers
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.mockito.kotlin.withSettings
 
 /** Class containing unit tests for MyTargetMediationAdapter.java */
 @RunWith(AndroidJUnit4::class)
@@ -55,12 +58,12 @@ class MyTargetMediationAdapterTest {
   private var myTargetMediationAdapter: MyTargetMediationAdapter = MyTargetMediationAdapter()
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val mockInitializationCompleteCallback = mock<InitializationCompleteCallback>()
-  private val mockRewardedAdCallback = mock<MediationRewardedAdCallback>()
-  private val mockMediationRewardedAdLoadCallback =
-    mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>> {
-      on { onSuccess(any()) } doReturn mockRewardedAdCallback
-    }
+  private val initializationCompleteCallback = FakeInitializationCompleteCallback()
+  private val rewardedAdCallback = FakeMediationRewardedAdCallback()
+  private val rewardedAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      rewardedAdCallback
+    )
 
   @Before
   fun setUp() {
@@ -79,11 +82,13 @@ class MyTargetMediationAdapterTest {
   // region Initialize Tests
   @Test
   fun initialize_invokesOnInitializationSucceeded() {
-    myTargetMediationAdapter.mediationAdapterInitializeVerifySuccess(
+    myTargetMediationAdapter.initialize(
       context,
-      mockInitializationCompleteCallback,
-      /* serverParameters= */ bundleOf(),
+      initializationCompleteCallback,
+      /* mediationConfigurations= */ listOf(),
     )
+
+    assertThat(initializationCompleteCallback).hasSucceeded()
   }
 
   @Test
@@ -96,12 +101,13 @@ class MyTargetMediationAdapterTest {
     MobileAds.setRequestConfiguration(requestConfiguration)
     val mockMyTargetPrivacy = mockStatic(MyTargetPrivacy::class.java)
 
-    myTargetMediationAdapter.mediationAdapterInitializeVerifySuccess(
+    myTargetMediationAdapter.initialize(
       context,
-      mockInitializationCompleteCallback,
-      /* serverParameters= */ bundleOf(),
+      initializationCompleteCallback,
+      /* mediationConfigurations= */ listOf(),
     )
 
+    assertThat(initializationCompleteCallback).hasSucceeded()
     mockMyTargetPrivacy.verify { MyTargetPrivacy.setUserAgeRestricted(true) }
     mockMyTargetPrivacy.close()
   }
@@ -118,12 +124,13 @@ class MyTargetMediationAdapterTest {
     MobileAds.setRequestConfiguration(requestConfiguration)
     val mockMyTargetPrivacy = mockStatic(MyTargetPrivacy::class.java)
 
-    myTargetMediationAdapter.mediationAdapterInitializeVerifySuccess(
+    myTargetMediationAdapter.initialize(
       context,
-      mockInitializationCompleteCallback,
-      /* serverParameters= */ bundleOf(),
+      initializationCompleteCallback,
+      /* mediationConfigurations= */ listOf(),
     )
 
+    assertThat(initializationCompleteCallback).hasSucceeded()
     mockMyTargetPrivacy.verify { MyTargetPrivacy.setUserAgeRestricted(true) }
     mockMyTargetPrivacy.close()
   }
@@ -140,12 +147,13 @@ class MyTargetMediationAdapterTest {
     MobileAds.setRequestConfiguration(requestConfiguration)
     val mockMyTargetPrivacy = mockStatic(MyTargetPrivacy::class.java)
 
-    myTargetMediationAdapter.mediationAdapterInitializeVerifySuccess(
+    myTargetMediationAdapter.initialize(
       context,
-      mockInitializationCompleteCallback,
-      /* serverParameters= */ bundleOf(),
+      initializationCompleteCallback,
+      /* mediationConfigurations= */ listOf(),
     )
 
+    assertThat(initializationCompleteCallback).hasSucceeded()
     mockMyTargetPrivacy.verify { MyTargetPrivacy.setUserAgeRestricted(false) }
     mockMyTargetPrivacy.close()
   }
@@ -162,12 +170,13 @@ class MyTargetMediationAdapterTest {
     MobileAds.setRequestConfiguration(requestConfiguration)
     val mockMyTargetPrivacy = mockStatic(MyTargetPrivacy::class.java)
 
-    myTargetMediationAdapter.mediationAdapterInitializeVerifySuccess(
+    myTargetMediationAdapter.initialize(
       context,
-      mockInitializationCompleteCallback,
-      /* serverParameters= */ bundleOf(),
+      initializationCompleteCallback,
+      /* mediationConfigurations= */ listOf(),
     )
 
+    assertThat(initializationCompleteCallback).hasSucceeded()
     mockMyTargetPrivacy.verify { MyTargetPrivacy.setUserAgeRestricted(false) }
     mockMyTargetPrivacy.close()
   }
@@ -184,12 +193,13 @@ class MyTargetMediationAdapterTest {
     MobileAds.setRequestConfiguration(requestConfiguration)
     val mockMyTargetPrivacy = mockStatic(MyTargetPrivacy::class.java)
 
-    myTargetMediationAdapter.mediationAdapterInitializeVerifySuccess(
+    myTargetMediationAdapter.initialize(
       context,
-      mockInitializationCompleteCallback,
-      /* serverParameters= */ bundleOf(),
+      initializationCompleteCallback,
+      /* mediationConfigurations= */ listOf(),
     )
 
+    assertThat(initializationCompleteCallback).hasSucceeded()
     mockMyTargetPrivacy.verify({ MyTargetPrivacy.setUserAgeRestricted(any()) }, never())
     mockMyTargetPrivacy.close()
   }
@@ -207,12 +217,13 @@ class MyTargetMediationAdapterTest {
     MobileAds.setRequestConfiguration(requestConfiguration)
     val mockMyTargetPrivacy = mockStatic(MyTargetPrivacy::class.java)
 
-    myTargetMediationAdapter.mediationAdapterInitializeVerifySuccess(
+    myTargetMediationAdapter.initialize(
       context,
-      mockInitializationCompleteCallback,
-      /* serverParameters= */ bundleOf(),
+      initializationCompleteCallback,
+      /* mediationConfigurations= */ listOf(),
     )
 
+    assertThat(initializationCompleteCallback).hasSucceeded()
     mockMyTargetPrivacy.verify { MyTargetPrivacy.setUserAgeRestricted(true) }
     mockMyTargetPrivacy.close()
   }
@@ -230,14 +241,90 @@ class MyTargetMediationAdapterTest {
     MobileAds.setRequestConfiguration(requestConfiguration)
     val mockMyTargetPrivacy = mockStatic(MyTargetPrivacy::class.java)
 
-    myTargetMediationAdapter.mediationAdapterInitializeVerifySuccess(
+    myTargetMediationAdapter.initialize(
       context,
-      mockInitializationCompleteCallback,
-      /* serverParameters= */ bundleOf(),
+      initializationCompleteCallback,
+      /* mediationConfigurations= */ listOf(),
     )
 
+    assertThat(initializationCompleteCallback).hasSucceeded()
     mockMyTargetPrivacy.verify { MyTargetPrivacy.setUserAgeRestricted(true) }
     mockMyTargetPrivacy.close()
+  }
+
+  @Test
+  fun initialize_withUnknownACConsent_doesNotSetUserConsent() {
+    mockStatic(
+        MyTargetAdapterUtils::class.java,
+        withSettings().defaultAnswer(Answers.CALLS_REAL_METHODS),
+      )
+      .use {
+        whenever(
+          MyTargetAdapterUtils.hasACConsent(eq(context), eq(AD_TECHNOLOGY_PROVIDER_ID))
+        ) doReturn MyTargetMediationAdapter.ConsentResult.UNKNOWN
+
+        val mockMyTargetPrivacy = mockStatic(MyTargetPrivacy::class.java)
+
+        myTargetMediationAdapter.initialize(
+          context,
+          initializationCompleteCallback,
+          /* mediationConfigurations= */ listOf(),
+        )
+
+        assertThat(initializationCompleteCallback).hasSucceeded()
+        mockMyTargetPrivacy.verify({ MyTargetPrivacy.setUserConsent(any()) }, never())
+        mockMyTargetPrivacy.close()
+      }
+  }
+
+  @Test
+  fun initialize_withTrueACConsent_setsUserConsentTrue() {
+    mockStatic(
+        MyTargetAdapterUtils::class.java,
+        withSettings().defaultAnswer(Answers.CALLS_REAL_METHODS),
+      )
+      .use {
+        whenever(
+          MyTargetAdapterUtils.hasACConsent(eq(context), eq(AD_TECHNOLOGY_PROVIDER_ID))
+        ) doReturn MyTargetMediationAdapter.ConsentResult.TRUE
+
+        val mockMyTargetPrivacy = mockStatic(MyTargetPrivacy::class.java)
+
+        myTargetMediationAdapter.initialize(
+          context,
+          initializationCompleteCallback,
+          /* mediationConfigurations= */ listOf(),
+        )
+
+        assertThat(initializationCompleteCallback).hasSucceeded()
+        mockMyTargetPrivacy.verify { MyTargetPrivacy.setUserConsent(true) }
+        mockMyTargetPrivacy.close()
+      }
+  }
+
+  @Test
+  fun initialize_withFalseACConsent_setsUserConsentFalse() {
+    mockStatic(
+        MyTargetAdapterUtils::class.java,
+        withSettings().defaultAnswer(Answers.CALLS_REAL_METHODS),
+      )
+      .use {
+        whenever(
+          MyTargetAdapterUtils.hasACConsent(eq(context), eq(AD_TECHNOLOGY_PROVIDER_ID))
+        ) doReturn MyTargetMediationAdapter.ConsentResult.FALSE
+
+        val mockMyTargetPrivacy = mockStatic(MyTargetPrivacy::class.java)
+
+        myTargetMediationAdapter.initialize(
+          context,
+          initializationCompleteCallback,
+          /* mediationConfigurations= */ listOf(),
+        )
+
+        assertThat(initializationCompleteCallback).hasSucceeded()
+        mockMyTargetPrivacy.verify { MyTargetPrivacy.setUserConsent(false) }
+        mockMyTargetPrivacy.close()
+      }
   }
 
   // endregion
@@ -308,14 +395,11 @@ class MyTargetMediationAdapterTest {
   fun loadRewardedAd_withNullSlotId_invokesOnFailure() {
     val rewardedAdConfiguration = createRewardedAdConfiguration(context = context)
 
-    myTargetMediationAdapter.loadRewardedAd(
-      rewardedAdConfiguration,
-      mockMediationRewardedAdLoadCallback,
-    )
+    myTargetMediationAdapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid Slot ID.", ERROR_DOMAIN)
-    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -323,14 +407,11 @@ class MyTargetMediationAdapterTest {
     val serverParameters = bundleOf(KEY_SLOT_ID to "")
     val rewardedAdConfiguration = createRewardedAdConfiguration(serverParameters = serverParameters)
 
-    myTargetMediationAdapter.loadRewardedAd(
-      rewardedAdConfiguration,
-      mockMediationRewardedAdLoadCallback,
-    )
+    myTargetMediationAdapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid Slot ID.", ERROR_DOMAIN)
-    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -338,14 +419,11 @@ class MyTargetMediationAdapterTest {
     val serverParameters = bundleOf(KEY_SLOT_ID to "NotAnInt")
     val rewardedAdConfiguration = createRewardedAdConfiguration(serverParameters = serverParameters)
 
-    myTargetMediationAdapter.loadRewardedAd(
-      rewardedAdConfiguration,
-      mockMediationRewardedAdLoadCallback,
-    )
+    myTargetMediationAdapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
     val expectedAdError =
       AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid Slot ID.", ERROR_DOMAIN)
-    verify(mockMediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -359,10 +437,7 @@ class MyTargetMediationAdapterTest {
       val rewardedAdConfiguration =
         createRewardedAdConfiguration(serverParameters = serverParameters)
 
-      myTargetMediationAdapter.loadRewardedAd(
-        rewardedAdConfiguration,
-        mockMediationRewardedAdLoadCallback,
-      )
+      myTargetMediationAdapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
       verify(mockRewardedAd).customParams
       verify(mockCustomParams).setCustomParam(eq(PARAM_MEDIATION_KEY), eq(PARAM_MEDIATION_VALUE))
@@ -381,10 +456,7 @@ class MyTargetMediationAdapterTest {
       val serverParameters = bundleOf(KEY_SLOT_ID to TEST_SLOT_ID)
       val rewardedAdConfiguration =
         createRewardedAdConfiguration(serverParameters = serverParameters)
-      myTargetMediationAdapter.loadRewardedAd(
-        rewardedAdConfiguration,
-        mockMediationRewardedAdLoadCallback,
-      )
+      myTargetMediationAdapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
       myTargetMediationAdapter.showAd(context)
 
@@ -402,14 +474,11 @@ class MyTargetMediationAdapterTest {
       val serverParameters = bundleOf(KEY_SLOT_ID to TEST_SLOT_ID)
       val rewardedAdConfiguration =
         createRewardedAdConfiguration(serverParameters = serverParameters)
-      myTargetMediationAdapter.loadRewardedAd(
-        rewardedAdConfiguration,
-        mockMediationRewardedAdLoadCallback,
-      )
+      myTargetMediationAdapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
       myTargetMediationAdapter.onLoad(mockRewardedAd)
 
-      verify(mockMediationRewardedAdLoadCallback).onSuccess(eq(myTargetMediationAdapter))
+      assertThat(rewardedAdLoadCallback).hasSucceededWith(myTargetMediationAdapter)
     }
   }
 
@@ -425,17 +494,13 @@ class MyTargetMediationAdapterTest {
       val serverParameters = bundleOf(KEY_SLOT_ID to TEST_SLOT_ID)
       val rewardedAdConfiguration =
         createRewardedAdConfiguration(serverParameters = serverParameters)
-      myTargetMediationAdapter.loadRewardedAd(
-        rewardedAdConfiguration,
-        mockMediationRewardedAdLoadCallback,
-      )
+      myTargetMediationAdapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
 
       myTargetMediationAdapter.onNoAd(mockAdLoadingError, mockRewardedAd)
 
       val expectedAdError =
         AdError(ERROR_MY_TARGET_SDK, "TEST_ERROR_MESSAGE", MY_TARGET_SDK_ERROR_DOMAIN)
-      verify(mockMediationRewardedAdLoadCallback)
-        .onFailure(argThat(AdErrorMatcher(expectedAdError)))
+      assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
     }
   }
 
@@ -449,15 +514,12 @@ class MyTargetMediationAdapterTest {
       val serverParameters = bundleOf(KEY_SLOT_ID to TEST_SLOT_ID)
       val rewardedAdConfiguration =
         createRewardedAdConfiguration(serverParameters = serverParameters)
-      myTargetMediationAdapter.loadRewardedAd(
-        rewardedAdConfiguration,
-        mockMediationRewardedAdLoadCallback,
-      )
+      myTargetMediationAdapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
       myTargetMediationAdapter.onLoad(mockRewardedAd)
 
       myTargetMediationAdapter.onClick(mockRewardedAd)
 
-      verify(mockRewardedAdCallback).reportAdClicked()
+      assertThat(rewardedAdCallback.isClicked).isTrue()
     }
   }
 
@@ -471,15 +533,12 @@ class MyTargetMediationAdapterTest {
       val serverParameters = bundleOf(KEY_SLOT_ID to TEST_SLOT_ID)
       val rewardedAdConfiguration =
         createRewardedAdConfiguration(serverParameters = serverParameters)
-      myTargetMediationAdapter.loadRewardedAd(
-        rewardedAdConfiguration,
-        mockMediationRewardedAdLoadCallback,
-      )
+      myTargetMediationAdapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
       myTargetMediationAdapter.onLoad(mockRewardedAd)
 
       myTargetMediationAdapter.onDismiss(mockRewardedAd)
 
-      verify(mockRewardedAdCallback).onAdClosed()
+      assertThat(rewardedAdCallback.isClosed).isTrue()
     }
   }
 
@@ -493,16 +552,13 @@ class MyTargetMediationAdapterTest {
       val serverParameters = bundleOf(KEY_SLOT_ID to TEST_SLOT_ID)
       val rewardedAdConfiguration =
         createRewardedAdConfiguration(serverParameters = serverParameters)
-      myTargetMediationAdapter.loadRewardedAd(
-        rewardedAdConfiguration,
-        mockMediationRewardedAdLoadCallback,
-      )
+      myTargetMediationAdapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
       myTargetMediationAdapter.onLoad(mockRewardedAd)
 
       myTargetMediationAdapter.onReward(mock<Reward>(), mockRewardedAd)
 
-      verify(mockRewardedAdCallback).onVideoComplete()
-      verify(mockRewardedAdCallback).onUserEarnedReward()
+      assertThat(rewardedAdCallback.isVideoCompleted).isTrue()
+      assertThat(rewardedAdCallback.isUserEarnedReward).isTrue()
     }
   }
 
@@ -516,17 +572,14 @@ class MyTargetMediationAdapterTest {
       val serverParameters = bundleOf(KEY_SLOT_ID to TEST_SLOT_ID)
       val rewardedAdConfiguration =
         createRewardedAdConfiguration(serverParameters = serverParameters)
-      myTargetMediationAdapter.loadRewardedAd(
-        rewardedAdConfiguration,
-        mockMediationRewardedAdLoadCallback,
-      )
+      myTargetMediationAdapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
       myTargetMediationAdapter.onLoad(mockRewardedAd)
 
       myTargetMediationAdapter.onDisplay(mockRewardedAd)
 
-      verify(mockRewardedAdCallback).onAdOpened()
-      verify(mockRewardedAdCallback).onVideoStart()
-      verify(mockRewardedAdCallback).reportAdImpression()
+      assertThat(rewardedAdCallback.isOpened).isTrue()
+      assertThat(rewardedAdCallback.isVideoStarted).isTrue()
+      assertThat(rewardedAdCallback.isImpressionReported).isTrue()
     }
   }
 
@@ -540,17 +593,15 @@ class MyTargetMediationAdapterTest {
       val serverParameters = bundleOf(KEY_SLOT_ID to TEST_SLOT_ID)
       val rewardedAdConfiguration =
         createRewardedAdConfiguration(serverParameters = serverParameters)
-      myTargetMediationAdapter.loadRewardedAd(
-        rewardedAdConfiguration,
-        mockMediationRewardedAdLoadCallback,
-      )
+      myTargetMediationAdapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
       myTargetMediationAdapter.onLoad(mockRewardedAd)
 
       myTargetMediationAdapter.onFailedToShow(mockRewardedAd)
 
       val expectedAdError =
         AdError(ERROR_AD_FAILED_TO_SHOW, ERROR_MSG_AD_FAILED_TO_SHOW, ERROR_DOMAIN)
-      verify(mockRewardedAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+      assertThat(rewardedAdCallback.isFailedToShow).isTrue()
+      assertThat(rewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
     }
   }
 

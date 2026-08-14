@@ -9,13 +9,16 @@ import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenAd
 import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenAdInteractionListener
 import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenAdLoadListener
 import com.bytedance.sdk.openadsdk.api.open.PAGAppOpenRequest
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAppOpenAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
+import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfiguration
 import com.google.ads.mediation.pangle.PangleConstants
 import com.google.ads.mediation.pangle.PangleFactory
 import com.google.ads.mediation.pangle.PangleInitializer
 import com.google.ads.mediation.pangle.PangleRequestHelper.ADMOB_WATERMARK_KEY
 import com.google.ads.mediation.pangle.PangleSdkWrapper
 import com.google.ads.mediation.pangle.renderer.PangleAppOpenAd.ERROR_MSG_INVALID_PLACEMENT_ID
-import com.google.ads.mediation.pangle.utils.AdErrorMatcher
 import com.google.ads.mediation.pangle.utils.TestConstants
 import com.google.ads.mediation.pangle.utils.TestConstants.APP_ID_VALUE
 import com.google.ads.mediation.pangle.utils.TestConstants.BID_RESPONSE
@@ -23,10 +26,8 @@ import com.google.ads.mediation.pangle.utils.TestConstants.PLACEMENT_ID_VALUE
 import com.google.ads.mediation.pangle.utils.TestConstants.WATERMARK
 import com.google.ads.mediation.pangle.utils.mockPangleSdkInitializationFailure
 import com.google.ads.mediation.pangle.utils.mockPangleSdkInitializationSuccess
-import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
 import com.google.android.gms.ads.RequestConfiguration.TagForChildDirectedTreatment
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAd
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration
@@ -35,7 +36,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
@@ -56,12 +56,9 @@ class PangleAppOpenAdTest {
   private var serverParameters: Bundle = Bundle()
 
   private val context: Context = ApplicationProvider.getApplicationContext()
-  private val appOpenAdCallback: MediationAppOpenAdCallback = mock()
-  private val mediationAdLoadCallback:
-    MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn appOpenAdCallback
-    }
+  private val appOpenAdCallback = FakeMediationAppOpenAdCallback()
+  private val mediationAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>(appOpenAdCallback)
   private val pangleInitializer: PangleInitializer = mock()
   private val pangleSdkWrapper: PangleSdkWrapper = mock()
   private val pagAppOpenRequest: PAGAppOpenRequest = mock()
@@ -93,12 +90,12 @@ class PangleAppOpenAdTest {
 
     // The onFailure method of the mediationAdLoadCallback is called with the
     // ERROR_INVALID_SERVER_PARAMETERS code.
-    val adError: AdError =
+    val expectedAdError =
       PangleConstants.createAdapterError(
         PangleConstants.ERROR_INVALID_SERVER_PARAMETERS,
         ERROR_MSG_INVALID_PLACEMENT_ID,
       )
-    verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(adError)))
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -110,7 +107,7 @@ class PangleAppOpenAdTest {
     appOpenAd.render(mediationAppOpenAdConfig)
 
     // No onFailure should be triggered.
-    verify(mediationAdLoadCallback, never()).onFailure(any<AdError>())
+    assertThat(mediationAdLoadCallback).hasNotFailed()
   }
 
   /**
@@ -158,7 +155,7 @@ class PangleAppOpenAdTest {
 
     appOpenAd.render(mediationAppOpenAdConfig)
 
-    verify(mediationAdLoadCallback).onSuccess(appOpenAd)
+    assertThat(mediationAdLoadCallback).hasSucceededWith(appOpenAd)
   }
 
   @Test
@@ -178,12 +175,12 @@ class PangleAppOpenAdTest {
 
     appOpenAd.render(mediationAppOpenAdConfig)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(FAILURE_CODE_PANGLE_APP_OPEN_LOAD)
-    assertThat(adError.message).isEqualTo(FAILURE_MESSAGE_PANGLE_APP_OPEN_LOAD)
-    assertThat(adError.domain).isEqualTo(PangleConstants.PANGLE_SDK_ERROR_DOMAIN)
+    val expectedAdError =
+      PangleConstants.createSdkError(
+        FAILURE_CODE_PANGLE_APP_OPEN_LOAD,
+        FAILURE_MESSAGE_PANGLE_APP_OPEN_LOAD,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -193,12 +190,12 @@ class PangleAppOpenAdTest {
 
     appOpenAd.render(mediationAppOpenAdConfig)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(TestConstants.PANGLE_INIT_FAILURE_CODE)
-    assertThat(adError.message).isEqualTo(TestConstants.PANGLE_INIT_FAILURE_MESSAGE)
-    assertThat(adError.domain).isEqualTo(PangleConstants.PANGLE_SDK_ERROR_DOMAIN)
+    val expectedAdError =
+      PangleConstants.createSdkError(
+        TestConstants.PANGLE_INIT_FAILURE_CODE,
+        TestConstants.PANGLE_INIT_FAILURE_MESSAGE,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -240,8 +237,8 @@ class PangleAppOpenAdTest {
     // Mock that the ad is showed.
     pagAdInteractionListenerCaptor.firstValue.onAdShowed()
 
-    verify(appOpenAdCallback).onAdOpened()
-    verify(appOpenAdCallback).reportAdImpression()
+    assertThat(appOpenAdCallback.isOpened).isTrue()
+    assertThat(appOpenAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -254,7 +251,7 @@ class PangleAppOpenAdTest {
     // Mock that the ad is clicked.
     pagAdInteractionListenerCaptor.firstValue.onAdClicked()
 
-    verify(appOpenAdCallback).reportAdClicked()
+    assertThat(appOpenAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -267,7 +264,7 @@ class PangleAppOpenAdTest {
     // Mock that the ad is dismissed.
     pagAdInteractionListenerCaptor.firstValue.onAdDismissed()
 
-    verify(appOpenAdCallback).onAdClosed()
+    assertThat(appOpenAdCallback.isClosed).isTrue()
   }
 
   private fun initializeAppOpenAd(
@@ -276,19 +273,13 @@ class PangleAppOpenAdTest {
     bidResponse: String = BID_RESPONSE,
     watermark: String = WATERMARK,
   ) {
-    // Constructor of the MediationAppOpenAdConfiguration called by the GMA SDK
     mediationAppOpenAdConfig =
-      MediationAppOpenAdConfiguration(
+      createMediationAppOpenAdConfiguration(
         context,
-        bidResponse,
-        serverParameters,
-        /*mediationExtras=*/ Bundle(),
-        /*isTesting=*/ true,
-        /*location=*/ null,
-        tagForChildDirectedTreatment,
-        /*taggedForUnderAgeTreatment=*/ -1,
-        /*maxAdContentRating=*/ null,
-        watermark,
+        bidResponse = bidResponse,
+        serverParameters = serverParameters,
+        taggedForChildDirectedTreatment = tagForChildDirectedTreatment,
+        watermark = watermark,
       )
 
     appOpenAd =

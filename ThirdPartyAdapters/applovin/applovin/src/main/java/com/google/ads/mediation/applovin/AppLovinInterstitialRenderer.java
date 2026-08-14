@@ -95,6 +95,7 @@ public abstract class AppLovinInterstitialRenderer
   public void adDisplayed(AppLovinAd ad) {
     Log.d(TAG, "Interstitial displayed.");
     interstitialAdCallback.onAdOpened();
+    interstitialAdCallback.reportAdImpression();
   }
 
   @Override

@@ -15,13 +15,16 @@ import com.applovin.sdk.AppLovinAdSize
 import com.applovin.sdk.AppLovinSdk
 import com.applovin.sdk.AppLovinSdkSettings
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
+import com.google.ads.mediation.adaptertestkit.FakeInitializationCompleteCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeSignalCallbacks
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.applovin.AppLovinInitializer.OnInitializeSuccessListener
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.APPLOVIN_SDK_ERROR_DOMAIN
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_AD_ALREADY_REQUESTED
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_BANNER_SIZE_MISMATCH
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_CHILD_USER
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_DOMAIN
-import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_MISSING_AD_UNIT_ID
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_MISSING_SDK_KEY
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_MSG_BANNER_SIZE_MISMATCH
 import com.google.ads.mediation.applovin.AppLovinMediationAdapter.ERROR_MSG_MISSING_SDK
@@ -37,8 +40,6 @@ import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TR
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
-import com.google.android.gms.ads.mediation.InitializationCompleteCallback
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
@@ -50,14 +51,12 @@ import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
-import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -82,16 +81,13 @@ class AppLovinMediationAdapterTest {
   private lateinit var appLovinInitializer: AppLovinInitializer
 
   private val context: Context = ApplicationProvider.getApplicationContext()
-  private val initializationCompleteCallback: InitializationCompleteCallback = mock()
-  private val mediationBannerAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
-    mock()
-  private val mediationInterstitialAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock()
-  private val mediationRewardedAdLoadCallback:
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
-    mock()
+  private val initializationCompleteCallback = FakeInitializationCompleteCallback()
+  private val mediationBannerAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>()
+  private val mediationInterstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>()
+  private val mediationRewardedAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>()
   private val appLovinAdService: AppLovinAdService = mock()
   private val appLovinSdkSettings: AppLovinSdkSettings = mock()
   private val appLovinSdk: AppLovinSdk = mock {
@@ -111,7 +107,7 @@ class AppLovinMediationAdapterTest {
     on { createIncentivizedInterstitial(any(), any()) } doReturn appLovinIncentivizedInterstitial
     on { createIncentivizedInterstitial(any()) } doReturn appLovinIncentivizedInterstitial
   }
-  private val signalCallbacks: SignalCallbacks = mock()
+  private val signalCallbacks = FakeSignalCallbacks()
   private val mediationUtils: MediationUtilsWrapper = mock()
 
   @Before
@@ -162,7 +158,7 @@ class AppLovinMediationAdapterTest {
       /*mediationConfigurations=*/ emptyList(),
     )
 
-    verify(initializationCompleteCallback).onInitializationFailed(ERROR_MSG_CHILD_USER)
+    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_CHILD_USER)
   }
 
   @Test
@@ -179,7 +175,7 @@ class AppLovinMediationAdapterTest {
       /*mediationConfigurations=*/ emptyList(),
     )
 
-    verify(initializationCompleteCallback).onInitializationFailed(ERROR_MSG_CHILD_USER)
+    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_CHILD_USER)
   }
 
   @Test
@@ -194,19 +190,18 @@ class AppLovinMediationAdapterTest {
       /*mediationConfigurations=*/ emptyList(),
     )
 
-    verify(initializationCompleteCallback).onInitializationFailed(ERROR_MSG_CHILD_USER)
+    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_CHILD_USER)
   }
 
   @Test
   fun initialize_withoutSdkKeys_invokesOnFailure() {
-
     appLovinMediationAdapter.initialize(
       context,
       initializationCompleteCallback,
       /*mediationConfigurations=*/ emptyList(),
     )
 
-    verify(initializationCompleteCallback).onInitializationFailed(ERROR_MSG_MISSING_SDK)
+    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_MISSING_SDK)
     verify(appLovinInitializer, never()).initialize(any(), any(), any())
   }
 
@@ -239,7 +234,7 @@ class AppLovinMediationAdapterTest {
 
     appLovinMediationAdapter.initialize(context, initializationCompleteCallback, configurationList)
 
-    verify(initializationCompleteCallback).onInitializationSucceeded()
+    assertThat(initializationCompleteCallback).hasSucceeded()
   }
 
   @Test
@@ -309,7 +304,7 @@ class AppLovinMediationAdapterTest {
 
     appLovinMediationAdapter.collectSignals(mock<RtbSignalData>(), signalCallbacks)
 
-    verify(signalCallbacks).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(signalCallbacks).hasFailedWith(expectedError)
   }
 
   @Test
@@ -323,7 +318,7 @@ class AppLovinMediationAdapterTest {
 
     appLovinMediationAdapter.collectSignals(mock<RtbSignalData>(), signalCallbacks)
 
-    verify(signalCallbacks).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(signalCallbacks).hasFailedWith(expectedError)
   }
 
   @Test
@@ -335,7 +330,7 @@ class AppLovinMediationAdapterTest {
 
     appLovinMediationAdapter.collectSignals(mock<RtbSignalData>(), signalCallbacks)
 
-    verify(signalCallbacks).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(signalCallbacks).hasFailedWith(expectedError)
   }
 
   @Test
@@ -353,7 +348,7 @@ class AppLovinMediationAdapterTest {
       mediationBannerAdLoadCallback,
     )
 
-    verify(mediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationBannerAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -371,7 +366,7 @@ class AppLovinMediationAdapterTest {
       mediationBannerAdLoadCallback,
     )
 
-    verify(mediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationBannerAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -387,7 +382,7 @@ class AppLovinMediationAdapterTest {
       mediationBannerAdLoadCallback,
     )
 
-    verify(mediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationBannerAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -401,7 +396,7 @@ class AppLovinMediationAdapterTest {
       mediationBannerAdLoadCallback,
     )
 
-    verify(mediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationBannerAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -417,7 +412,7 @@ class AppLovinMediationAdapterTest {
       mediationBannerAdLoadCallback,
     )
 
-    verify(mediationBannerAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationBannerAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -503,7 +498,7 @@ class AppLovinMediationAdapterTest {
       mediationInterstitialAdLoadCallback,
     )
 
-    verify(mediationInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationInterstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -521,7 +516,7 @@ class AppLovinMediationAdapterTest {
       mediationInterstitialAdLoadCallback,
     )
 
-    verify(mediationInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationInterstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -537,7 +532,7 @@ class AppLovinMediationAdapterTest {
       mediationInterstitialAdLoadCallback,
     )
 
-    verify(mediationInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationInterstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -552,7 +547,7 @@ class AppLovinMediationAdapterTest {
       mediationInterstitialAdLoadCallback,
     )
 
-    verify(mediationInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationInterstitialAdLoadCallback).hasFailedWith(expectedError)
     verify(appLovinSdk, never()).initialize(any(), any())
   }
 
@@ -589,7 +584,7 @@ class AppLovinMediationAdapterTest {
       mediationInterstitialAdLoadCallback,
     )
 
-    verify(mediationInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationInterstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -607,7 +602,7 @@ class AppLovinMediationAdapterTest {
       mediationInterstitialAdLoadCallback,
     )
 
-    verify(mediationInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationInterstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -625,7 +620,7 @@ class AppLovinMediationAdapterTest {
       mediationInterstitialAdLoadCallback,
     )
 
-    verify(mediationInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationInterstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -641,7 +636,7 @@ class AppLovinMediationAdapterTest {
       mediationInterstitialAdLoadCallback,
     )
 
-    verify(mediationInterstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationInterstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -700,7 +695,7 @@ class AppLovinMediationAdapterTest {
       mediationRewardedAdLoadCallback,
     )
 
-    verify(mediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationRewardedAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -718,7 +713,7 @@ class AppLovinMediationAdapterTest {
       mediationRewardedAdLoadCallback,
     )
 
-    verify(mediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationRewardedAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -734,7 +729,7 @@ class AppLovinMediationAdapterTest {
       mediationRewardedAdLoadCallback,
     )
 
-    verify(mediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationRewardedAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -749,7 +744,7 @@ class AppLovinMediationAdapterTest {
       mediationRewardedAdLoadCallback,
     )
 
-    verify(mediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationRewardedAdLoadCallback).hasFailedWith(expectedError)
     verify(appLovinSdk, never()).initialize(any(), any())
   }
 
@@ -786,7 +781,7 @@ class AppLovinMediationAdapterTest {
       mediationRewardedAdLoadCallback,
     )
 
-    verify(mediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationRewardedAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -804,7 +799,7 @@ class AppLovinMediationAdapterTest {
       mediationRewardedAdLoadCallback,
     )
 
-    verify(mediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationRewardedAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -822,7 +817,7 @@ class AppLovinMediationAdapterTest {
       mediationRewardedAdLoadCallback,
     )
 
-    verify(mediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationRewardedAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -838,7 +833,7 @@ class AppLovinMediationAdapterTest {
       mediationRewardedAdLoadCallback,
     )
 
-    verify(mediationRewardedAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(mediationRewardedAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test

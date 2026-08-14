@@ -18,20 +18,24 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_APP_ID
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID
 import com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION
 import com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID
 import com.google.ads.mediation.vungle.VungleFactory
 import com.google.ads.mediation.vungle.VungleInitializer
+import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_CANNOT_PLAY_AD
+import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.vungle.VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.common.truth.Truth.assertThat
 import com.vungle.ads.AdConfig.Companion.LANDSCAPE
 import com.vungle.ads.InterstitialAd
 import com.vungle.ads.VungleError
@@ -41,12 +45,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 
 /** Tests for [VungleWaterfallInterstitialAd]. */
@@ -57,11 +59,11 @@ class VungleWaterfallInterstitialAdTest {
   private lateinit var adapterWaterfallInterstitialAd: VungleWaterfallInterstitialAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val interstitialAdCallback = mock<MediationInterstitialAdCallback>()
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
   private val interstitialAdLoadCallback =
-    mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>> {
-      on { onSuccess(any()) } doReturn interstitialAdCallback
-    }
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
   private val vungleInitializer = mock<VungleInitializer>()
   private val vungleInterstitialAd = mock<InterstitialAd>()
   private val vungleFactory =
@@ -93,7 +95,7 @@ class VungleWaterfallInterstitialAdTest {
   fun onAdLoaded_callsLoadSuccess() {
     adapterWaterfallInterstitialAd.onAdLoaded(vungleInterstitialAd)
 
-    verify(interstitialAdLoadCallback).onSuccess(adapterWaterfallInterstitialAd)
+    assertThat(interstitialAdLoadCallback).hasSucceededWith(adapterWaterfallInterstitialAd)
   }
 
   @Test
@@ -108,7 +110,7 @@ class VungleWaterfallInterstitialAdTest {
 
     val expectedError =
       AdError(liftoffError.code, liftoffError.errorMessage, VUNGLE_SDK_ERROR_DOMAIN)
-    verify(interstitialAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -120,6 +122,22 @@ class VungleWaterfallInterstitialAdTest {
     adapterWaterfallInterstitialAd.showAd(context)
 
     verify(vungleInterstitialAd).play(context)
+  }
+
+  @Test
+  fun showAd_whenInterstitialAdIsNull_invokesOnAdFailedToShow() {
+    adapterWaterfallInterstitialAd.onAdLoaded(vungleInterstitialAd)
+
+    adapterWaterfallInterstitialAd.showAd(context)
+
+    val expectedError =
+      AdError(
+        ERROR_CANNOT_PLAY_AD,
+        "Failed to show interstitial ad from Liftoff Monetize.",
+        ERROR_DOMAIN,
+      )
+    assertThat(interstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(interstitialAdCallback.adFailedToShowError).isEqualTo(expectedError)
   }
 
   private fun renderAdAndMockLoadSuccess() {
@@ -136,8 +154,7 @@ class VungleWaterfallInterstitialAdTest {
 
     adapterWaterfallInterstitialAd.onAdStart(vungleInterstitialAd)
 
-    verify(interstitialAdCallback).onAdOpened()
-    verifyNoMoreInteractions(interstitialAdCallback)
+    assertThat(interstitialAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -146,8 +163,7 @@ class VungleWaterfallInterstitialAdTest {
 
     adapterWaterfallInterstitialAd.onAdEnd(vungleInterstitialAd)
 
-    verify(interstitialAdCallback).onAdClosed()
-    verifyNoMoreInteractions(interstitialAdCallback)
+    assertThat(interstitialAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -156,8 +172,7 @@ class VungleWaterfallInterstitialAdTest {
 
     adapterWaterfallInterstitialAd.onAdClicked(vungleInterstitialAd)
 
-    verify(interstitialAdCallback).reportAdClicked()
-    verifyNoMoreInteractions(interstitialAdCallback)
+    assertThat(interstitialAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -165,8 +180,8 @@ class VungleWaterfallInterstitialAdTest {
     renderAdAndMockLoadSuccess()
 
     adapterWaterfallInterstitialAd.onAdLeftApplication(vungleInterstitialAd)
-    verify(interstitialAdCallback).onAdLeftApplication()
-    verifyNoMoreInteractions(interstitialAdCallback)
+
+    assertThat(interstitialAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -182,8 +197,8 @@ class VungleWaterfallInterstitialAdTest {
 
     val expectedError =
       AdError(liftoffError.code, liftoffError.errorMessage, VUNGLE_SDK_ERROR_DOMAIN)
-    verify(interstitialAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedError)))
-    verifyNoMoreInteractions(interstitialAdCallback)
+    assertThat(interstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(interstitialAdCallback.adFailedToShowError).isEqualTo(expectedError)
   }
 
   @Test
@@ -192,7 +207,6 @@ class VungleWaterfallInterstitialAdTest {
 
     adapterWaterfallInterstitialAd.onAdImpression(vungleInterstitialAd)
 
-    verify(interstitialAdCallback).reportAdImpression()
-    verifyNoMoreInteractions(interstitialAdCallback)
+    assertThat(interstitialAdCallback.isImpressionReported).isTrue()
   }
 }

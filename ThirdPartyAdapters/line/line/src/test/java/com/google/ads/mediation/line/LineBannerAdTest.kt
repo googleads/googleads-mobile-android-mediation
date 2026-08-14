@@ -1,3 +1,17 @@
+// Copyright 2023 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.ads.mediation.line
 
 import android.content.Context
@@ -5,13 +19,18 @@ import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.five_corp.ad.AdLoader
+import com.five_corp.ad.BidData
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdCustomLayout
 import com.five_corp.ad.FiveAdErrorCode
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.RequestConfiguration
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
@@ -19,11 +38,13 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -41,16 +62,15 @@ class LineBannerAdTest {
       on { logicalHeight } doReturn AdSize.BANNER.height
       on { context } doReturn context
     }
-  private val mockMediationAdCallback = mock<MediationBannerAdCallback>()
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
   private val sdkFactory =
     mock<SdkFactory> {
       on { createFiveAdConfig(any()) } doReturn mockFiveAdConfig
       on { createFiveAdCustomLayout(context, TEST_SLOT_ID, AdSize.BANNER.width) } doReturn
         mockFiveAdCustomLayout
     }
-  private val mediationAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
-    mock()
+  private val mediationAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
   private val mediationUtils: MediationUtilsWrapper = mock()
 
   @Before
@@ -63,8 +83,260 @@ class LineBannerAdTest {
       AdSize.BANNER
     LineBannerAd.newInstance(mediationAdConfiguration, mediationAdLoadCallback, mediationUtils)
       .onSuccess { lineBannerAd = it }
-    whenever(mediationAdLoadCallback.onSuccess(lineBannerAd)) doReturn mockMediationAdCallback
   }
+
+  // region newInstance Tests
+  @Test
+  fun newInstance_withValidAppId_returnsSuccess() {
+    val config = createMediationBannerAdConfiguration()
+
+    val result = LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils)
+
+    assertThat(result.isSuccess).isTrue()
+  }
+
+  @Test
+  fun newInstance_withMissingAppId_invokesOnFailureAndReturnsFailure() {
+    val serverParameters = bundleOf(LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID)
+    val config = createMediationBannerAdConfiguration(serverParameters = serverParameters)
+
+    val result = LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils)
+
+    val expectedError =
+      AdError(
+        LineMediationAdapter.ERROR_CODE_MISSING_APP_ID,
+        LineMediationAdapter.ERROR_MSG_MISSING_APP_ID,
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(result.isFailure).isTrue()
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
+  }
+
+  @Test
+  fun newInstance_withEmptyAppId_invokesOnFailureAndReturnsFailure() {
+    val serverParameters =
+      bundleOf(
+        LineMediationAdapter.KEY_APP_ID to "",
+        LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID,
+      )
+    val config = createMediationBannerAdConfiguration(serverParameters = serverParameters)
+
+    val result = LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils)
+
+    val expectedError =
+      AdError(
+        LineMediationAdapter.ERROR_CODE_MISSING_APP_ID,
+        LineMediationAdapter.ERROR_MSG_MISSING_APP_ID,
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(result.isFailure).isTrue()
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
+  }
+
+  // endregion
+
+  // region Waterfall loadAd Tests
+  @Test
+  fun loadAd_withNullSlotId_invokesOnFailure() {
+    val serverParameters = bundleOf(LineMediationAdapter.KEY_APP_ID to TEST_APP_ID)
+    val config = createMediationBannerAdConfiguration(serverParameters = serverParameters)
+    var ad: LineBannerAd? = null
+    LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess { ad = it }
+
+    ad?.loadAd(context)
+
+    val expectedError =
+      AdError(
+        LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
+        LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
+  }
+
+  @Test
+  fun loadAd_withEmptySlotId_invokesOnFailure() {
+    val serverParameters =
+      bundleOf(
+        LineMediationAdapter.KEY_APP_ID to TEST_APP_ID,
+        LineMediationAdapter.KEY_SLOT_ID to "",
+      )
+    val config = createMediationBannerAdConfiguration(serverParameters = serverParameters)
+    var ad: LineBannerAd? = null
+    LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess { ad = it }
+
+    ad?.loadAd(context)
+
+    val expectedError =
+      AdError(
+        LineMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
+        LineMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
+  }
+
+  @Test
+  fun loadAd_withSoundExtrasTrue_enablesSound() {
+    val mediationExtras = bundleOf(LineExtras.KEY_ENABLE_AD_SOUND to true)
+    val config = createMediationBannerAdConfiguration(mediationExtras = mediationExtras)
+    var ad: LineBannerAd? = null
+    LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess { ad = it }
+
+    ad?.loadAd(context)
+
+    verify(mockFiveAdCustomLayout).enableSound(true)
+  }
+
+  @Test
+  fun loadAd_withSoundExtrasFalse_disablesSound() {
+    val mediationExtras = bundleOf(LineExtras.KEY_ENABLE_AD_SOUND to false)
+    val config = createMediationBannerAdConfiguration(mediationExtras = mediationExtras)
+    var ad: LineBannerAd? = null
+    LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess { ad = it }
+
+    ad?.loadAd(context)
+
+    verify(mockFiveAdCustomLayout).enableSound(false)
+  }
+
+  // endregion
+
+  // region RTB loadRtbAd Tests
+  @Test
+  fun loadRtbAd_success_invokesOnSuccess() {
+    mockStatic(AdLoader::class.java).use {
+      val mockAdLoader = mock<AdLoader>()
+      whenever(AdLoader.forConfig(eq(context), any())) doReturn mockAdLoader
+      val config = createMediationBannerAdConfiguration(bidResponse = TEST_BID_RESPONSE)
+      var rtbBannerAd: LineBannerAd? = null
+      LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess {
+        rtbBannerAd = it
+      }
+
+      rtbBannerAd?.loadRtbAd(context)
+
+      val callbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
+      verify(mockAdLoader)
+        .loadBannerAd(
+          any<BidData>(),
+          eq(AdSize.BANNER.getWidthInPixels(context)),
+          callbackCaptor.capture(),
+        )
+      callbackCaptor.firstValue.onLoad(mockFiveAdCustomLayout)
+      verify(mockFiveAdCustomLayout).setEventListener(rtbBannerAd!!)
+      assertThat(mediationAdLoadCallback).hasSucceededWith(rtbBannerAd!!)
+    }
+  }
+
+  @Test
+  fun loadRtbAd_error_invokesOnFailure() {
+    mockStatic(AdLoader::class.java).use {
+      val mockAdLoader = mock<AdLoader>()
+      whenever(AdLoader.forConfig(eq(context), any())) doReturn mockAdLoader
+      val config = createMediationBannerAdConfiguration(bidResponse = TEST_BID_RESPONSE)
+      var rtbBannerAd: LineBannerAd? = null
+      LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess {
+        rtbBannerAd = it
+      }
+
+      rtbBannerAd?.loadRtbAd(context)
+
+      val callbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
+      verify(mockAdLoader)
+        .loadBannerAd(
+          any<BidData>(),
+          eq(AdSize.BANNER.getWidthInPixels(context)),
+          callbackCaptor.capture(),
+        )
+      callbackCaptor.firstValue.onError(FiveAdErrorCode.INTERNAL_ERROR)
+      val expectedError =
+        AdError(
+          FiveAdErrorCode.INTERNAL_ERROR.value,
+          FiveAdErrorCode.INTERNAL_ERROR.name,
+          LineMediationAdapter.SDK_ERROR_DOMAIN,
+        )
+      assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
+    }
+  }
+
+  @Test
+  fun loadRtbAd_whenNullAdLoader_returnsEarlySafely() {
+    mockStatic(AdLoader::class.java).use {
+      whenever(AdLoader.forConfig(eq(context), any())) doReturn null
+      val config = createMediationBannerAdConfiguration(bidResponse = TEST_BID_RESPONSE)
+      var rtbBannerAd: LineBannerAd? = null
+      LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess {
+        rtbBannerAd = it
+      }
+
+      rtbBannerAd?.loadRtbAd(context)
+
+      verify(mockFiveAdCustomLayout, never()).loadAdAsync()
+    }
+  }
+
+  @Test
+  fun loadRtbAd_withSoundExtrasTrue_enablesSound() {
+    mockStatic(AdLoader::class.java).use {
+      val mockAdLoader = mock<AdLoader>()
+      whenever(AdLoader.forConfig(eq(context), any())) doReturn mockAdLoader
+      val mediationExtras = bundleOf(LineExtras.KEY_ENABLE_AD_SOUND to true)
+      val config =
+        createMediationBannerAdConfiguration(
+          mediationExtras = mediationExtras,
+          bidResponse = TEST_BID_RESPONSE,
+        )
+      var rtbBannerAd: LineBannerAd? = null
+      LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess {
+        rtbBannerAd = it
+      }
+
+      rtbBannerAd?.loadRtbAd(context)
+
+      val callbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
+      verify(mockAdLoader)
+        .loadBannerAd(
+          any<BidData>(),
+          eq(AdSize.BANNER.getWidthInPixels(context)),
+          callbackCaptor.capture(),
+        )
+      callbackCaptor.firstValue.onLoad(mockFiveAdCustomLayout)
+      verify(mockFiveAdCustomLayout).enableSound(true)
+    }
+  }
+
+  @Test
+  fun loadRtbAd_withSoundExtrasFalse_disablesSound() {
+    mockStatic(AdLoader::class.java).use {
+      val mockAdLoader = mock<AdLoader>()
+      whenever(AdLoader.forConfig(eq(context), any())) doReturn mockAdLoader
+      val mediationExtras = bundleOf(LineExtras.KEY_ENABLE_AD_SOUND to false)
+      val config =
+        createMediationBannerAdConfiguration(
+          mediationExtras = mediationExtras,
+          bidResponse = TEST_BID_RESPONSE,
+        )
+      var rtbBannerAd: LineBannerAd? = null
+      LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess {
+        rtbBannerAd = it
+      }
+
+      rtbBannerAd?.loadRtbAd(context)
+
+      val callbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
+      verify(mockAdLoader)
+        .loadBannerAd(
+          any<BidData>(),
+          eq(AdSize.BANNER.getWidthInPixels(context)),
+          callbackCaptor.capture(),
+        )
+      callbackCaptor.firstValue.onLoad(mockFiveAdCustomLayout)
+      verify(mockFiveAdCustomLayout).enableSound(false)
+    }
+  }
+
+  // endregion
 
   @Test
   fun getView_returnsCreatedBannerAd() {
@@ -77,7 +349,6 @@ class LineBannerAdTest {
 
   @Test
   fun onFiveAdLoad_withUnexpectedAdSize_invokesOnFailure() {
-    val adErrorCaptor = argumentCaptor<AdError>()
     val differentBannerAd =
       mock<FiveAdCustomLayout> {
         on { logicalWidth } doReturn AdSize.LARGE_BANNER.width
@@ -88,11 +359,13 @@ class LineBannerAdTest {
 
     lineBannerAd.onFiveAdLoad(differentBannerAd)
 
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(LineBannerAd.ERROR_CODE_MISMATCH_AD_SIZE)
-    assertThat(capturedError.message).startsWith("Unexpected ad size loaded.")
-    assertThat(capturedError.domain).isEqualTo(LineMediationAdapter.ADAPTER_ERROR_DOMAIN)
+    val expectedError =
+      AdError(
+        LineBannerAd.ERROR_CODE_MISMATCH_AD_SIZE,
+        "Unexpected ad size loaded. Expected 320x50 but received 320x100.",
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -102,20 +375,20 @@ class LineBannerAdTest {
     lineBannerAd.onFiveAdLoad(mockFiveAdCustomLayout)
 
     verify(mockFiveAdCustomLayout).setEventListener(lineBannerAd)
-    verify(mediationAdLoadCallback).onSuccess(lineBannerAd)
+    assertThat(mediationAdLoadCallback).hasSucceededWith(lineBannerAd)
   }
 
   @Test
   fun onFiveAdLoadError_invokesOnFailure() {
-    val adErrorCaptor = argumentCaptor<AdError>()
-
     lineBannerAd.onFiveAdLoadError(mockFiveAdCustomLayout, FiveAdErrorCode.INTERNAL_ERROR)
 
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val capturedError = adErrorCaptor.firstValue
-    assertThat(capturedError.code).isEqualTo(FiveAdErrorCode.INTERNAL_ERROR.value)
-    assertThat(capturedError.message)
-      .isEqualTo("FiveAd SDK returned a load error with code INTERNAL_ERROR.")
+    val expectedError =
+      AdError(
+        FiveAdErrorCode.INTERNAL_ERROR.value,
+        "FiveAd SDK returned a load error with code INTERNAL_ERROR.",
+        LineMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -125,8 +398,8 @@ class LineBannerAdTest {
 
     lineBannerAd.onClick(mockFiveAdCustomLayout)
 
-    verify(mockMediationAdCallback).reportAdClicked()
-    verify(mockMediationAdCallback).onAdLeftApplication()
+    assertThat(bannerAdCallback.isClicked).isTrue()
+    assertThat(bannerAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -136,7 +409,7 @@ class LineBannerAdTest {
 
     lineBannerAd.onImpression(mockFiveAdCustomLayout)
 
-    verify(mockMediationAdCallback).reportAdImpression()
+    assertThat(bannerAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -166,30 +439,34 @@ class LineBannerAdTest {
     lineBannerAd.onViewThrough(mockFiveAdCustomLayout)
   }
 
-  private fun createMediationBannerAdConfiguration(): MediationBannerAdConfiguration {
-    val serverParameters =
+  private fun createMediationBannerAdConfiguration(
+    serverParameters: Bundle =
       bundleOf(
         LineMediationAdapter.KEY_SLOT_ID to TEST_SLOT_ID,
         LineMediationAdapter.KEY_APP_ID to TEST_APP_ID,
-      )
+      ),
+    adSize: AdSize = AdSize.BANNER,
+    mediationExtras: Bundle = Bundle(),
+    bidResponse: String = "",
+  ): MediationBannerAdConfiguration {
     return MediationBannerAdConfiguration(
       context,
-      /*bidresponse=*/ "",
+      bidResponse,
       serverParameters,
-      /*mediationExtras=*/ Bundle(),
+      mediationExtras,
       /*isTesting=*/ true,
       /*location=*/ null,
       RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
       RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
       /*maxAdContentRating=*/ "",
-      AdSize.BANNER,
+      adSize,
       TEST_WATERMARK,
     )
   }
 
-  companion object {
-    private const val TEST_APP_ID = "testAppId"
-    private const val TEST_SLOT_ID = "testSlotId"
-    private const val TEST_WATERMARK = "testWatermark"
+  private companion object {
+    const val TEST_APP_ID = "testAppId"
+    const val TEST_SLOT_ID = "testSlotId"
+    const val TEST_WATERMARK = "testWatermark"
   }
 }

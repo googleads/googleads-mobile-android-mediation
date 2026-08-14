@@ -18,7 +18,9 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_AD_FAILED_TO_SHOW
 import com.google.ads.mediation.mytarget.MyTargetMediationAdapter.ERROR_DOMAIN
@@ -28,9 +30,9 @@ import com.google.ads.mediation.mytarget.MyTargetMediationAdapter.MY_TARGET_SDK_
 import com.google.ads.mediation.mytarget.MyTargetTools.PARAM_MEDIATION_KEY
 import com.google.ads.mediation.mytarget.MyTargetTools.PARAM_MEDIATION_VALUE
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.common.truth.Truth.assertThat
 import com.my.target.ads.InterstitialAd
 import com.my.target.common.CustomParams
 import com.my.target.common.models.IAdLoadingError
@@ -39,13 +41,10 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
@@ -54,17 +53,16 @@ class MyTargetInterstitialAdTest {
   private lateinit var myTargetInterstitialAd: MyTargetInterstitialAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
-  private val mockInterstitialAdCallback: MediationInterstitialAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockInterstitialAdCallback
-    }
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
+  private val adLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
   private val mockMyTargetInterstitialAd: InterstitialAd = mock()
 
   @Before
   fun setUp() {
-    myTargetInterstitialAd = MyTargetInterstitialAd(mockAdLoadCallback)
+    myTargetInterstitialAd = MyTargetInterstitialAd(adLoadCallback)
   }
 
   @Test
@@ -79,7 +77,7 @@ class MyTargetInterstitialAdTest {
       )
 
     myTargetInterstitialAd.loadAd(adConfiguration)
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(adLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -132,7 +130,7 @@ class MyTargetInterstitialAdTest {
   fun onLoad_invokesOnSuccess() {
     myTargetInterstitialAd.onLoad(mockMyTargetInterstitialAd)
 
-    verify(mockAdLoadCallback).onSuccess(myTargetInterstitialAd)
+    assertThat(adLoadCallback).hasSucceededWith(myTargetInterstitialAd)
   }
 
   @Test
@@ -144,7 +142,7 @@ class MyTargetInterstitialAdTest {
 
     val expectedAdError =
       AdError(ERROR_MY_TARGET_SDK, TEST_MYTARGET_ERROR_MESSAGE, MY_TARGET_SDK_ERROR_DOMAIN)
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(adLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -152,8 +150,8 @@ class MyTargetInterstitialAdTest {
     myTargetInterstitialAd.onLoad(mockMyTargetInterstitialAd)
     myTargetInterstitialAd.onDisplay(mockMyTargetInterstitialAd)
 
-    verify(mockInterstitialAdCallback).onAdOpened()
-    verify(mockInterstitialAdCallback).reportAdImpression()
+    assertThat(interstitialAdCallback.isOpened).isTrue()
+    assertThat(interstitialAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -163,7 +161,8 @@ class MyTargetInterstitialAdTest {
 
     val expectedAdError =
       AdError(ERROR_AD_FAILED_TO_SHOW, ERROR_MSG_AD_FAILED_TO_SHOW, ERROR_DOMAIN)
-    verify(mockInterstitialAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(interstitialAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
@@ -171,8 +170,8 @@ class MyTargetInterstitialAdTest {
     myTargetInterstitialAd.onLoad(mockMyTargetInterstitialAd)
     myTargetInterstitialAd.onClick(mockMyTargetInterstitialAd)
 
-    verify(mockInterstitialAdCallback).reportAdClicked()
-    verify(mockInterstitialAdCallback).onAdLeftApplication()
+    assertThat(interstitialAdCallback.isClicked).isTrue()
+    assertThat(interstitialAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -180,7 +179,7 @@ class MyTargetInterstitialAdTest {
     myTargetInterstitialAd.onLoad(mockMyTargetInterstitialAd)
     myTargetInterstitialAd.onDismiss(mockMyTargetInterstitialAd)
 
-    verify(mockInterstitialAdCallback).onAdClosed()
+    assertThat(interstitialAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -188,7 +187,12 @@ class MyTargetInterstitialAdTest {
     myTargetInterstitialAd.onLoad(mockMyTargetInterstitialAd)
     myTargetInterstitialAd.onVideoCompleted(mockMyTargetInterstitialAd)
 
-    verifyNoInteractions(mockInterstitialAdCallback)
+    assertThat(interstitialAdCallback.isOpened).isFalse()
+    assertThat(interstitialAdCallback.isClosed).isFalse()
+    assertThat(interstitialAdCallback.isClicked).isFalse()
+    assertThat(interstitialAdCallback.isImpressionReported).isFalse()
+    assertThat(interstitialAdCallback.isLeftApplication).isFalse()
+    assertThat(interstitialAdCallback.isFailedToShow).isFalse()
   }
 
   private companion object {

@@ -26,6 +26,9 @@ allprojects {
             maven {
                 url = uri("https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea")
             }
+            maven {
+                url = uri("https://artifact.bytedance.com/repository/pangle/")
+            }
         }
     }
 }
@@ -37,6 +40,6 @@ ext {
 
     appcompat = "androidx.appcompat:appcompat:1.6.1"
 
-    play = '24.2.0'
+    play = '25.4.0'
     playServicesAds = "com.google.android.gms:play-services-ads:$play"
 }
