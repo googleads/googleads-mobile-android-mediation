@@ -8,6 +8,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAd
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerAdLoadListener
 import com.bytedance.sdk.openadsdk.api.banner.PAGBannerRequest
+import com.bytedance.sdk.openadsdk.api.banner.PAGBannerSize
 import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
 import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
 import com.google.ads.mediation.adaptertestkit.assertThat
@@ -147,6 +148,80 @@ class PangleBannerAdTest {
     // Verify that setExtraInfo is not called when watermark is empty.
     verify(pagBannerRequest, never()).setExtraInfo(any())
     verify(pangleSdkWrapper).loadBannerAd(eq(PLACEMENT_ID_VALUE), eq(pagBannerRequest), any())
+  }
+
+  @Test
+  fun render_withStandardBanner320x50_resolvesCorrectBannerSize() {
+    mockPangleSdkInitializationSuccess(pangleInitializer)
+    initializeBannerAd(adSize = AdSize.BANNER)
+
+    bannerAd.render(mediationBannerAdConfig)
+
+    val pagBannerSizeCaptor = argumentCaptor<PAGBannerSize>()
+    verify(pangleFactory).createPagBannerRequest(pagBannerSizeCaptor.capture())
+    val bannerSize = pagBannerSizeCaptor.firstValue
+    assertThat(bannerSize).isEqualTo(PAGBannerSize.BANNER_W_320_H_50)
+  }
+
+  @Test
+  fun render_withMediumRectangle300x250_resolvesCorrectBannerSize() {
+    mockPangleSdkInitializationSuccess(pangleInitializer)
+    initializeBannerAd(adSize = AdSize.MEDIUM_RECTANGLE)
+
+    bannerAd.render(mediationBannerAdConfig)
+
+    val pagBannerSizeCaptor = argumentCaptor<PAGBannerSize>()
+    verify(pangleFactory).createPagBannerRequest(pagBannerSizeCaptor.capture())
+    val bannerSize = pagBannerSizeCaptor.firstValue
+    assertThat(bannerSize).isEqualTo(PAGBannerSize.BANNER_W_300_H_250)
+  }
+
+  @Test
+  fun render_withLeaderboard728x90_resolvesCorrectBannerSize() {
+    mockPangleSdkInitializationSuccess(pangleInitializer)
+    initializeBannerAd(adSize = AdSize.LEADERBOARD)
+
+    bannerAd.render(mediationBannerAdConfig)
+
+    val pagBannerSizeCaptor = argumentCaptor<PAGBannerSize>()
+    verify(pangleFactory).createPagBannerRequest(pagBannerSizeCaptor.capture())
+    val bannerSize = pagBannerSizeCaptor.firstValue
+    assertThat(bannerSize).isEqualTo(PAGBannerSize.BANNER_W_728_H_90)
+  }
+
+  @Test
+  fun render_withAdaptiveBanner_resolvesAdaptiveBannerSize() {
+    mockPangleSdkInitializationSuccess(pangleInitializer)
+    val adaptiveAdSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, 320)
+    initializeBannerAd(adSize = adaptiveAdSize)
+
+    bannerAd.render(mediationBannerAdConfig)
+
+    val pagBannerSizeCaptor = argumentCaptor<PAGBannerSize>()
+    verify(pangleFactory).createPagBannerRequest(pagBannerSizeCaptor.capture())
+    val bannerSize = pagBannerSizeCaptor.firstValue
+    assertThat(bannerSize.width).isEqualTo(adaptiveAdSize.width)
+    assertThat(bannerSize.height).isEqualTo(adaptiveAdSize.height)
+  }
+
+  @Test
+  fun render_whenAdSizeIsNull_invokesOnFailureWithError102() {
+    mockPangleSdkInitializationSuccess(pangleInitializer)
+    val mockAdConfig: MediationBannerAdConfiguration = mock {
+      on { serverParameters } doReturn serverParameters
+      on { context } doReturn context
+      on { bidResponse } doReturn BID_RESPONSE
+      on { adSize } doAnswer { null }
+    }
+
+    bannerAd.render(mockAdConfig)
+
+    val expectedAdError =
+      PangleConstants.createAdapterError(
+        PangleConstants.ERROR_BANNER_SIZE_MISMATCH,
+        PangleBannerAd.ERROR_MESSAGE_BANNER_SIZE_MISMATCH,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test

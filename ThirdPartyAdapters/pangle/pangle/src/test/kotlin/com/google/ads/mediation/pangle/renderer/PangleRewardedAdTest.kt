@@ -284,6 +284,19 @@ class PangleRewardedAdTest {
     assertThat(rewardedAdCallback.isUserEarnedReward).isTrue()
   }
 
+  @Test
+  fun onUserEarnedRewardFail_logsErrorAndDoesNotCallOnUserEarnedReward() {
+    loadPangleRewardedAd()
+
+    rewardedAd.showAd(context)
+    // Capture PAGRewardedAdInteractionListener.
+    verify(pagRewardedAd).setAdInteractionListener(pagAdInteractionListenerCaptor.capture())
+    // Mock that the reward failed.
+    pagAdInteractionListenerCaptor.firstValue.onUserEarnedRewardFail(1, "Reward failed")
+
+    assertThat(rewardedAdCallback.isUserEarnedReward).isFalse()
+  }
+
   private fun initializeRewardedAd(
     @TagForChildDirectedTreatment
     tagForChildDirectedTreatment: Int =
