@@ -96,8 +96,11 @@ class BigoMediationAdapterTest {
 
   @Before
   fun setUp() {
-    adapter = BigoMediationAdapter(mediationUtils)
     mockBigoSdk = mockStatic(BigoAdSdk::class.java)
+    adapter = BigoMediationAdapter(mediationUtils)
+    BigoMediationAdapter.bigoSdkVersionDelegate = null
+    BigoMediationAdapter.adapterVersionDelegate = null
+    MobileAds.setRequestConfiguration(RequestConfiguration.Builder().build())
   }
 
   @After
@@ -114,15 +117,51 @@ class BigoMediationAdapterTest {
   }
 
   @Test
+  fun getSDKVersionInfo_withInvalidVersion_returnsZeros() {
+    BigoMediationAdapter.bigoSdkVersionDelegate = "invalid"
+
+    adapter.assertGetSdkVersion(expectedValue = "0.0.0")
+  }
+
+  @Test
   fun getVersionInfo_returnsValidVersionInfo() {
     BigoMediationAdapter.adapterVersionDelegate = "1.2.3.1"
 
     adapter.assertGetVersionInfo(expectedValue = "1.2.301")
   }
 
+  @Test
+  fun getVersionInfo_with5Digits_returnsValidVersionInfo() {
+    BigoMediationAdapter.adapterVersionDelegate = "1.2.3.4.5"
+
+    adapter.assertGetVersionInfo(expectedValue = "1.2.304")
+  }
+
+  @Test
+  fun getVersionInfo_withInvalidVersion_returnsZeros() {
+    BigoMediationAdapter.adapterVersionDelegate = "invalid"
+
+    adapter.assertGetVersionInfo(expectedValue = "0.0.0")
+  }
+
   // endregion
 
   // region Initialize tests
+  @Test
+  fun initialize_whenAlreadyInitialized_invokesOnInitializationSucceededImmediately() {
+    whenever(BigoAdSdk.isInitialized()) doReturn true
+    val mediationConfiguration =
+      MediationConfiguration(
+        AdFormat.BANNER,
+        /* serverParameters= */ bundleOf(APP_ID_KEY to TEST_APP_ID),
+      )
+
+    adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+
+    assertThat(initializationCompleteCallback).hasSucceeded()
+    mockBigoSdk.verify({ BigoAdSdk.initialize(any(), any(), any()) }, never())
+  }
+
   @Test
   fun initialize_withEmptyConfiguration_invokesOnInitializationFailed() {
     adapter.initialize(context, initializationCompleteCallback, mediationConfigurations = listOf())

@@ -26,7 +26,7 @@ object BigoUtils {
     adSize: com.google.android.gms.ads.AdSize,
     mediationUtils: MediationUtilsWrapper,
   ): AdSize {
-    // List of banner ad sizes supported by BidMachine.
+    // List of banner ad sizes supported by Bigo.
     val supportedSizes =
       listOf(
         com.google.android.gms.ads.AdSize.BANNER,
