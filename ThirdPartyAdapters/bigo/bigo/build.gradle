@@ -12,7 +12,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Bigo"
     // String property to store version name.
-    stringVersion = "5.10.1.0"
+    stringVersion = "6.0.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -30,7 +30,7 @@ android {
             minSdk 23
         }
         targetSdk 33
-        versionCode 5100100
+        versionCode 6000000
         versionName stringVersion
         multiDexEnabled true
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
@@ -135,11 +135,11 @@ dependencies {
     implementation 'com.google.ads.mediation:common:1.1.0'
     // Check for a 'useNextGenGma' flag to use the next generation GMA SDK.
     if (project.hasProperty('useNextGenGma')) {
-        implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.2.1'
+        implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.3.1'
     } else {
         implementation 'com.google.android.gms:play-services-ads:25.4.0'
     }
-    implementation 'com.bigossp:bigo-ads:5.10.1'
+    implementation 'com.bigossp:bigo-ads:6.0.0'
 
     testImplementation 'androidx.test:core:1.7.0'
     testImplementation 'androidx.test.espresso:espresso-core:3.6.1'
