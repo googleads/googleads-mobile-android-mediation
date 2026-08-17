@@ -18,14 +18,15 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.MEDIATION_PLATFORM_NAME
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.RequestConfiguration
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
@@ -44,13 +45,10 @@ import org.junit.runner.RunWith
 import org.mockito.MockedStatic
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class MolocoBannerAdTest {
@@ -62,19 +60,17 @@ class MolocoBannerAdTest {
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val adSize = AdSize.BANNER
   private val mockBannerAd = mock<Banner>()
-  private val mockMediationAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
-    mock()
-  private val mockMediationAdCallback = mock<MediationBannerAdCallback>()
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
+  private val bannerAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
 
   @Before
   fun setUp() {
     mockMoloco = mockStatic(Moloco::class.java)
     mediationAdConfiguration = createMediationBannerAdConfiguration()
-    MolocoBannerAd.newInstance(mediationAdConfiguration, mockMediationAdLoadCallback).onSuccess {
+    MolocoBannerAd.newInstance(mediationAdConfiguration, bannerAdLoadCallback).onSuccess {
       molocoBannerAd = it
     }
-    whenever(mockMediationAdLoadCallback.onSuccess(molocoBannerAd)) doReturn mockMediationAdCallback
   }
 
   @After
@@ -87,7 +83,7 @@ class MolocoBannerAdTest {
   fun newInstance_emptyAdUnitId_invokesOnFailureAndReturnsFailure() {
     val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to "")
     val configuration = createMediationBannerAdConfiguration(serverParameters = serverParameters)
-    val callback = mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
+    val callback = FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>()
     val expectedAdError =
       AdError(
         MolocoMediationAdapter.ERROR_CODE_MISSING_AD_UNIT,
@@ -98,13 +94,13 @@ class MolocoBannerAdTest {
     val result = MolocoBannerAd.newInstance(configuration, callback)
 
     assertThat(result.isFailure).isTrue()
-    verify(callback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(callback).hasFailedWith(expectedAdError)
   }
 
   @Test
   fun newInstance_validConfiguration_returnsSuccess() {
     val configuration = createMediationBannerAdConfiguration()
-    val callback = mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>>()
+    val callback = FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>()
 
     val result = MolocoBannerAd.newInstance(configuration, callback)
 
@@ -164,7 +160,7 @@ class MolocoBannerAdTest {
     val capturedCallback = createBannerCaptor.firstValue
     capturedCallback.invoke(/* banner= */ null, molocoError)
 
-    verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -191,7 +187,7 @@ class MolocoBannerAdTest {
     val capturedCallback = createBannerCaptor.firstValue
     capturedCallback.invoke(/* banner= */ null, /* molocoError= */ null)
 
-    verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   // endregion
@@ -231,24 +227,25 @@ class MolocoBannerAdTest {
 
     molocoBannerAd.onAdLoadFailed(testError)
 
-    verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
   fun onAdLoadSuccess_invokesOnSuccess() {
     molocoBannerAd.onAdLoadSuccess(mock())
 
-    verify(mockMediationAdLoadCallback).onSuccess(molocoBannerAd)
+    assertThat(bannerAdLoadCallback).hasSucceededWith(molocoBannerAd)
   }
 
   @Test
-  fun onAdClicked_invokesReportAdClickedAndOnAdLeftApplication() {
+  fun onAdClicked_reportsAdClickedAndInvokesOnAdOpenedAndOnAdLeftApplication() {
     molocoBannerAd.onAdLoadSuccess(mock())
 
     molocoBannerAd.onAdClicked(mock())
 
-    verify(mockMediationAdCallback).reportAdClicked()
-    verify(mockMediationAdCallback).onAdLeftApplication()
+    assertThat(bannerAdCallback.isClicked).isTrue()
+    assertThat(bannerAdCallback.isOpened).isTrue()
+    assertThat(bannerAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -257,7 +254,7 @@ class MolocoBannerAdTest {
 
     molocoBannerAd.onAdHidden(mock())
 
-    verify(mockMediationAdCallback).onAdClosed()
+    assertThat(bannerAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -274,17 +271,16 @@ class MolocoBannerAdTest {
 
     molocoBannerAd.onAdShowFailed(testError)
 
-    verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
-  fun onAdShowSuccess_invokesOnAdOpenedAndReportAdImpression() {
+  fun onAdShowSuccess_reportsAdImpression() {
     molocoBannerAd.onAdLoadSuccess(mock())
 
     molocoBannerAd.onAdShowSuccess(mock())
 
-    verify(mockMediationAdCallback).onAdOpened()
-    verify(mockMediationAdCallback).reportAdImpression()
+    assertThat(bannerAdCallback.isImpressionReported).isTrue()
   }
 
   // endregion

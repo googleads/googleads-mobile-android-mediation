@@ -1,8 +1,13 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 4.19.0.1
 - Adapter now automatically forwards GDPR consent found inside `IABTCF_AddtlConsent` to the Unity Ads SDK if GDPR applies.
 - Updated to report ad impression when Unity's interstitial ad is displayed.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.3.1.
+- Unity Ads SDK version 4.19.0.
 
 #### Version 4.19.0.0
 - Verified compatibility with Unity Ads SDK 4.19.0.

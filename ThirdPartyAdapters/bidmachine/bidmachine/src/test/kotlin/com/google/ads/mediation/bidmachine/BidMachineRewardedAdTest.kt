@@ -27,7 +27,9 @@ import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_AD_REQUEST_EXPIRED
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_COULD_NOT_SHOW_FULLSCREEN_AD
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_AD_REQUEST_EXPIRED
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_COULD_NOT_SHOW_FULLSCREEN_AD
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.PLACEMENT_ID_KEY
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
@@ -118,12 +120,31 @@ class BidMachineRewardedAdTest {
   }
 
   @Test
-  fun showAd_invokesBidMachineShow() {
+  fun showAd_whenCanShowIsTrue_invokesShow() {
     bidMachineRewardedAd.loadRtbAd(mockRewardedAd, context)
 
     bidMachineRewardedAd.showAd(context)
 
     verify(mockRewardedAd).show()
+  }
+
+  @Test
+  fun showAd_whenCanShowIsFalse_invokesOnAdFailedToShowWithError105() {
+    whenever(mockRewardedAd.canShow()) doReturn false
+    val expectedAdError =
+      AdError(
+        ERROR_CODE_COULD_NOT_SHOW_FULLSCREEN_AD,
+        ERROR_MSG_COULD_NOT_SHOW_FULLSCREEN_AD,
+        SDK_ERROR_DOMAIN,
+      )
+    bidMachineRewardedAd.loadRtbAd(mockRewardedAd, context)
+    bidMachineRewardedAd.onAdLoaded(mockRewardedAd)
+
+    bidMachineRewardedAd.showAd(context)
+
+    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
+    assertThat(rewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
+    verify(mockRewardedAd, never()).show()
   }
 
   @Test

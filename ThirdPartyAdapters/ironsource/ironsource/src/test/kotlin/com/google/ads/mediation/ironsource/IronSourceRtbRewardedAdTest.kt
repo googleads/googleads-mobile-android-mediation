@@ -1,36 +1,31 @@
+package com.google.ads.mediation.ironsource
+
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import androidx.test.core.app.ApplicationProvider
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.IRONSOURCE_SDK_ERROR_DOMAIN
-import com.google.ads.mediation.ironsource.IronSourceRtbRewardedAd
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
+import com.google.common.truth.Truth.assertThat
 import com.ironsource.mediationsdk.logger.IronSourceError
 import com.unity3d.ironsourceads.rewarded.RewardedAd
 import com.unity3d.ironsourceads.rewarded.RewardedAdLoader
-import junit.framework.TestCase.assertEquals
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
-import org.mockito.kotlin.verifyNoMoreInteractions
-import org.mockito.kotlin.whenever
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 
@@ -47,18 +42,17 @@ class IronSourceRtbRewardedAdTest {
     on { bidResponse } doReturn TEST_BID_RESPONSE
     on { watermark } doReturn TEST_WATERMARK
   }
-  private val mockMediationRewardedAdCallback: MediationRewardedAdCallback = mock()
-  private val mockMediationAdLoadCallback:
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockMediationRewardedAdCallback
-    }
+  private val rewardedAdCallback = FakeMediationRewardedAdCallback()
+  private val rewardedAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      rewardedAdCallback
+    )
   private val mockRewardedAd: RewardedAd = mock()
   private val mockRewardedAdLoader = mockStatic(RewardedAdLoader::class.java)
 
   @Before
   fun setUp() {
-    ironSourceRtbRewardedAd = IronSourceRtbRewardedAd(mockMediationAdLoadCallback)
+    ironSourceRtbRewardedAd = IronSourceRtbRewardedAd(rewardedAdLoadCallback)
   }
 
   @After
@@ -73,8 +67,7 @@ class IronSourceRtbRewardedAdTest {
     ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
 
     // Then
-    verify(mockMediationAdLoadCallback).onSuccess(ironSourceRtbRewardedAd)
-    verifyNoMoreInteractions(mockMediationAdLoadCallback)
+    assertThat(rewardedAdLoadCallback).hasSucceededWith(ironSourceRtbRewardedAd)
   }
 
   @Test
@@ -83,8 +76,7 @@ class IronSourceRtbRewardedAdTest {
     ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
 
     // Then
-    verify(mockMediationAdLoadCallback).onSuccess(ironSourceRtbRewardedAd)
-    verifyNoMoreInteractions(mockMediationAdLoadCallback)
+    assertThat(rewardedAdLoadCallback).hasSucceededWith(ironSourceRtbRewardedAd)
   }
 
   @Test
@@ -100,7 +92,7 @@ class IronSourceRtbRewardedAdTest {
 
     // Then
     val expectedAdError = AdError(errorCode, errorRes, "com.ironsource.mediationsdk")
-    verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -130,8 +122,8 @@ class IronSourceRtbRewardedAdTest {
 
     // Then
     val expectedAdError = AdError(errorCode, errorRes, IRONSOURCE_SDK_ERROR_DOMAIN)
-    verify(mockMediationRewardedAdCallback)
-      .onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
+    assertThat(rewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
@@ -143,28 +135,29 @@ class IronSourceRtbRewardedAdTest {
     ironSourceRtbRewardedAd.showAd(context)
 
     // then
-    val captor = argumentCaptor<AdError>()
-    verify(mockMediationRewardedAdCallback).onAdFailedToShow(captor.capture())
-    val capturedError = captor.firstValue
-    assertEquals(102, capturedError.code)
-    assertEquals("IronSource requires an Activity context to load ads.", capturedError.message)
-    assertEquals("com.google.ads.mediation.ironsource", capturedError.domain)
+    val expectedAdError =
+      AdError(
+        102,
+        "IronSource requires an Activity context to load ads.",
+        "com.google.ads.mediation.ironsource",
+      )
+    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
+    assertThat(rewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
   fun onRewardedAdShowFailed_withoutRewardedAdCallbackInstance_verifyOnAdFailedToShow() {
     // Given
-    doReturn(null).whenever(mockMediationAdLoadCallback).onSuccess(any())
+    ironSourceRtbRewardedAd.loadRtbAd(mockRewardedAdConfig)
     val errorRes = "An error occurred"
     val errorCode = 123
-    ironSourceRtbRewardedAd.onRewardedAdLoaded(mockRewardedAd)
     val ironSourceError = IronSourceError(errorCode, errorRes)
 
     // When
     ironSourceRtbRewardedAd.onRewardedAdFailedToShow(mockRewardedAd, ironSourceError)
 
     // Then
-    verifyNoInteractions(mockMediationRewardedAdCallback)
+    assertThat(rewardedAdCallback.isFailedToShow).isFalse()
   }
 
   @Test
@@ -177,8 +170,9 @@ class IronSourceRtbRewardedAdTest {
     ironSourceRtbRewardedAd.onRewardedAdShown(mockRewardedAd)
 
     // Then
-    verify(mockMediationRewardedAdCallback).onAdOpened()
-    verify(mockMediationRewardedAdCallback).reportAdImpression()
+    assertThat(rewardedAdCallback.isOpened).isTrue()
+    assertThat(rewardedAdCallback.isVideoStarted).isTrue()
+    assertThat(rewardedAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -191,7 +185,7 @@ class IronSourceRtbRewardedAdTest {
     ironSourceRtbRewardedAd.onRewardedAdDismissed(mockRewardedAd)
 
     // Then
-    verify(mockMediationRewardedAdCallback).onAdClosed()
+    assertThat(rewardedAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -204,8 +198,8 @@ class IronSourceRtbRewardedAdTest {
     ironSourceRtbRewardedAd.onUserEarnedReward(mockRewardedAd)
 
     // Then
-    verify(mockMediationRewardedAdCallback).onVideoComplete()
-    verify(mockMediationRewardedAdCallback).onUserEarnedReward()
+    assertThat(rewardedAdCallback.isVideoCompleted).isTrue()
+    assertThat(rewardedAdCallback.isUserEarnedReward).isTrue()
   }
 
   @Test
@@ -218,20 +212,21 @@ class IronSourceRtbRewardedAdTest {
     ironSourceRtbRewardedAd.onRewardedAdClicked(mockRewardedAd)
 
     // Then
-    verify(mockMediationRewardedAdCallback).reportAdClicked()
+    assertThat(rewardedAdCallback.isClicked).isTrue()
   }
 
   @Test
   fun onAdEvents_withoutRewardedAd_verifyNoCallbacks() {
-    // Given
-    clearInvocations(mockMediationRewardedAdCallback)
-
     // When
     ironSourceRtbRewardedAd.onRewardedAdShown(mockRewardedAd)
     ironSourceRtbRewardedAd.onRewardedAdDismissed(mockRewardedAd)
     ironSourceRtbRewardedAd.onRewardedAdClicked(mockRewardedAd)
 
     // Then
-    verifyNoInteractions(mockMediationRewardedAdCallback)
+    assertThat(rewardedAdCallback.isOpened).isFalse()
+    assertThat(rewardedAdCallback.isVideoStarted).isFalse()
+    assertThat(rewardedAdCallback.isImpressionReported).isFalse()
+    assertThat(rewardedAdCallback.isClosed).isFalse()
+    assertThat(rewardedAdCallback.isClicked).isFalse()
   }
 }

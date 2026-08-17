@@ -8,12 +8,13 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.facebook.ads.Ad
 import com.facebook.ads.AdError
 import com.facebook.ads.AdView
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.facebook.FacebookMediationAdapter
 import com.google.ads.mediation.facebook.MetaFactory
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
@@ -22,11 +23,8 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 /** Unit tests for [FacebookRtbBannerAd]. */
@@ -40,12 +38,9 @@ class FacebookRtbBannerAdTest {
     )
   private val mediationBannerAdConfiguration: MediationBannerAdConfiguration =
     createMediationBannerAdConfiguration(context = context, serverParameters = serverParameters)
-  private val mediationBannerAdCallback = mock<MediationBannerAdCallback>()
-  private val mediationAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mediationBannerAdCallback
-    }
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
+  private val mediationAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
   private val metaFactory: MetaFactory = mock()
   private val metaAd: Ad = mock()
   private val metaBannerAdLoadConfig: AdView.AdViewLoadConfig = mock()
@@ -79,7 +74,7 @@ class FacebookRtbBannerAdTest {
     // invoke onError callback
     adapterBannerAd.onError(metaAd, metaAdError)
 
-    verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -87,7 +82,7 @@ class FacebookRtbBannerAdTest {
     // invoke onAdLoaded callback
     adapterBannerAd.onAdLoaded(metaAd)
 
-    verify(mediationAdLoadCallback).onSuccess(adapterBannerAd)
+    assertThat(mediationAdLoadCallback).hasSucceededWith(adapterBannerAd)
   }
 
   @Test
@@ -98,9 +93,9 @@ class FacebookRtbBannerAdTest {
     // invoke onAdClicked callback
     adapterBannerAd.onAdClicked(metaAd)
 
-    verify(mediationBannerAdCallback).onAdOpened()
-    verify(mediationBannerAdCallback).onAdLeftApplication()
-    verify(mediationBannerAdCallback).reportAdClicked()
+    assertThat(bannerAdCallback.isOpened).isTrue()
+    assertThat(bannerAdCallback.isLeftApplication).isTrue()
+    assertThat(bannerAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -111,7 +106,7 @@ class FacebookRtbBannerAdTest {
     // invoke onLoggingImpression callback
     adapterBannerAd.onLoggingImpression(metaAd)
 
-    verify(mediationBannerAdCallback).reportAdImpression()
+    assertThat(bannerAdCallback.isImpressionReported).isTrue()
   }
 
   @Test

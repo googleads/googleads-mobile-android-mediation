@@ -18,13 +18,14 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.MEDIATION_PLATFORM_NAME
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.RequestConfiguration
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
@@ -41,13 +42,10 @@ import org.junit.runner.RunWith
 import org.mockito.MockedStatic
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class MolocoRewardedAdTest {
@@ -58,20 +56,19 @@ class MolocoRewardedAdTest {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val mockRewardedAd = mock<RewardedInterstitialAd>()
-  private val mockMediationAdLoadCallback:
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
-    mock()
-  private val mockMediationAdCallback = mock<MediationRewardedAdCallback>()
+  private val rewardedAdCallback = FakeMediationRewardedAdCallback()
+  private val rewardedAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      rewardedAdCallback
+    )
 
   @Before
   fun setUp() {
     mockMoloco = mockStatic(Moloco::class.java)
     mediationAdConfiguration = createMediationRewardedAdConfiguration()
-    MolocoRewardedAd.newInstance(mediationAdConfiguration, mockMediationAdLoadCallback).onSuccess {
+    MolocoRewardedAd.newInstance(mediationAdConfiguration, rewardedAdLoadCallback).onSuccess {
       molocoRewardedAd = it
     }
-    whenever(mockMediationAdLoadCallback.onSuccess(molocoRewardedAd)) doReturn
-      mockMediationAdCallback
   }
 
   @After
@@ -84,7 +81,7 @@ class MolocoRewardedAdTest {
   fun newInstance_emptyAdUnitId_invokesOnFailureAndReturnsFailure() {
     val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to "")
     val configuration = createMediationRewardedAdConfiguration(serverParameters = serverParameters)
-    val callback = mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+    val callback = FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>()
     val expectedAdError =
       AdError(
         MolocoMediationAdapter.ERROR_CODE_MISSING_AD_UNIT,
@@ -95,13 +92,13 @@ class MolocoRewardedAdTest {
     val result = MolocoRewardedAd.newInstance(configuration, callback)
 
     assertThat(result.isFailure).isTrue()
-    verify(callback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(callback).hasFailedWith(expectedAdError)
   }
 
   @Test
   fun newInstance_validConfiguration_returnsSuccess() {
     val configuration = createMediationRewardedAdConfiguration()
-    val callback = mock<MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>>()
+    val callback = FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>()
 
     val result = MolocoRewardedAd.newInstance(configuration, callback)
 
@@ -158,7 +155,7 @@ class MolocoRewardedAdTest {
     val capturedCallback = createRewardedCaptor.firstValue
     capturedCallback.invoke(/* returnedAd= */ null, molocoError)
 
-    verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -184,7 +181,7 @@ class MolocoRewardedAdTest {
     val capturedCallback = createRewardedCaptor.firstValue
     capturedCallback.invoke(/* returnedAd= */ null, /* molocoError= */ null)
 
-    verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   // endregion
@@ -215,14 +212,14 @@ class MolocoRewardedAdTest {
 
     molocoRewardedAd.onAdLoadFailed(testError)
 
-    verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
   fun onAdLoadSuccess_invokesOnSuccess() {
     molocoRewardedAd.onAdLoadSuccess(mock())
 
-    verify(mockMediationAdLoadCallback).onSuccess(molocoRewardedAd)
+    assertThat(rewardedAdLoadCallback).hasSucceededWith(molocoRewardedAd)
   }
 
   @Test
@@ -231,7 +228,7 @@ class MolocoRewardedAdTest {
 
     molocoRewardedAd.onAdClicked(mock())
 
-    verify(mockMediationAdCallback).reportAdClicked()
+    assertThat(rewardedAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -240,7 +237,7 @@ class MolocoRewardedAdTest {
 
     molocoRewardedAd.onAdHidden(mock())
 
-    verify(mockMediationAdCallback).onAdClosed()
+    assertThat(rewardedAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -257,7 +254,8 @@ class MolocoRewardedAdTest {
 
     molocoRewardedAd.onAdShowFailed(testError)
 
-    verify(mockMediationAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
+    assertThat(rewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
@@ -266,8 +264,8 @@ class MolocoRewardedAdTest {
 
     molocoRewardedAd.onAdShowSuccess(mock())
 
-    verify(mockMediationAdCallback).onAdOpened()
-    verify(mockMediationAdCallback).reportAdImpression()
+    assertThat(rewardedAdCallback.isOpened).isTrue()
+    assertThat(rewardedAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -276,7 +274,7 @@ class MolocoRewardedAdTest {
 
     molocoRewardedAd.onRewardedVideoCompleted(mock())
 
-    verify(mockMediationAdCallback).onVideoComplete()
+    assertThat(rewardedAdCallback.isVideoCompleted).isTrue()
   }
 
   @Test
@@ -285,7 +283,7 @@ class MolocoRewardedAdTest {
 
     molocoRewardedAd.onRewardedVideoStarted(mock())
 
-    verify(mockMediationAdCallback).onVideoStart()
+    assertThat(rewardedAdCallback.isVideoStarted).isTrue()
   }
 
   @Test
@@ -294,7 +292,7 @@ class MolocoRewardedAdTest {
 
     molocoRewardedAd.onUserRewarded(mock())
 
-    verify(mockMediationAdCallback).onUserEarnedReward()
+    assertThat(rewardedAdCallback.isUserEarnedReward).isTrue()
   }
 
   // endregion

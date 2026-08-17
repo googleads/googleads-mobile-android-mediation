@@ -15,6 +15,10 @@
 package com.google.ads.mediation.bidmachine
 
 import android.content.Context
+import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.view.View
+import android.widget.FrameLayout
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -27,17 +31,21 @@ import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfiguration
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_AD_REQUEST_EXPIRED
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_EMPTY_NATIVE_AD_DATA
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_AD_REQUEST_EXPIRED
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_EMPTY_NATIVE_AD_DATA
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.PLACEMENT_ID_KEY
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.common.truth.Truth.assertThat
+import io.bidmachine.ImageData
 import io.bidmachine.RendererConfiguration
 import io.bidmachine.nativead.NativeAd
 import io.bidmachine.nativead.NativePublicData
 import io.bidmachine.nativead.NativeRequest
+import io.bidmachine.nativead.view.NativeMediaView
 import io.bidmachine.utils.BMError
 import org.junit.Before
 import org.junit.Test
@@ -116,6 +124,27 @@ class BidMachineNativeAdTest {
   }
 
   @Test
+  fun trackViews_registersViewsWithBidMachineNativeAd() {
+    val container = FrameLayout(context)
+    val view1 = View(context)
+    val view2 = View(context)
+    val clickableAssetViews = mapOf("asset1" to view1)
+    val nonClickableAssetViews = mapOf("asset2" to view2)
+    bidMachineNativeAd.loadRtbAd(mockNativeAd)
+    bidMachineNativeAd.onAdLoaded(mockNativeAd)
+
+    bidMachineNativeAd.trackViews(container, clickableAssetViews, nonClickableAssetViews)
+
+    verify(mockNativeAd)
+      .registerView(
+        eq(container),
+        eq(bidMachineNativeAd.adChoicesContent),
+        any<NativeMediaView>(),
+        eq(clickableAssetViews.values.toSet()),
+      )
+  }
+
+  @Test
   fun onRequestSuccess_invokesLoad() {
     bidMachineNativeAd.loadRtbAd(mockNativeAd)
     val rendererConfigCaptor = argumentCaptor<RendererConfiguration>()
@@ -174,6 +203,41 @@ class BidMachineNativeAdTest {
   }
 
   @Test
+  fun onAdLoaded_mapsAllNativeAdAssets() {
+    val mockDrawable = mock<Drawable>()
+    val mockUri = mock<Uri>()
+    val mockImageData =
+      mock<ImageData> {
+        on { image } doReturn mockDrawable
+        on { localUri } doReturn mockUri
+      }
+    whenever(nativePublicData.icon) doReturn mockImageData
+    bidMachineNativeAd.loadRtbAd(mockNativeAd)
+
+    bidMachineNativeAd.onAdLoaded(mockNativeAd)
+
+    assertThat(bidMachineNativeAd.headline).isEqualTo(TEST_TITLE)
+    assertThat(bidMachineNativeAd.body).isEqualTo(TEST_DESCRIPTION)
+    assertThat(bidMachineNativeAd.callToAction).isEqualTo(TEST_CALL_TO_ACTION)
+    assertThat(bidMachineNativeAd.starRating).isEqualTo(5.0)
+    val icon = checkNotNull(bidMachineNativeAd.icon)
+    assertThat(icon.drawable).isEqualTo(mockDrawable)
+    assertThat(icon.uri).isEqualTo(mockUri)
+  }
+
+  @Test
+  fun onAdLoaded_withNullAdData_invokesOnFailureWithError106() {
+    whenever(mockNativeAd.adData) doReturn null
+    val expectedAdError =
+      AdError(ERROR_CODE_EMPTY_NATIVE_AD_DATA, ERROR_MSG_EMPTY_NATIVE_AD_DATA, ADAPTER_ERROR_DOMAIN)
+    bidMachineNativeAd.loadRtbAd(mockNativeAd)
+
+    bidMachineNativeAd.onAdLoaded(mockNativeAd)
+
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
+  }
+
+  @Test
   fun onAdLoadFailed_invokesOnFailure() {
     val bMError = BMError.AlreadyShown
     val expectedAdError = AdError(bMError.code, bMError.message, SDK_ERROR_DOMAIN)
@@ -207,16 +271,6 @@ class BidMachineNativeAdTest {
     assertThat(nativeAdCallback.isOpened).isTrue()
     assertThat(nativeAdCallback.isLeftApplication).isTrue()
     assertThat(nativeAdCallback.isClicked).isTrue()
-  }
-
-  @Test
-  fun onAdShowFailed_throwsNoException() {
-    bidMachineNativeAd.onAdShowFailed(mockNativeAd, BMError.InternalUnknownError)
-  }
-
-  @Test
-  fun onAdExpired_throwsNoException() {
-    bidMachineNativeAd.onAdExpired(mockNativeAd)
   }
 
   private fun configureNativeRequestBuilder(): NativeRequest.Builder {

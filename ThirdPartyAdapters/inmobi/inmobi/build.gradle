@@ -134,6 +134,7 @@ dependencies {
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
 
     // Unit tests
+    testImplementation project(':adaptertestkit')
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.3.0'
     testImplementation 'com.google.truth:truth:1.1.5'

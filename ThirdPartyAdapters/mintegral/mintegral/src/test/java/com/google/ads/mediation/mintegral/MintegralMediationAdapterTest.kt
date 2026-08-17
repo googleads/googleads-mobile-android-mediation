@@ -20,16 +20,15 @@ import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_AD_U
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeInitializationCompleteCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
 import com.google.ads.mediation.adaptertestkit.assertGetSdkVersion
 import com.google.ads.mediation.adaptertestkit.assertGetVersionInfo
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
-import com.google.ads.mediation.adaptertestkit.loadAppOpenAdWithFailure
-import com.google.ads.mediation.adaptertestkit.loadInterstitialAdWithFailure
-import com.google.ads.mediation.adaptertestkit.loadRtbAppOpenAdWithFailure
-import com.google.ads.mediation.adaptertestkit.loadRtbInterstitialAdWithFailure
 import com.google.ads.mediation.mintegral.MintegralConstants.AD_UNIT_ID
 import com.google.ads.mediation.mintegral.MintegralConstants.ERROR_BANNER_SIZE_UNSUPPORTED
 import com.google.ads.mediation.mintegral.MintegralConstants.ERROR_DOMAIN
@@ -42,8 +41,6 @@ import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
-import com.google.android.gms.ads.mediation.InitializationCompleteCallback
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAd
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
@@ -80,16 +77,13 @@ class MintegralMediationAdapterTest {
   private var mintegralMediationAdapter = MintegralMediationAdapter()
 
   private val context = Robolectric.buildActivity(Activity::class.java).get()
-  private val mockInitializationCompleteCallback: InitializationCompleteCallback = mock()
-  private val mockInterstitialAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock()
-  private val mockAppOpenAdLoadCallback:
-    MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> =
-    mock()
-  private val mediationBannerAdLoadCallback:
-    MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> =
-    mock()
+  private val initializationCompleteCallback = FakeInitializationCompleteCallback()
+  private val interstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>()
+  private val appOpenAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>()
+  private val bannerAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>()
   private val mbBannerView: MBBannerView = mock()
   private val mediationUtils: MediationUtilsWrapper = mock()
 
@@ -183,7 +177,7 @@ class MintegralMediationAdapterTest {
 
       mintegralMediationAdapter.initialize(
         context,
-        mockInitializationCompleteCallback,
+        initializationCompleteCallback,
         listOf(mediationConfiguration),
       )
 
@@ -191,7 +185,7 @@ class MintegralMediationAdapterTest {
       verify(mockMBridgeSdk).init(any(), eq(context), initStatusCaptor.capture())
       initStatusCaptor.firstValue.onInitSuccess()
       verify(mockMBridgeSdk).setCoppaStatus(eq(context), eq(true))
-      verify(mockInitializationCompleteCallback).onInitializationSucceeded()
+      assertThat(initializationCompleteCallback).hasSucceeded()
     }
   }
 
@@ -217,7 +211,7 @@ class MintegralMediationAdapterTest {
 
       mintegralMediationAdapter.initialize(
         context,
-        mockInitializationCompleteCallback,
+        initializationCompleteCallback,
         listOf(mediationConfiguration),
       )
 
@@ -250,7 +244,7 @@ class MintegralMediationAdapterTest {
 
       mintegralMediationAdapter.initialize(
         context,
-        mockInitializationCompleteCallback,
+        initializationCompleteCallback,
         listOf(mediationConfiguration),
       )
 
@@ -283,7 +277,7 @@ class MintegralMediationAdapterTest {
 
       mintegralMediationAdapter.initialize(
         context,
-        mockInitializationCompleteCallback,
+        initializationCompleteCallback,
         listOf(mediationConfiguration),
       )
 
@@ -308,7 +302,7 @@ class MintegralMediationAdapterTest {
 
       mintegralMediationAdapter.initialize(
         context,
-        mockInitializationCompleteCallback,
+        initializationCompleteCallback,
         listOf(mediationConfiguration),
       )
 
@@ -333,7 +327,7 @@ class MintegralMediationAdapterTest {
 
       mintegralMediationAdapter.initialize(
         context,
-        mockInitializationCompleteCallback,
+        initializationCompleteCallback,
         listOf(mediationConfiguration),
       )
 
@@ -364,7 +358,7 @@ class MintegralMediationAdapterTest {
 
       mintegralMediationAdapter.initialize(
         context,
-        mockInitializationCompleteCallback,
+        initializationCompleteCallback,
         listOf(mediationConfiguration),
       )
 
@@ -398,7 +392,7 @@ class MintegralMediationAdapterTest {
 
       mintegralMediationAdapter.initialize(
         context,
-        mockInitializationCompleteCallback,
+        initializationCompleteCallback,
         listOf(mediationConfiguration),
       )
 
@@ -416,17 +410,15 @@ class MintegralMediationAdapterTest {
   fun loadWaterfallBannerAd_forUnsupportedAdSize_fails() {
     val mediationBannerAdConfiguration =
       createMediationBannerAdConfiguration(context = context, adSize = AdSize(800, 50))
+    val expectedError =
+      MintegralConstants.createAdapterError(
+        ERROR_BANNER_SIZE_UNSUPPORTED,
+        "The requested banner size: ${mediationBannerAdConfiguration.adSize} is not supported by Mintegral SDK.",
+      )
 
-    mintegralMediationAdapter.loadBannerAd(
-      mediationBannerAdConfiguration,
-      mediationBannerAdLoadCallback,
-    )
+    mintegralMediationAdapter.loadBannerAd(mediationBannerAdConfiguration, bannerAdLoadCallback)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(mediationBannerAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_BANNER_SIZE_UNSUPPORTED)
-    assertThat(adError.domain).isEqualTo(ERROR_DOMAIN)
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedError)
   }
 
   /**
@@ -449,7 +441,7 @@ class MintegralMediationAdapterTest {
 
       mintegralMediationAdapter.loadRtbBannerAd(
         mediationBannerAdConfiguration,
-        mediationBannerAdLoadCallback,
+        bannerAdLoadCallback,
       )
 
       verify(mbBannerView).loadFromBid(TEST_BID_RESPONSE)
@@ -471,11 +463,12 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadInterstitialAdWithFailure(
+    mintegralMediationAdapter.loadInterstitialAd(
       mediationInterstitialAdConfiguration,
-      mockInterstitialAdLoadCallback,
-      expectedError,
+      interstitialAdLoadCallback,
     )
+
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -494,11 +487,12 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadInterstitialAdWithFailure(
+    mintegralMediationAdapter.loadInterstitialAd(
       mediationInterstitialAdConfiguration,
-      mockInterstitialAdLoadCallback,
-      expectedError,
+      interstitialAdLoadCallback,
     )
+
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -517,11 +511,12 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadInterstitialAdWithFailure(
+    mintegralMediationAdapter.loadInterstitialAd(
       mediationInterstitialAdConfiguration,
-      mockInterstitialAdLoadCallback,
-      expectedError,
+      interstitialAdLoadCallback,
     )
+
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -540,11 +535,12 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadInterstitialAdWithFailure(
+    mintegralMediationAdapter.loadInterstitialAd(
       mediationInterstitialAdConfiguration,
-      mockInterstitialAdLoadCallback,
-      expectedError,
+      interstitialAdLoadCallback,
     )
+
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -561,7 +557,7 @@ class MintegralMediationAdapterTest {
 
       mintegralMediationAdapter.loadInterstitialAd(
         mediationInterstitialAdConfiguration,
-        mockInterstitialAdLoadCallback,
+        interstitialAdLoadCallback,
       )
 
       verify(mockInterstitialAdWrapper).createAd(context, TEST_PLACEMENT_ID, TEST_AD_UNIT)
@@ -582,11 +578,12 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadRtbInterstitialAdWithFailure(
+    mintegralMediationAdapter.loadRtbInterstitialAd(
       mediationInterstitialAdConfiguration,
-      mockInterstitialAdLoadCallback,
-      expectedError,
+      interstitialAdLoadCallback,
     )
+
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -605,11 +602,12 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadRtbInterstitialAdWithFailure(
+    mintegralMediationAdapter.loadRtbInterstitialAd(
       mediationInterstitialAdConfiguration,
-      mockInterstitialAdLoadCallback,
-      expectedError,
+      interstitialAdLoadCallback,
     )
+
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -628,11 +626,12 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadRtbInterstitialAdWithFailure(
+    mintegralMediationAdapter.loadRtbInterstitialAd(
       mediationInterstitialAdConfiguration,
-      mockInterstitialAdLoadCallback,
-      expectedError,
+      interstitialAdLoadCallback,
     )
+
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -651,11 +650,12 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadRtbInterstitialAdWithFailure(
+    mintegralMediationAdapter.loadRtbInterstitialAd(
       mediationInterstitialAdConfiguration,
-      mockInterstitialAdLoadCallback,
-      expectedError,
+      interstitialAdLoadCallback,
     )
+
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -673,11 +673,12 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadRtbInterstitialAdWithFailure(
+    mintegralMediationAdapter.loadRtbInterstitialAd(
       mediationInterstitialAdConfiguration,
-      mockInterstitialAdLoadCallback,
-      expectedError,
+      interstitialAdLoadCallback,
     )
+
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -697,7 +698,7 @@ class MintegralMediationAdapterTest {
 
       mintegralMediationAdapter.loadRtbInterstitialAd(
         mediationInterstitialAdConfiguration,
-        mockInterstitialAdLoadCallback,
+        interstitialAdLoadCallback,
       )
 
       verify(mockBinInterstitialAdWrapper).setExtraInfo(any())
@@ -721,11 +722,9 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadAppOpenAdWithFailure(
-      mediationAppOpenAdConfiguration,
-      mockAppOpenAdLoadCallback,
-      expectedError,
-    )
+    mintegralMediationAdapter.loadAppOpenAd(mediationAppOpenAdConfiguration, appOpenAdLoadCallback)
+
+    assertThat(appOpenAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -741,11 +740,9 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadAppOpenAdWithFailure(
-      mediationAppOpenAdConfiguration,
-      mockAppOpenAdLoadCallback,
-      expectedError,
-    )
+    mintegralMediationAdapter.loadAppOpenAd(mediationAppOpenAdConfiguration, appOpenAdLoadCallback)
+
+    assertThat(appOpenAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -761,11 +758,9 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadAppOpenAdWithFailure(
-      mediationAppOpenAdConfiguration,
-      mockAppOpenAdLoadCallback,
-      expectedError,
-    )
+    mintegralMediationAdapter.loadAppOpenAd(mediationAppOpenAdConfiguration, appOpenAdLoadCallback)
+
+    assertThat(appOpenAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -781,11 +776,9 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadAppOpenAdWithFailure(
-      mediationAppOpenAdConfiguration,
-      mockAppOpenAdLoadCallback,
-      expectedError,
-    )
+    mintegralMediationAdapter.loadAppOpenAd(mediationAppOpenAdConfiguration, appOpenAdLoadCallback)
+
+    assertThat(appOpenAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -802,7 +795,7 @@ class MintegralMediationAdapterTest {
 
       mintegralMediationAdapter.loadAppOpenAd(
         mediationAppOpenAdConfiguration,
-        mockAppOpenAdLoadCallback,
+        appOpenAdLoadCallback,
       )
 
       verify(mockSplashAd).createAd(TEST_PLACEMENT_ID, TEST_AD_UNIT)
@@ -823,11 +816,12 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadRtbAppOpenAdWithFailure(
+    mintegralMediationAdapter.loadRtbAppOpenAd(
       mediationAppOpenAdConfiguration,
-      mockAppOpenAdLoadCallback,
-      expectedError,
+      appOpenAdLoadCallback,
     )
+
+    assertThat(appOpenAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -843,11 +837,12 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadRtbAppOpenAdWithFailure(
+    mintegralMediationAdapter.loadRtbAppOpenAd(
       mediationAppOpenAdConfiguration,
-      mockAppOpenAdLoadCallback,
-      expectedError,
+      appOpenAdLoadCallback,
     )
+
+    assertThat(appOpenAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -863,11 +858,12 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadRtbAppOpenAdWithFailure(
+    mintegralMediationAdapter.loadRtbAppOpenAd(
       mediationAppOpenAdConfiguration,
-      mockAppOpenAdLoadCallback,
-      expectedError,
+      appOpenAdLoadCallback,
     )
+
+    assertThat(appOpenAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -883,11 +879,12 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadRtbAppOpenAdWithFailure(
+    mintegralMediationAdapter.loadRtbAppOpenAd(
       mediationAppOpenAdConfiguration,
-      mockAppOpenAdLoadCallback,
-      expectedError,
+      appOpenAdLoadCallback,
     )
+
+    assertThat(appOpenAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -902,11 +899,12 @@ class MintegralMediationAdapterTest {
         MintegralConstants.ERROR_DOMAIN,
       )
 
-    mintegralMediationAdapter.loadRtbAppOpenAdWithFailure(
+    mintegralMediationAdapter.loadRtbAppOpenAd(
       mediationAppOpenAdConfiguration,
-      mockAppOpenAdLoadCallback,
-      expectedError,
+      appOpenAdLoadCallback,
     )
+
+    assertThat(appOpenAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -925,7 +923,7 @@ class MintegralMediationAdapterTest {
 
       mintegralMediationAdapter.loadRtbAppOpenAd(
         mediationAppOpenAdConfiguration,
-        mockAppOpenAdLoadCallback,
+        appOpenAdLoadCallback,
       )
 
       verify(mockSplashAd).setExtraInfo(any())

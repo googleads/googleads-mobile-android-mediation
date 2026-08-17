@@ -5,18 +5,17 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.facebook.ads.AudienceNetworkAds
 import com.facebook.ads.AudienceNetworkAds.InitResult
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_DOMAIN
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.ERROR_FACEBOOK_INITIALIZATION
 import com.google.android.gms.ads.AdError
+import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
-import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
@@ -43,7 +42,7 @@ class FacebookInitializerTest {
     Mockito.mockStatic(AudienceNetworkAds::class.java).use {
       whenever(AudienceNetworkAds.buildInitSettings(any())) doReturn metaInitSettingsBuilder
 
-      facebookInitializer.initialize(context, TEST_PLACEMENT_ID, mock())
+      facebookInitializer.initialize(context, TEST_PLACEMENT_ID, FakeInitializationListener())
     }
 
     verify(metaInitSettingsBuilder).withMediationService("GOOGLE:" + BuildConfig.ADAPTER_VERSION)
@@ -60,7 +59,7 @@ class FacebookInitializerTest {
       facebookInitializer.initialize(
         context,
         arrayListOf(TEST_PLACEMENT_ID, ANOTHER_PLACEMENT_ID),
-        mock()
+        FakeInitializationListener(),
       )
     }
 
@@ -76,8 +75,8 @@ class FacebookInitializerTest {
     Mockito.mockStatic(AudienceNetworkAds::class.java).use {
       whenever(AudienceNetworkAds.buildInitSettings(any())) doReturn metaInitSettingsBuilder
 
-      facebookInitializer.initialize(context, TEST_PLACEMENT_ID, mock())
-      facebookInitializer.initialize(context, ANOTHER_PLACEMENT_ID, mock())
+      facebookInitializer.initialize(context, TEST_PLACEMENT_ID, FakeInitializationListener())
+      facebookInitializer.initialize(context, ANOTHER_PLACEMENT_ID, FakeInitializationListener())
     }
 
     verify(metaInitSettingsBuilder, times(1)).initialize()
@@ -86,34 +85,34 @@ class FacebookInitializerTest {
   @Test
   fun initialize_ifMetaSdkIsAlreadyInitialized_invokesOnInitializeSuccessWithoutCallingInitializeOnMetaSdk() {
     facebookInitializer.onInitialized(mock { on { isSuccess } doReturn true })
-    val initializationListener = mock<FacebookInitializer.Listener>()
+    val initializationListener = FakeInitializationListener()
     Mockito.mockStatic(AudienceNetworkAds::class.java).use {
       whenever(AudienceNetworkAds.buildInitSettings(any())) doReturn metaInitSettingsBuilder
 
       facebookInitializer.initialize(context, TEST_PLACEMENT_ID, initializationListener)
     }
 
-    verify(initializationListener).onInitializeSuccess()
+    assertThat(initializationListener.isSuccess).isTrue()
     verify(metaInitSettingsBuilder, times(0)).initialize()
   }
 
   @Test
   fun onInitialized_forInitializationSuccess_invokesOnInitializeSuccessOnAllListeners() {
-    val initializationListener1 = mock<FacebookInitializer.Listener>()
-    val initializationListener2 = mock<FacebookInitializer.Listener>()
+    val initializationListener1 = FakeInitializationListener()
+    val initializationListener2 = FakeInitializationListener()
     facebookInitializer.initialize(context, TEST_PLACEMENT_ID, initializationListener1)
     facebookInitializer.initialize(context, ANOTHER_PLACEMENT_ID, initializationListener2)
 
     facebookInitializer.onInitialized(mock { on { isSuccess } doReturn true })
 
-    verify(initializationListener1).onInitializeSuccess()
-    verify(initializationListener2).onInitializeSuccess()
+    assertThat(initializationListener1.isSuccess).isTrue()
+    assertThat(initializationListener2.isSuccess).isTrue()
   }
 
   @Test
   fun onInitialized_forInitializationFailure_invokesOnInitializeErrorOnAllListeners() {
-    val initializationListener1 = mock<FacebookInitializer.Listener>()
-    val initializationListener2 = mock<FacebookInitializer.Listener>()
+    val initializationListener1 = FakeInitializationListener()
+    val initializationListener2 = FakeInitializationListener()
     facebookInitializer.initialize(context, TEST_PLACEMENT_ID, initializationListener1)
     facebookInitializer.initialize(context, ANOTHER_PLACEMENT_ID, initializationListener2)
     val metaInitResult =
@@ -126,8 +125,10 @@ class FacebookInitializerTest {
 
     val expectedAdError =
       AdError(ERROR_FACEBOOK_INITIALIZATION, "Meta SDK initialization failed.", ERROR_DOMAIN)
-    verify(initializationListener1).onInitializeError(argThat(AdErrorMatcher(expectedAdError)))
-    verify(initializationListener2).onInitializeError(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(initializationListener1.isError).isTrue()
+    assertThat(initializationListener1.adError).isEqualTo(expectedAdError)
+    assertThat(initializationListener2.isError).isTrue()
+    assertThat(initializationListener2.adError).isEqualTo(expectedAdError)
   }
 
   @After
@@ -135,6 +136,26 @@ class FacebookInitializerTest {
     // Call facebookInitializer.onInitialized with failed InitResult in tearDown() to clear all the
     // initializer listeners and reset isInitializing and isInitialized to false after each test.
     facebookInitializer.onInitialized(mock { on { isSuccess } doReturn false })
+  }
+
+  private class FakeInitializationListener : FacebookInitializer.Listener {
+    var isSuccess = false
+      private set
+
+    var isError = false
+      private set
+
+    var adError: AdError? = null
+      private set
+
+    override fun onInitializeSuccess() {
+      isSuccess = true
+    }
+
+    override fun onInitializeError(error: AdError) {
+      isError = true
+      this.adError = error
+    }
   }
 
   companion object {

@@ -15,47 +15,38 @@
 package com.google.ads.mediation.imobile
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.imobile.IMobileMediationAdapter.IMOBILE_SDK_ERROR_DOMAIN
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.common.truth.Truth.assertThat
 import jp.co.imobile.sdkads.android.FailNotificationReason
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 
 /** Tests for the APIs implemented by [IMobileInterstitialAd]. */
 @RunWith(AndroidJUnit4::class)
 class IMobileInterstitialAdTest {
 
-  private val adLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock()
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
+
+  private val adLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
 
   private val iMobileSdkWrapper: IMobileSdkWrapper = mock()
 
   private val iMobileInterstitialAd = IMobileInterstitialAd(adLoadCallback, iMobileSdkWrapper)
-
-  private val interstitialAdCallback = mock<MediationInterstitialAdCallback>()
-
-  @Before
-  fun setUp() {
-    whenever(adLoadCallback.onSuccess(iMobileInterstitialAd)) doReturn interstitialAdCallback
-  }
 
   // region ImobileSdkAdListener implementation tests
   @Test
   fun onAdReadyCompleted_callsLoadSuccessCallback() {
     iMobileInterstitialAd.onAdReadyCompleted()
 
-    verify(adLoadCallback).onSuccess(iMobileInterstitialAd)
+    assertThat(adLoadCallback).hasSucceededWith(iMobileInterstitialAd)
   }
 
   @Test
@@ -65,7 +56,7 @@ class IMobileInterstitialAdTest {
 
     iMobileInterstitialAd.onAdShowCompleted()
 
-    verify(interstitialAdCallback).onAdOpened()
+    assertThat(interstitialAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -75,8 +66,8 @@ class IMobileInterstitialAdTest {
 
     iMobileInterstitialAd.onAdCliclkCompleted()
 
-    verify(interstitialAdCallback).reportAdClicked()
-    verify(interstitialAdCallback).onAdLeftApplication()
+    assertThat(interstitialAdCallback.isClicked).isTrue()
+    assertThat(interstitialAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -86,17 +77,16 @@ class IMobileInterstitialAdTest {
 
     iMobileInterstitialAd.onAdCloseCompleted()
 
-    verify(interstitialAdCallback).onAdClosed()
+    assertThat(interstitialAdCallback.isClosed).isTrue()
   }
 
   @Test
   fun onFailed_callsLoadFailureCallback() {
+    val expectedError = AdapterHelper.getAdError(FailNotificationReason.RESPONSE)
+
     iMobileInterstitialAd.onFailed(FailNotificationReason.RESPONSE)
 
-    val adErrorCaptor = argumentCaptor<AdError>()
-    verify(adLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.domain).isEqualTo(IMOBILE_SDK_ERROR_DOMAIN)
+    assertThat(adLoadCallback).hasFailedWith(expectedError)
   }
   // endregion
 }

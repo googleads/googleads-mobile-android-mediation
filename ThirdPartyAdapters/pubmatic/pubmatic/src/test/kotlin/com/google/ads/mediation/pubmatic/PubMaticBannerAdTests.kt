@@ -18,12 +18,14 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.pubmatic.PubMaticMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
 import com.google.android.gms.ads.RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
@@ -33,9 +35,7 @@ import com.pubmatic.sdk.openwrap.banner.POBBannerView
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 
@@ -48,16 +48,12 @@ class PubMaticBannerAdTests {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
 
-  private val mediationBannerAdCallback = mock<MediationBannerAdCallback>()
+  private val bannerAdCallback = FakeMediationBannerAdCallback()
 
-  private val mediationAdLoadCallback =
-    mock<MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>> {
-      on { onSuccess(any()) } doReturn mediationBannerAdCallback
-    }
+  private val bannerAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
 
   private val pobBannerView = mock<POBBannerView>()
-
-  private val adErrorCaptor = argumentCaptor<AdError>()
 
   private val pubMaticAdFactory =
     mock<PubMaticAdFactory> { on { createPOBBannerView(any()) } doReturn pobBannerView }
@@ -83,7 +79,7 @@ class PubMaticBannerAdTests {
   fun setUp() {
     PubMaticBannerAd.newInstance(
         mediationBannerAdConfiguration,
-        mediationAdLoadCallback,
+        bannerAdLoadCallback,
         pubMaticAdFactory,
         isRTB = true,
         mediationUtils,
@@ -95,7 +91,7 @@ class PubMaticBannerAdTests {
   fun onAdReceived_invokesLoadSuccessCallback() {
     pubMaticBannerAd.onAdReceived(pobBannerView)
 
-    verify(mediationAdLoadCallback).onSuccess(pubMaticBannerAd)
+    assertThat(bannerAdLoadCallback).hasSucceededWith(pubMaticBannerAd)
   }
 
   @Test
@@ -104,10 +100,8 @@ class PubMaticBannerAdTests {
 
     pubMaticBannerAd.onAdFailed(pobBannerView, pobError)
 
-    verify(mediationAdLoadCallback).onFailure(adErrorCaptor.capture())
-    val adError = adErrorCaptor.firstValue
-    assertThat(adError.code).isEqualTo(ERROR_PUBMATIC_AD_LOAD_FAILURE)
-    assertThat(adError.domain).isEqualTo(SDK_ERROR_DOMAIN)
+    val expectedError = AdError(pobError.errorCode, pobError.errorMessage, SDK_ERROR_DOMAIN)
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -117,7 +111,7 @@ class PubMaticBannerAdTests {
 
     pubMaticBannerAd.onAdImpression(pobBannerView)
 
-    verify(mediationBannerAdCallback).reportAdImpression()
+    assertThat(bannerAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -127,7 +121,7 @@ class PubMaticBannerAdTests {
 
     pubMaticBannerAd.onAdClicked(pobBannerView)
 
-    verify(mediationBannerAdCallback).reportAdClicked()
+    assertThat(bannerAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -137,7 +131,7 @@ class PubMaticBannerAdTests {
 
     pubMaticBannerAd.onAppLeaving(pobBannerView)
 
-    verify(mediationBannerAdCallback).onAdLeftApplication()
+    assertThat(bannerAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -147,7 +141,7 @@ class PubMaticBannerAdTests {
 
     pubMaticBannerAd.onAdOpened(pobBannerView)
 
-    verify(mediationBannerAdCallback).onAdOpened()
+    assertThat(bannerAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -157,7 +151,7 @@ class PubMaticBannerAdTests {
 
     pubMaticBannerAd.onAdClosed(pobBannerView)
 
-    verify(mediationBannerAdCallback).onAdClosed()
+    assertThat(bannerAdCallback.isClosed).isTrue()
   }
 
   @Test

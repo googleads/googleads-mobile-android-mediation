@@ -19,6 +19,9 @@ import androidx.core.os.bundleOf
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_AD_UNIT
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeSignalCallbacks
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
@@ -27,7 +30,6 @@ import com.google.ads.mediation.mintegral.MintegralConstants.AD_UNIT_ID
 import com.google.ads.mediation.mintegral.MintegralConstants.PLACEMENT_ID
 import com.google.ads.mediation.mintegral.MintegralMediationAdapterTest.SynchronousExecutorService
 import com.google.android.gms.ads.AdFormat
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAd
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
@@ -35,13 +37,11 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
-import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import kotlin.use
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
-import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
@@ -68,17 +68,14 @@ class DoNotRestrictMultipleAdLoadsTest {
 
   private val bidRewardedAdWrapper: MintegralBidRewardedAdWrapper = mock()
 
-  private val appOpenAdLoadCallback:
-    MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> =
-    mock()
+  private val appOpenAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>()
 
-  private val interstitialAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock()
+  private val interstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>()
 
-  private val rewardedAdLoadCallback:
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
-    mock()
+  private val rewardedAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>()
 
   private val appOpenAdWaterfallConfig =
     createMediationAppOpenAdConfiguration(
@@ -119,7 +116,7 @@ class DoNotRestrictMultipleAdLoadsTest {
       bidResponse = TEST_BID_RESPONSE,
     )
 
-  private val signalCallbacks: SignalCallbacks = mock()
+  private val signalCallbacks = FakeSignalCallbacks()
 
   private val appOpenRtbSignalData =
     RtbSignalData(
@@ -190,7 +187,7 @@ class DoNotRestrictMultipleAdLoadsTest {
 
       adapter.collectSignals(appOpenRtbSignalData, signalCallbacks)
 
-      verify(signalCallbacks).onSuccess(any())
+      assertThat(signalCallbacks).hasSucceeded()
     }
   }
 
@@ -214,7 +211,7 @@ class DoNotRestrictMultipleAdLoadsTest {
 
       adapter.collectSignals(interstitialRtbSignalData, signalCallbacks)
 
-      verify(signalCallbacks).onSuccess(any())
+      assertThat(signalCallbacks).hasSucceeded()
     }
   }
 
@@ -238,7 +235,7 @@ class DoNotRestrictMultipleAdLoadsTest {
 
       adapter.collectSignals(rewardedRtbSignalData, signalCallbacks)
 
-      verify(signalCallbacks).onSuccess(any())
+      assertThat(signalCallbacks).hasSucceeded()
     }
   }
 }

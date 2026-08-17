@@ -1,14 +1,18 @@
 ## Moloco Android Mediation Adapter Changelog
 
-#### Version 4.11.0.0 (In progress)
+#### Next version
 
-#### Version 4.10.1.1 (In progress)
+- Updated to report ad impression when native ad is displayed.
+- Fixed banner ads to invoke the `onAdOpened` callback when clicked instead of shown.
+
+#### Version 4.11.0.0
 - Adds adaptive banner support to the Moloco mediation adapter.
+- Verified compatibility with Moloco SDK 4.11.0.
 
 Built and tested with:
 - Google Mobile Ads SDK version 25.4.0.
-- Google Mobile Ads Next-Gen SDK version 1.3.0.
-- Moloco SDK version 4.10.1.
+- Google Mobile Ads Next-Gen SDK version 1.3.1.
+- Moloco SDK version 4.11.0.
 
 #### Version 4.10.1.0
 - Verified compatibility with Moloco SDK 4.10.1.

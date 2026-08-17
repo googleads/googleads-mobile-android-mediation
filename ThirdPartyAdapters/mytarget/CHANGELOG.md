@@ -1,7 +1,13 @@
 ## myTarget Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 5.51.2.0
 - Adapter now automatically forwards GDPR consent found inside `IABTCF_AddtlConsent` to the myTarget SDK if GDPR applies.
+- Verified compatibility with myTarget SDK version 5.51.2.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.3.1.
+- MyTarget SDK version 5.51.2.
 
 #### Version 5.47.1.1
 - Maps `AgeRestrictedTreatment` to myTarget's age restriction settings.

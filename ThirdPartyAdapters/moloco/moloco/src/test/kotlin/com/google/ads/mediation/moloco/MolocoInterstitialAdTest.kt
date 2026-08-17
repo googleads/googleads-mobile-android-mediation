@@ -18,13 +18,14 @@ import android.content.Context
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.MEDIATION_PLATFORM_NAME
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.RequestConfiguration
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
@@ -41,13 +42,10 @@ import org.junit.runner.RunWith
 import org.mockito.MockedStatic
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class MolocoInterstitialAdTest {
@@ -58,19 +56,18 @@ class MolocoInterstitialAdTest {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val mockInterstitialAd = mock<InterstitialAd>()
-  private val mockMediationAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock()
-  private val mockMediationAdCallback = mock<MediationInterstitialAdCallback>()
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
+  private val interstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
 
   @Before
   fun setUp() {
     mockMoloco = mockStatic(Moloco::class.java)
     mediationAdConfiguration = createMediationInterstitialAdConfiguration()
-    MolocoInterstitialAd.newInstance(mediationAdConfiguration, mockMediationAdLoadCallback)
+    MolocoInterstitialAd.newInstance(mediationAdConfiguration, interstitialAdLoadCallback)
       .onSuccess { molocoInterstitialAd = it }
-    whenever(mockMediationAdLoadCallback.onSuccess(molocoInterstitialAd)) doReturn
-      mockMediationAdCallback
   }
 
   @After
@@ -85,7 +82,7 @@ class MolocoInterstitialAdTest {
     val configuration =
       createMediationInterstitialAdConfiguration(serverParameters = serverParameters)
     val callback =
-      mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
+      FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>()
     val expectedAdError =
       AdError(
         MolocoMediationAdapter.ERROR_CODE_MISSING_AD_UNIT,
@@ -96,14 +93,14 @@ class MolocoInterstitialAdTest {
     val result = MolocoInterstitialAd.newInstance(configuration, callback)
 
     assertThat(result.isFailure).isTrue()
-    verify(callback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(callback).hasFailedWith(expectedAdError)
   }
 
   @Test
   fun newInstance_validConfiguration_returnsSuccess() {
     val configuration = createMediationInterstitialAdConfiguration()
     val callback =
-      mock<MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>>()
+      FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>()
 
     val result = MolocoInterstitialAd.newInstance(configuration, callback)
 
@@ -160,7 +157,7 @@ class MolocoInterstitialAdTest {
     val capturedCallback = createInterstitialCaptor.firstValue
     capturedCallback.invoke(/* returnedAd= */ null, molocoError)
 
-    verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -186,7 +183,7 @@ class MolocoInterstitialAdTest {
     val capturedCallback = createInterstitialCaptor.firstValue
     capturedCallback.invoke(/* returnedAd= */ null, /* molocoError= */ null)
 
-    verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   // endregion
@@ -217,14 +214,14 @@ class MolocoInterstitialAdTest {
 
     molocoInterstitialAd.onAdLoadFailed(testError)
 
-    verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
   fun onAdLoadSuccess_invokesOnSuccess() {
     molocoInterstitialAd.onAdLoadSuccess(mock())
 
-    verify(mockMediationAdLoadCallback).onSuccess(molocoInterstitialAd)
+    assertThat(interstitialAdLoadCallback).hasSucceededWith(molocoInterstitialAd)
   }
 
   @Test
@@ -233,7 +230,7 @@ class MolocoInterstitialAdTest {
 
     molocoInterstitialAd.onAdClicked(mock())
 
-    verify(mockMediationAdCallback).reportAdClicked()
+    assertThat(interstitialAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -242,7 +239,7 @@ class MolocoInterstitialAdTest {
 
     molocoInterstitialAd.onAdHidden(mock())
 
-    verify(mockMediationAdCallback).onAdClosed()
+    assertThat(interstitialAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -259,7 +256,8 @@ class MolocoInterstitialAdTest {
 
     molocoInterstitialAd.onAdShowFailed(testError)
 
-    verify(mockMediationAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdCallback.isFailedToShow).isTrue()
+    assertThat(interstitialAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
@@ -268,8 +266,8 @@ class MolocoInterstitialAdTest {
 
     molocoInterstitialAd.onAdShowSuccess(mock())
 
-    verify(mockMediationAdCallback).onAdOpened()
-    verify(mockMediationAdCallback).reportAdImpression()
+    assertThat(interstitialAdCallback.isOpened).isTrue()
+    assertThat(interstitialAdCallback.isImpressionReported).isTrue()
   }
 
   // endregion

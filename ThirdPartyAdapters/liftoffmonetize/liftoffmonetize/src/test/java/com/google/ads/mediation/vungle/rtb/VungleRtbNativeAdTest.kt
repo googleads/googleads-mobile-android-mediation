@@ -8,11 +8,13 @@ import android.widget.RelativeLayout
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_APP_ID
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationNativeAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfiguration
 import com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID
 import com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID
@@ -24,7 +26,6 @@ import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.VideoOptions
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames.ASSET_ICON
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
 import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_MEDIA_VIDEO
@@ -42,7 +43,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -50,7 +50,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
-import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 
 /** Tests for [VungleRtbNativeAd]. */
@@ -62,11 +61,9 @@ class VungleRtbNativeAdTest {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val vungleInitializer = mock<VungleInitializer>()
-  private val nativeAdCallback = mock<MediationNativeAdCallback>()
+  private val nativeAdCallback = FakeMediationNativeAdCallback()
   private val nativeAdLoadCallback =
-    mock<MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>> {
-      on { onSuccess(any()) } doReturn nativeAdCallback
-    }
+    FakeMediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>(nativeAdCallback)
   private val vungleNativeAd =
     mock<NativeAd> {
       on { getAdTitle() } doReturn AD_TITLE
@@ -119,7 +116,7 @@ class VungleRtbNativeAdTest {
     assertThat(adIcon.scale).isEqualTo(1)
     assertThat(adapterRtbNativeAd.overrideImpressionRecording).isTrue()
     assertThat(adapterRtbNativeAd.overrideClickHandling).isTrue()
-    verify(nativeAdLoadCallback).onSuccess(adapterRtbNativeAd)
+    assertThat(nativeAdLoadCallback).hasSucceededWith(adapterRtbNativeAd)
   }
 
   @Test
@@ -323,7 +320,7 @@ class VungleRtbNativeAdTest {
         liftoffError.errorMessage,
         VungleMediationAdapter.VUNGLE_SDK_ERROR_DOMAIN,
       )
-    verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedError)
   }
 
   private fun renderAdAndMockLoadSuccess() {
@@ -345,7 +342,11 @@ class VungleRtbNativeAdTest {
 
     adapterRtbNativeAd.onAdFailedToPlay(vungleNativeAd, liftoffError)
 
-    verifyNoInteractions(nativeAdCallback)
+    assertThat(nativeAdCallback.isImpressionReported).isFalse()
+    assertThat(nativeAdCallback.isClicked).isFalse()
+    assertThat(nativeAdCallback.isOpened).isFalse()
+    assertThat(nativeAdCallback.isClosed).isFalse()
+    assertThat(nativeAdCallback.isLeftApplication).isFalse()
   }
 
   @Test
@@ -354,9 +355,8 @@ class VungleRtbNativeAdTest {
 
     adapterRtbNativeAd.onAdClicked(vungleNativeAd)
 
-    verify(nativeAdCallback).reportAdClicked()
-    verify(nativeAdCallback).onAdOpened()
-    verifyNoMoreInteractions(nativeAdCallback)
+    assertThat(nativeAdCallback.isClicked).isTrue()
+    assertThat(nativeAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -365,8 +365,7 @@ class VungleRtbNativeAdTest {
 
     adapterRtbNativeAd.onAdLeftApplication(vungleNativeAd)
 
-    verify(nativeAdCallback).onAdLeftApplication()
-    verifyNoMoreInteractions(nativeAdCallback)
+    assertThat(nativeAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -375,8 +374,7 @@ class VungleRtbNativeAdTest {
 
     adapterRtbNativeAd.onAdImpression(vungleNativeAd)
 
-    verify(nativeAdCallback).reportAdImpression()
-    verifyNoMoreInteractions(nativeAdCallback)
+    assertThat(nativeAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -385,7 +383,8 @@ class VungleRtbNativeAdTest {
 
     adapterRtbNativeAd.onAdStart(vungleNativeAd)
 
-    verifyNoInteractions(nativeAdCallback)
+    assertThat(nativeAdCallback.isImpressionReported).isFalse()
+    assertThat(nativeAdCallback.isClicked).isFalse()
   }
 
   @Test
@@ -394,7 +393,8 @@ class VungleRtbNativeAdTest {
 
     adapterRtbNativeAd.onAdEnd(vungleNativeAd)
 
-    verifyNoInteractions(nativeAdCallback)
+    assertThat(nativeAdCallback.isImpressionReported).isFalse()
+    assertThat(nativeAdCallback.isClicked).isFalse()
   }
 
   @Test
@@ -404,8 +404,7 @@ class VungleRtbNativeAdTest {
 
     videoListener.onVideoPlay()
 
-    verify(nativeAdCallback).onVideoPlay()
-    verifyNoMoreInteractions(nativeAdCallback)
+    assertThat(nativeAdCallback.isVideoPlaying).isTrue()
   }
 
   @Test
@@ -415,8 +414,7 @@ class VungleRtbNativeAdTest {
 
     videoListener.onVideoPause()
 
-    verify(nativeAdCallback).onVideoPause()
-    verifyNoMoreInteractions(nativeAdCallback)
+    assertThat(nativeAdCallback.isVideoPaused).isTrue()
   }
 
   @Test
@@ -426,8 +424,7 @@ class VungleRtbNativeAdTest {
 
     videoListener.onVideoEnd()
 
-    verify(nativeAdCallback).onVideoComplete()
-    verifyNoMoreInteractions(nativeAdCallback)
+    assertThat(nativeAdCallback.isVideoCompleted).isTrue()
   }
 
   @Test
@@ -437,8 +434,7 @@ class VungleRtbNativeAdTest {
 
     videoListener.onVideoMute()
 
-    verify(nativeAdCallback).onVideoMute()
-    verifyNoMoreInteractions(nativeAdCallback)
+    assertThat(nativeAdCallback.isVideoMuted).isTrue()
   }
 
   @Test
@@ -448,8 +444,7 @@ class VungleRtbNativeAdTest {
 
     videoListener.onVideoUnmute()
 
-    verify(nativeAdCallback).onVideoUnmute()
-    verifyNoMoreInteractions(nativeAdCallback)
+    assertThat(nativeAdCallback.isVideoUnmuted).isTrue()
   }
 
   @Test

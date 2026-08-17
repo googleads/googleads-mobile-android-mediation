@@ -21,21 +21,20 @@ import com.fyber.inneractive.sdk.external.InneractiveAdSpotManager
 import com.fyber.inneractive.sdk.external.InneractiveAdViewUnitController
 import com.fyber.inneractive.sdk.external.InneractiveErrorCode
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
+import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -47,18 +46,17 @@ class DTExchangeRtbInterstitialAdTest {
   private lateinit var dtExchangeRtbInterstitialAd: DTExchangeRtbInterstitialAd
 
   private val context = Robolectric.buildActivity(Activity::class.java).get()
-  private val mockInterstitialAdCallback: MediationInterstitialAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockInterstitialAdCallback
-    }
+  private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
+  private val interstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
+      interstitialAdCallback
+    )
   private val adConfiguration =
     createMediationInterstitialAdConfiguration(context = context, bidResponse = TEST_BID_RESPONSE)
 
   @Before
   fun setUp() {
-    dtExchangeRtbInterstitialAd = DTExchangeRtbInterstitialAd(mockAdLoadCallback)
+    dtExchangeRtbInterstitialAd = DTExchangeRtbInterstitialAd(interstitialAdLoadCallback)
   }
 
   @Test
@@ -78,7 +76,7 @@ class DTExchangeRtbInterstitialAdTest {
 
       dtExchangeRtbInterstitialAd.onInneractiveSuccessfulAdRequest(mock())
 
-      verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+      assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
       verify(mockAdSpot).destroy()
     }
   }
@@ -99,7 +97,7 @@ class DTExchangeRtbInterstitialAdTest {
 
       dtExchangeRtbInterstitialAd.onInneractiveSuccessfulAdRequest(mock())
 
-      verify(mockAdLoadCallback).onSuccess(eq(dtExchangeRtbInterstitialAd))
+      assertThat(interstitialAdLoadCallback).hasSucceededWith(dtExchangeRtbInterstitialAd)
     }
   }
 
@@ -116,7 +114,7 @@ class DTExchangeRtbInterstitialAdTest {
 
     dtExchangeRtbInterstitialAd.onInneractiveFailedAdRequest(mockAdSpot, iErrorCode)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
     verify(mockAdSpot).destroy()
   }
 
@@ -136,8 +134,8 @@ class DTExchangeRtbInterstitialAdTest {
 
       dtExchangeRtbInterstitialAd.showAd(context)
 
-      verify(mockInterstitialAdCallback).onAdOpened()
-      verify(mockInterstitialAdCallback).onAdClosed()
+      assertThat(interstitialAdCallback.isOpened).isTrue()
+      assertThat(interstitialAdCallback.isClosed).isTrue()
       verify(mockAdSpot).destroy()
     }
   }
@@ -180,7 +178,7 @@ class DTExchangeRtbInterstitialAdTest {
 
       dtExchangeRtbInterstitialAd.onAdImpression(mock())
 
-      verify(mockInterstitialAdCallback).reportAdImpression()
+      assertThat(interstitialAdCallback.isImpressionReported).isTrue()
     }
   }
 
@@ -201,7 +199,7 @@ class DTExchangeRtbInterstitialAdTest {
 
       dtExchangeRtbInterstitialAd.onAdClicked(mock())
 
-      verify(mockInterstitialAdCallback).reportAdClicked()
+      assertThat(interstitialAdCallback.isClicked).isTrue()
     }
   }
 
@@ -222,7 +220,7 @@ class DTExchangeRtbInterstitialAdTest {
 
       dtExchangeRtbInterstitialAd.onAdWillOpenExternalApp(mock())
 
-      verify(mockInterstitialAdCallback).onAdLeftApplication()
+      assertThat(interstitialAdCallback.isLeftApplication).isTrue()
     }
   }
 
@@ -253,7 +251,7 @@ class DTExchangeRtbInterstitialAdTest {
 
       dtExchangeRtbInterstitialAd.onAdDismissed(mock())
 
-      verify(mockInterstitialAdCallback).onAdClosed()
+      assertThat(interstitialAdCallback.isClosed).isTrue()
     }
   }
 }

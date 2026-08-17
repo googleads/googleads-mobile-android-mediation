@@ -23,14 +23,15 @@ import android.view.View
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationNativeAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.moloco.MolocoMediationAdapter.Companion.MEDIATION_PLATFORM_NAME
 import com.google.ads.mediation.moloco.MolocoNativeAd.Companion.MEDIA_VIEW_TAG
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.RequestConfiguration
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.NativeAdMapper
@@ -47,14 +48,12 @@ import org.junit.runner.RunWith
 import org.mockito.MockedStatic
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class MolocoNativeAdTest {
@@ -65,19 +64,17 @@ class MolocoNativeAdTest {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val mockNativeAd = mock<NativeAd>()
-  private val mockMediationAdLoadCallback:
-    MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> =
-    mock()
-  private val mockMediationAdCallback = mock<MediationNativeAdCallback>()
+  private val nativeAdCallback = FakeMediationNativeAdCallback()
+  private val nativeAdLoadCallback =
+    FakeMediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>(nativeAdCallback)
 
   @Before
   fun setUp() {
     mockMoloco = mockStatic(Moloco::class.java)
     mediationAdConfiguration = createMediationNativeAdConfiguration()
-    MolocoNativeAd.newInstance(mediationAdConfiguration, mockMediationAdLoadCallback).onSuccess {
+    MolocoNativeAd.newInstance(mediationAdConfiguration, nativeAdLoadCallback).onSuccess {
       molocoNativeAd = it
     }
-    whenever(mockMediationAdLoadCallback.onSuccess(molocoNativeAd)) doReturn mockMediationAdCallback
   }
 
   @After
@@ -90,7 +87,7 @@ class MolocoNativeAdTest {
   fun newInstance_emptyAdUnitId_invokesOnFailureAndReturnsFailure() {
     val serverParameters = bundleOf(MolocoMediationAdapter.KEY_AD_UNIT_ID to "")
     val configuration = createMediationNativeAdConfiguration(serverParameters = serverParameters)
-    val callback = mock<MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>>()
+    val callback = FakeMediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>()
     val expectedAdError =
       AdError(
         MolocoMediationAdapter.ERROR_CODE_MISSING_AD_UNIT,
@@ -101,13 +98,13 @@ class MolocoNativeAdTest {
     val result = MolocoNativeAd.newInstance(configuration, callback)
 
     assertThat(result.isFailure).isTrue()
-    verify(callback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(callback).hasFailedWith(expectedAdError)
   }
 
   @Test
   fun newInstance_validConfiguration_returnsSuccess() {
     val configuration = createMediationNativeAdConfiguration()
-    val callback = mock<MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>>()
+    val callback = FakeMediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>()
 
     val result = MolocoNativeAd.newInstance(configuration, callback)
 
@@ -165,7 +162,7 @@ class MolocoNativeAdTest {
     val capturedCallback = createNativeAdCaptor.firstValue
     capturedCallback.invoke(/* returnedAd= */ null, adCreateError)
 
-    verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -191,7 +188,7 @@ class MolocoNativeAdTest {
     val capturedCallback = createNativeAdCaptor.firstValue
     capturedCallback.invoke(/* returnedAd= */ null, /* adCreateError= */ null)
 
-    verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   // endregion
@@ -225,13 +222,16 @@ class MolocoNativeAdTest {
     assertThat(molocoNativeAd.callToAction).isEqualTo("testCallToAction")
     assertThat(molocoNativeAd.icon).isNotNull()
     assertThat(mediaView.tag).isEqualTo(MEDIA_VIEW_TAG)
-    verify(mockMediationAdLoadCallback).onSuccess(molocoNativeAd)
+    assertThat(nativeAdLoadCallback).hasSucceededWith(molocoNativeAd)
 
     verify(mockMolocoNativeAd).interactionListener = interactionListenerCaptor.capture()
     val capturedListener = interactionListenerCaptor.firstValue
 
+    capturedListener.onImpressionHandled()
+    assertThat(nativeAdCallback.isImpressionReported).isTrue()
+
     capturedListener.onGeneralClickHandled()
-    verify(mockMediationAdCallback).reportAdClicked()
+    assertThat(nativeAdCallback.isClicked).isTrue()
 
     capturedListener.onImpressionHandled()
   }
@@ -261,7 +261,7 @@ class MolocoNativeAdTest {
     assertThat(molocoNativeAd.body).isNull()
     assertThat(molocoNativeAd.callToAction).isNull()
     assertThat(molocoNativeAd.icon).isNull()
-    verify(mockMediationAdLoadCallback).onSuccess(molocoNativeAd)
+    assertThat(nativeAdLoadCallback).hasSucceededWith(molocoNativeAd)
   }
 
   @Test
@@ -282,7 +282,7 @@ class MolocoNativeAdTest {
 
     molocoNativeAd.onAdLoadFailed(testError)
 
-    verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -303,7 +303,7 @@ class MolocoNativeAdTest {
 
     molocoNativeAd.onAdLoadFailed(testError)
 
-    verify(mockMediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test

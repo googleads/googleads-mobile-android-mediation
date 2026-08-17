@@ -24,24 +24,23 @@ import com.fyber.inneractive.sdk.external.InneractiveErrorCode
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenVideoContentController
 import com.fyber.inneractive.sdk.external.InneractiveUnitController.AdDisplayError
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
+import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.robolectric.Robolectric
 
@@ -55,12 +54,11 @@ class FyberRewardedVideoRendererTest {
   private val serverParameters =
     bundleOf(FyberMediationAdapter.KEY_SPOT_ID to AdapterTestKitConstants.TEST_AD_UNIT)
 
-  private val mockRewardedAdCallback: MediationRewardedAdCallback = mock()
-  private val mockAdLoadCallback:
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn mockRewardedAdCallback
-    }
+  private val rewardedAdCallback = FakeMediationRewardedAdCallback()
+  private val rewardedAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+      rewardedAdCallback
+    )
   private val mockRewardedAdSpot: InneractiveAdSpot = mock()
   private val mockUnitController: InneractiveFullscreenUnitController = mock()
 
@@ -76,7 +74,7 @@ class FyberRewardedVideoRendererTest {
     FyberFactory.delegate = mockFactory
     whenever(mockFactory.createRewardedAdSpot()) doReturn mockRewardedAdSpot
     whenever(mockFactory.createInneractiveFullscreenUnitController()) doReturn mockUnitController
-    fyberRewardedAd = FyberRewardedVideoRenderer(mockAdLoadCallback)
+    fyberRewardedAd = FyberRewardedVideoRenderer(rewardedAdLoadCallback)
   }
 
   @After
@@ -91,7 +89,7 @@ class FyberRewardedVideoRendererTest {
   fun onInneractiveSuccessfulAdRequest_invokesOnSuccess() {
     loadAndRenderAdSuccessfully()
 
-    verify(mockAdLoadCallback).onSuccess(fyberRewardedAd)
+    assertThat(rewardedAdLoadCallback).hasSucceededWith(fyberRewardedAd)
   }
 
   @Test
@@ -106,7 +104,7 @@ class FyberRewardedVideoRendererTest {
 
     fyberRewardedAd.onInneractiveFailedAdRequest(mockRewardedAdSpot, InneractiveErrorCode.NO_FILL)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -124,7 +122,12 @@ class FyberRewardedVideoRendererTest {
         context = activity,
         serverParameters = invalidServerParameters,
       )
-    val invalidFyberRewardedAd = FyberRewardedVideoRenderer(mockAdLoadCallback)
+    val invalidRewardedAdCallback = FakeMediationRewardedAdCallback()
+    val invalidRewardedAdLoadCallback =
+      FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
+        invalidRewardedAdCallback
+      )
+    val invalidFyberRewardedAd = FyberRewardedVideoRenderer(invalidRewardedAdLoadCallback)
     val expectedAdError =
       AdError(
         DTExchangeErrorCodes.ERROR_INVALID_SERVER_PARAMETERS,
@@ -134,7 +137,7 @@ class FyberRewardedVideoRendererTest {
 
     invalidFyberRewardedAd.loadWaterfallAd(adConfiguration)
 
-    verify(mockAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(invalidRewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   // endregion
@@ -163,7 +166,8 @@ class FyberRewardedVideoRendererTest {
 
     fyberRewardedAd.showAd(context)
 
-    verify(mockRewardedAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
+    assertThat(rewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
@@ -179,7 +183,8 @@ class FyberRewardedVideoRendererTest {
     loadAndRenderAdSuccessfully()
     fyberRewardedAd.showAd(activity)
 
-    verify(mockRewardedAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
+    assertThat(rewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
   }
 
   @Test
@@ -203,9 +208,9 @@ class FyberRewardedVideoRendererTest {
     loadAndRenderAdSuccessfully()
     fyberRewardedAd.onAdImpression(mockRewardedAdSpot)
 
-    verify(mockRewardedAdCallback).onAdOpened()
-    verify(mockRewardedAdCallback).onVideoStart()
-    verify(mockRewardedAdCallback).reportAdImpression()
+    assertThat(rewardedAdCallback.isOpened).isTrue()
+    assertThat(rewardedAdCallback.isVideoStarted).isTrue()
+    assertThat(rewardedAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -216,9 +221,9 @@ class FyberRewardedVideoRendererTest {
     loadAndRenderAdSuccessfully()
     fyberRewardedAd.onAdImpression(mockRewardedAdSpot)
 
-    verify(mockRewardedAdCallback).onAdOpened()
-    verify(mockRewardedAdCallback, never()).onVideoStart()
-    verify(mockRewardedAdCallback).reportAdImpression()
+    assertThat(rewardedAdCallback.isOpened).isTrue()
+    assertThat(rewardedAdCallback.isVideoStarted).isFalse()
+    assertThat(rewardedAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -226,7 +231,7 @@ class FyberRewardedVideoRendererTest {
     loadAndRenderAdSuccessfully()
     fyberRewardedAd.onAdClicked(mockRewardedAdSpot)
 
-    verify(mockRewardedAdCallback).reportAdClicked()
+    assertThat(rewardedAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -234,7 +239,7 @@ class FyberRewardedVideoRendererTest {
     loadAndRenderAdSuccessfully()
     fyberRewardedAd.onAdDismissed(mockRewardedAdSpot)
 
-    verify(mockRewardedAdCallback).onAdClosed()
+    assertThat(rewardedAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -242,8 +247,8 @@ class FyberRewardedVideoRendererTest {
     loadAndRenderAdSuccessfully()
     fyberRewardedAd.onAdRewarded(mockRewardedAdSpot)
 
-    verify(mockRewardedAdCallback).onUserEarnedReward()
-    verify(mockRewardedAdCallback).onVideoComplete()
+    assertThat(rewardedAdCallback.isUserEarnedReward).isTrue()
+    assertThat(rewardedAdCallback.isVideoCompleted).isTrue()
   }
 
   @Test
@@ -251,7 +256,14 @@ class FyberRewardedVideoRendererTest {
     loadAndRenderAdSuccessfully()
     fyberRewardedAd.onAdWillOpenExternalApp(mockRewardedAdSpot)
 
-    verifyNoInteractions(mockRewardedAdCallback)
+    assertThat(rewardedAdCallback.isOpened).isFalse()
+    assertThat(rewardedAdCallback.isClosed).isFalse()
+    assertThat(rewardedAdCallback.isClicked).isFalse()
+    assertThat(rewardedAdCallback.isImpressionReported).isFalse()
+    assertThat(rewardedAdCallback.isUserEarnedReward).isFalse()
+    assertThat(rewardedAdCallback.isVideoStarted).isFalse()
+    assertThat(rewardedAdCallback.isVideoCompleted).isFalse()
+    assertThat(rewardedAdCallback.isFailedToShow).isFalse()
   }
 
   @Test
@@ -261,7 +273,14 @@ class FyberRewardedVideoRendererTest {
     loadAndRenderAdSuccessfully()
     fyberRewardedAd.onAdEnteredErrorState(mockRewardedAdSpot, mockAdDisplayError)
 
-    verifyNoInteractions(mockRewardedAdCallback)
+    assertThat(rewardedAdCallback.isOpened).isFalse()
+    assertThat(rewardedAdCallback.isClosed).isFalse()
+    assertThat(rewardedAdCallback.isClicked).isFalse()
+    assertThat(rewardedAdCallback.isImpressionReported).isFalse()
+    assertThat(rewardedAdCallback.isUserEarnedReward).isFalse()
+    assertThat(rewardedAdCallback.isVideoStarted).isFalse()
+    assertThat(rewardedAdCallback.isVideoCompleted).isFalse()
+    assertThat(rewardedAdCallback.isFailedToShow).isFalse()
   }
 
   @Test
@@ -269,7 +288,14 @@ class FyberRewardedVideoRendererTest {
     loadAndRenderAdSuccessfully()
     fyberRewardedAd.onAdWillCloseInternalBrowser(mockRewardedAdSpot)
 
-    verifyNoInteractions(mockRewardedAdCallback)
+    assertThat(rewardedAdCallback.isOpened).isFalse()
+    assertThat(rewardedAdCallback.isClosed).isFalse()
+    assertThat(rewardedAdCallback.isClicked).isFalse()
+    assertThat(rewardedAdCallback.isImpressionReported).isFalse()
+    assertThat(rewardedAdCallback.isUserEarnedReward).isFalse()
+    assertThat(rewardedAdCallback.isVideoStarted).isFalse()
+    assertThat(rewardedAdCallback.isVideoCompleted).isFalse()
+    assertThat(rewardedAdCallback.isFailedToShow).isFalse()
   }
 
   // endregion

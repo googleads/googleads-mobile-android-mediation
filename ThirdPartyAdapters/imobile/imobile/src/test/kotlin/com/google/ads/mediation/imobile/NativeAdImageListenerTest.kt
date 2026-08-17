@@ -17,14 +17,15 @@ package com.google.ads.mediation.imobile
 import android.app.Activity
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationNativeAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.common.truth.Truth.assertThat
 import jp.co.imobile.sdkads.android.ImobileSdkAdsNativeAdData
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -34,8 +35,9 @@ import org.robolectric.Robolectric
 @RunWith(AndroidJUnit4::class)
 class NativeAdImageListenerTest {
 
-  private val adLoadCallback: MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> =
-    mock()
+  private val nativeAdCallback = FakeMediationNativeAdCallback()
+  private val adLoadCallback =
+    FakeMediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>(nativeAdCallback)
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
   private val clickEvent: Runnable = mock()
   private val adData: ImobileSdkAdsNativeAdData = mock {
@@ -51,9 +53,8 @@ class NativeAdImageListenerTest {
   fun onNativeAdImageReciveCompleted_invokesLoadSuccessWithNativeAdMapper() {
     nativeAdImageListener.onNativeAdImageReciveCompleted(mock())
 
-    val nativeAdMapperCaptor = argumentCaptor<NativeAdMapper>()
-    verify(adLoadCallback).onSuccess(nativeAdMapperCaptor.capture())
-    val nativeAdMapper = nativeAdMapperCaptor.firstValue
+    assertThat(adLoadCallback).hasSucceeded()
+    val nativeAdMapper = adLoadCallback.loadedAd!!
     assertThat(nativeAdMapper.advertiser).isEqualTo(SPONSORED_TEXT)
     assertThat(nativeAdMapper.body).isEqualTo(DESCRIPTION)
     assertThat(nativeAdMapper.callToAction).isEqualTo(Constants.CALL_TO_ACTION)

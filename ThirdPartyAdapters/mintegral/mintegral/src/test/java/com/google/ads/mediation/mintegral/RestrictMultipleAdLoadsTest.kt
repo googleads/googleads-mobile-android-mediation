@@ -19,6 +19,9 @@ import androidx.core.os.bundleOf
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_AD_UNIT
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_BID_RESPONSE
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_PLACEMENT_ID
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeSignalCallbacks
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
@@ -26,11 +29,11 @@ import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfigur
 import com.google.ads.mediation.mintegral.MintegralConstants.AD_UNIT_ID
 import com.google.ads.mediation.mintegral.MintegralConstants.ERROR_CODE_AD_ALREADY_LOADED
 import com.google.ads.mediation.mintegral.MintegralConstants.ERROR_DOMAIN
+import com.google.ads.mediation.mintegral.MintegralConstants.ERROR_MSG_AD_ALREADY_LOADED
 import com.google.ads.mediation.mintegral.MintegralConstants.PLACEMENT_ID
 import com.google.ads.mediation.mintegral.MintegralMediationAdapterTest.SynchronousExecutorService
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAd
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
@@ -38,7 +41,6 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
-import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
 import com.google.common.truth.Truth.assertThat
 import com.mbridge.msdk.newinterstitial.out.NewInterstitialWithCodeListener
 import com.mbridge.msdk.out.MBSplashLoadWithCodeListener
@@ -50,7 +52,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockStatic
-import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
@@ -78,17 +79,14 @@ class RestrictMultipleAdLoadsTest {
 
   private val bidRewardedAdWrapper: MintegralBidRewardedAdWrapper = mock()
 
-  private val appOpenAdLoadCallback:
-    MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback> =
-    mock()
+  private val appOpenAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>()
 
-  private val interstitialAdLoadCallback:
-    MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> =
-    mock()
+  private val interstitialAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>()
 
-  private val rewardedAdLoadCallback:
-    MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> =
-    mock()
+  private val rewardedAdLoadCallback =
+    FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>()
 
   private val appOpenAdWaterfallConfig =
     createMediationAppOpenAdConfiguration(
@@ -129,7 +127,7 @@ class RestrictMultipleAdLoadsTest {
       bidResponse = TEST_BID_RESPONSE,
     )
 
-  private val signalCallbacks: SignalCallbacks = mock()
+  private val signalCallbacks = FakeSignalCallbacks()
 
   private val appOpenRtbSignalData =
     RtbSignalData(
@@ -195,10 +193,9 @@ class RestrictMultipleAdLoadsTest {
 
       adapter.loadAppOpenAd(appOpenAdWaterfallConfig, appOpenAdLoadCallback)
 
-      val adErrorCaptor = argumentCaptor<AdError>()
-      verify(appOpenAdLoadCallback).onFailure(adErrorCaptor.capture())
-      assertThat(adErrorCaptor.firstValue.code).isEqualTo(ERROR_CODE_AD_ALREADY_LOADED)
-      assertThat(adErrorCaptor.firstValue.domain).isEqualTo(ERROR_DOMAIN)
+      val expectedError =
+        AdError(ERROR_CODE_AD_ALREADY_LOADED, ERROR_MSG_AD_ALREADY_LOADED, ERROR_DOMAIN)
+      assertThat(appOpenAdLoadCallback).hasFailedWith(expectedError)
     }
   }
 
@@ -260,10 +257,9 @@ class RestrictMultipleAdLoadsTest {
 
       adapter.collectSignals(appOpenRtbSignalData, signalCallbacks)
 
-      val adErrorCaptor = argumentCaptor<AdError>()
-      verify(signalCallbacks).onFailure(adErrorCaptor.capture())
-      assertThat(adErrorCaptor.firstValue.code).isEqualTo(ERROR_CODE_AD_ALREADY_LOADED)
-      assertThat(adErrorCaptor.firstValue.domain).isEqualTo(ERROR_DOMAIN)
+      val expectedError =
+        AdError(ERROR_CODE_AD_ALREADY_LOADED, ERROR_MSG_AD_ALREADY_LOADED, ERROR_DOMAIN)
+      assertThat(signalCallbacks).hasFailedWith(expectedError)
     }
   }
 
@@ -278,7 +274,7 @@ class RestrictMultipleAdLoadsTest {
 
       adapter.collectSignals(appOpenRtbSignalData, signalCallbacks)
 
-      verify(signalCallbacks).onSuccess(any())
+      assertThat(signalCallbacks).hasSucceeded()
     }
   }
 
@@ -298,7 +294,7 @@ class RestrictMultipleAdLoadsTest {
 
       adapter.collectSignals(appOpenRtbSignalData, signalCallbacks)
 
-      verify(signalCallbacks).onSuccess(any())
+      assertThat(signalCallbacks).hasSucceeded()
     }
   }
 
@@ -313,7 +309,7 @@ class RestrictMultipleAdLoadsTest {
 
       adapter.collectSignals(appOpenRtbSignalData, signalCallbacks)
 
-      verify(signalCallbacks).onSuccess(any())
+      assertThat(signalCallbacks).hasSucceeded()
     }
   }
 
@@ -325,10 +321,9 @@ class RestrictMultipleAdLoadsTest {
 
       adapter.loadInterstitialAd(interstitialAdWaterfallConfig, interstitialAdLoadCallback)
 
-      val adErrorCaptor = argumentCaptor<AdError>()
-      verify(interstitialAdLoadCallback).onFailure(adErrorCaptor.capture())
-      assertThat(adErrorCaptor.firstValue.code).isEqualTo(ERROR_CODE_AD_ALREADY_LOADED)
-      assertThat(adErrorCaptor.firstValue.domain).isEqualTo(ERROR_DOMAIN)
+      val expectedError =
+        AdError(ERROR_CODE_AD_ALREADY_LOADED, ERROR_MSG_AD_ALREADY_LOADED, ERROR_DOMAIN)
+      assertThat(interstitialAdLoadCallback).hasFailedWith(expectedError)
     }
   }
 
@@ -392,10 +387,9 @@ class RestrictMultipleAdLoadsTest {
 
       adapter.collectSignals(interstitialRtbSignalData, signalCallbacks)
 
-      val adErrorCaptor = argumentCaptor<AdError>()
-      verify(signalCallbacks).onFailure(adErrorCaptor.capture())
-      assertThat(adErrorCaptor.firstValue.code).isEqualTo(ERROR_CODE_AD_ALREADY_LOADED)
-      assertThat(adErrorCaptor.firstValue.domain).isEqualTo(ERROR_DOMAIN)
+      val expectedError =
+        AdError(ERROR_CODE_AD_ALREADY_LOADED, ERROR_MSG_AD_ALREADY_LOADED, ERROR_DOMAIN)
+      assertThat(signalCallbacks).hasFailedWith(expectedError)
     }
   }
 
@@ -411,7 +405,7 @@ class RestrictMultipleAdLoadsTest {
 
       adapter.collectSignals(interstitialRtbSignalData, signalCallbacks)
 
-      verify(signalCallbacks).onSuccess(any())
+      assertThat(signalCallbacks).hasSucceeded()
     }
   }
 
@@ -431,7 +425,7 @@ class RestrictMultipleAdLoadsTest {
 
       adapter.collectSignals(interstitialRtbSignalData, signalCallbacks)
 
-      verify(signalCallbacks).onSuccess(any())
+      assertThat(signalCallbacks).hasSucceeded()
     }
   }
 
@@ -447,7 +441,7 @@ class RestrictMultipleAdLoadsTest {
 
       adapter.collectSignals(interstitialRtbSignalData, signalCallbacks)
 
-      verify(signalCallbacks).onSuccess(any())
+      assertThat(signalCallbacks).hasSucceeded()
     }
   }
 
@@ -459,10 +453,9 @@ class RestrictMultipleAdLoadsTest {
 
       adapter.loadRewardedAd(rewardedAdWaterfallConfig, rewardedAdLoadCallback)
 
-      val adErrorCaptor = argumentCaptor<AdError>()
-      verify(rewardedAdLoadCallback).onFailure(adErrorCaptor.capture())
-      assertThat(adErrorCaptor.firstValue.code).isEqualTo(ERROR_CODE_AD_ALREADY_LOADED)
-      assertThat(adErrorCaptor.firstValue.domain).isEqualTo(ERROR_DOMAIN)
+      val expectedError =
+        AdError(ERROR_CODE_AD_ALREADY_LOADED, ERROR_MSG_AD_ALREADY_LOADED, ERROR_DOMAIN)
+      assertThat(rewardedAdLoadCallback).hasFailedWith(expectedError)
     }
   }
 
@@ -519,10 +512,9 @@ class RestrictMultipleAdLoadsTest {
 
       adapter.collectSignals(rewardedRtbSignalData, signalCallbacks)
 
-      val adErrorCaptor = argumentCaptor<AdError>()
-      verify(signalCallbacks).onFailure(adErrorCaptor.capture())
-      assertThat(adErrorCaptor.firstValue.code).isEqualTo(ERROR_CODE_AD_ALREADY_LOADED)
-      assertThat(adErrorCaptor.firstValue.domain).isEqualTo(ERROR_DOMAIN)
+      val expectedError =
+        AdError(ERROR_CODE_AD_ALREADY_LOADED, ERROR_MSG_AD_ALREADY_LOADED, ERROR_DOMAIN)
+      assertThat(signalCallbacks).hasFailedWith(expectedError)
     }
   }
 
@@ -537,7 +529,7 @@ class RestrictMultipleAdLoadsTest {
 
       adapter.collectSignals(rewardedRtbSignalData, signalCallbacks)
 
-      verify(signalCallbacks).onSuccess(any())
+      assertThat(signalCallbacks).hasSucceeded()
     }
   }
 
@@ -552,7 +544,7 @@ class RestrictMultipleAdLoadsTest {
 
       adapter.collectSignals(rewardedRtbSignalData, signalCallbacks)
 
-      verify(signalCallbacks).onSuccess(any())
+      assertThat(signalCallbacks).hasSucceeded()
     }
   }
 
@@ -567,7 +559,7 @@ class RestrictMultipleAdLoadsTest {
 
       adapter.collectSignals(rewardedRtbSignalData, signalCallbacks)
 
-      verify(signalCallbacks).onSuccess(any())
+      assertThat(signalCallbacks).hasSucceeded()
     }
   }
 }

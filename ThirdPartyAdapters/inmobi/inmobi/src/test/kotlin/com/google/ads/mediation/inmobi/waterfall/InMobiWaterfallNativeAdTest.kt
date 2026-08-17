@@ -12,14 +12,15 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationNativeAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.inmobi.InMobiAdFactory
 import com.google.ads.mediation.inmobi.InMobiAdapterUtils
 import com.google.ads.mediation.inmobi.InMobiConstants
 import com.google.ads.mediation.inmobi.InMobiInitializer
 import com.google.ads.mediation.inmobi.InMobiInitializer.Listener
 import com.google.ads.mediation.inmobi.InMobiNativeWrapper
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
@@ -51,17 +52,19 @@ import org.robolectric.shadows.ShadowBitmapFactory
 @RunWith(AndroidJUnit4::class)
 class InMobiWaterfallNativeAdTest {
   private val nativeAdConfiguration = mock<MediationNativeAdConfiguration>()
+  private val mediationNativeAdCallback = FakeMediationNativeAdCallback()
   private val mediationAdLoadCallback =
-    mock<MediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>>()
+    FakeMediationAdLoadCallback<UnifiedNativeAdMapper, MediationNativeAdCallback>(
+      mediationNativeAdCallback
+    )
   private val inMobiInitializer = mock<InMobiInitializer>()
   private val inMobiAdFactory = mock<InMobiAdFactory>()
   private val inMobiNative = mock<InMobiNative>()
   private val inMobiNativeWrapper = mock<InMobiNativeWrapper>()
   private val wrappedNativeAd = mock<InMobiNativeWrapper>()
-  private val mediationNativeAdCallback = mock<MediationNativeAdCallback>()
   private val context = ApplicationProvider.getApplicationContext<Context>()
 
-  lateinit var waterfallNativeAd: InMobiWaterfallNativeAd
+  private lateinit var waterfallNativeAd: InMobiWaterfallNativeAd
   private lateinit var adMetaInfo: AdMetaInfo
   private lateinit var nativeAdOptions: NativeAdOptions
 
@@ -70,7 +73,6 @@ class InMobiWaterfallNativeAdTest {
     adMetaInfo = AdMetaInfo("fake", null)
     whenever(inMobiNativeWrapper.inMobiNative).thenReturn(inMobiNative)
     whenever(wrappedNativeAd.inMobiNative).thenReturn(inMobiNative)
-    whenever(mediationAdLoadCallback.onSuccess(any())).thenReturn(mediationNativeAdCallback)
     whenever(inMobiAdFactory.createInMobiNativeWrapper(anyOrNull())).thenReturn(wrappedNativeAd)
     setupWrappedInMobiNativeAd()
     whenever(nativeAdConfiguration.context).thenReturn(context)
@@ -103,21 +105,23 @@ class InMobiWaterfallNativeAdTest {
     assertThat(waterfallNativeAd.inMobiUnifiedNativeAdMapper.icon.scale).isEqualTo(1.0)
     assertThat(waterfallNativeAd.inMobiUnifiedNativeAdMapper.hasVideoContent()).isTrue()
 
-    verify(mediationAdLoadCallback).onSuccess(any())
+    assertThat(mediationAdLoadCallback)
+      .hasSucceededWith(waterfallNativeAd.inMobiUnifiedNativeAdMapper)
   }
 
   @Test
   fun onAdLoadFailed_invokesFailureCallback() {
-    var inMobiAdRequestStatus =
+    val inMobiAdRequestStatus =
       InMobiAdRequestStatus(InMobiAdRequestStatus.StatusCode.INTERNAL_ERROR)
+    val expectedAdError =
+      InMobiConstants.createSdkError(
+        InMobiAdapterUtils.getMediationErrorCode(inMobiAdRequestStatus),
+        inMobiAdRequestStatus.message.orEmpty(),
+      )
 
     waterfallNativeAd.onAdLoadFailed(inMobiNativeWrapper.inMobiNative, inMobiAdRequestStatus)
 
-    val captor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(captor.capture())
-    assertThat(captor.firstValue.code)
-      .isEqualTo(InMobiAdapterUtils.getMediationErrorCode(inMobiAdRequestStatus))
-    assertThat(captor.firstValue.domain).isEqualTo(InMobiConstants.INMOBI_SDK_ERROR_DOMAIN)
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -127,7 +131,7 @@ class InMobiWaterfallNativeAdTest {
 
     waterfallNativeAd.onAdFullScreenDismissed(inMobiNativeWrapper.inMobiNative)
 
-    verify(mediationNativeAdCallback).onAdClosed()
+    assertThat(mediationNativeAdCallback.isClosed).isTrue()
   }
 
   @Test
@@ -137,7 +141,7 @@ class InMobiWaterfallNativeAdTest {
 
     waterfallNativeAd.onAdFullScreenDisplayed(inMobiNativeWrapper.inMobiNative)
 
-    verify(mediationNativeAdCallback).onAdOpened()
+    assertThat(mediationNativeAdCallback.isOpened).isTrue()
   }
 
   @Test
@@ -147,7 +151,7 @@ class InMobiWaterfallNativeAdTest {
 
     waterfallNativeAd.onUserWillLeaveApplication(inMobiNativeWrapper.inMobiNative)
 
-    verify(mediationNativeAdCallback).onAdLeftApplication()
+    assertThat(mediationNativeAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -157,7 +161,7 @@ class InMobiWaterfallNativeAdTest {
 
     waterfallNativeAd.onAdClicked(inMobiNativeWrapper.inMobiNative)
 
-    verify(mediationNativeAdCallback).reportAdClicked()
+    assertThat(mediationNativeAdCallback.isClicked).isTrue()
   }
 
   @Test
@@ -167,7 +171,7 @@ class InMobiWaterfallNativeAdTest {
 
     waterfallNativeAd.onAdImpression(inMobiNativeWrapper.inMobiNative)
 
-    verify(mediationNativeAdCallback).reportAdImpression()
+    assertThat(mediationNativeAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -200,7 +204,8 @@ class InMobiWaterfallNativeAdTest {
       shadowOf(Looper.getMainLooper()).idle()
     }
 
-    verify(mediationAdLoadCallback).onSuccess(any())
+    assertThat(mediationAdLoadCallback)
+      .hasSucceededWith(waterfallNativeAd.inMobiUnifiedNativeAdMapper)
     assertThat(waterfallNativeAd.inMobiUnifiedNativeAdMapper.icon.drawable).isNotNull()
     assertThat(waterfallNativeAd.inMobiUnifiedNativeAdMapper.images).isNotEmpty()
     assertThat(waterfallNativeAd.inMobiUnifiedNativeAdMapper.images[0].drawable).isNotNull()
@@ -219,10 +224,12 @@ class InMobiWaterfallNativeAdTest {
       shadowOf(Looper.getMainLooper()).idle()
     }
 
-    val captor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(captor.capture())
-    assertThat(captor.firstValue.code).isEqualTo(InMobiConstants.ERROR_NATIVE_ASSET_DOWNLOAD_FAILED)
-    assertThat(captor.firstValue.domain).isEqualTo(InMobiConstants.ERROR_DOMAIN)
+    val expectedAdError =
+      InMobiConstants.createAdapterError(
+        InMobiConstants.ERROR_NATIVE_ASSET_DOWNLOAD_FAILED,
+        "InMobi SDK failed to download native ad image assets.",
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -231,10 +238,8 @@ class InMobiWaterfallNativeAdTest {
 
     waterfallNativeAd.onAdLoadSucceeded(inMobiNativeWrapper.inMobiNative, adMetaInfo)
 
-    val captor = argumentCaptor<AdError>()
-    verify(mediationAdLoadCallback).onFailure(captor.capture())
-    assertThat(captor.firstValue.code).isEqualTo(InMobiConstants.ERROR_MALFORMED_IMAGE_URL)
-    assertThat(captor.firstValue.domain).isEqualTo(InMobiConstants.ERROR_DOMAIN)
+    assertThat(mediationAdLoadCallback)
+      .hasFailedWith(InMobiConstants.ERROR_MALFORMED_IMAGE_URL, InMobiConstants.ERROR_DOMAIN)
   }
 
   @Test
@@ -298,7 +303,7 @@ class InMobiWaterfallNativeAdTest {
     waterfallNativeAd.onAdLoadSucceeded(inMobiNativeWrapper.inMobiNative, adMetaInfo)
 
     videoEventListenerCaptor.firstValue.onVideoCompleted(inMobiNativeWrapper.inMobiNative)
-    verify(mediationNativeAdCallback).onVideoComplete()
+    assertThat(mediationNativeAdCallback.isVideoCompleted).isTrue()
   }
 
   private fun setupWrappedInMobiNativeAd(): Unit {

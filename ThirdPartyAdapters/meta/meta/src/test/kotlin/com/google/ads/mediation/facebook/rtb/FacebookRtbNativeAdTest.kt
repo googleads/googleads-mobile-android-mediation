@@ -16,9 +16,11 @@ import com.facebook.ads.NativeAdBase.Image
 import com.facebook.ads.NativeAdListener
 import com.facebook.ads.NativeAdOptionsViewPosition
 import com.facebook.ads.NativeBannerAd
-import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants
 import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_WATERMARK
+import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
+import com.google.ads.mediation.adaptertestkit.FakeMediationNativeAdCallback
+import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfiguration
 import com.google.ads.mediation.facebook.FacebookMediationAdapter
 import com.google.ads.mediation.facebook.FacebookMediationAdapter.KEY_ID
@@ -26,7 +28,6 @@ import com.google.ads.mediation.facebook.FacebookMediationAdapter.KEY_SOCIAL_CON
 import com.google.ads.mediation.facebook.MetaFactory
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.formats.UnifiedNativeAdAssetNames.ASSET_ICON
-import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.nativead.NativeAdOptions
@@ -39,10 +40,8 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -68,12 +67,9 @@ class FacebookRtbNativeAdTest {
       watermark = TEST_WATERMARK,
       bidResponse = AdapterTestKitConstants.TEST_BID_RESPONSE,
     )
-  private val nativeAdCallback = mock<MediationNativeAdCallback>()
-  private val nativeAdLoadCallback:
-    MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback> =
-    mock {
-      on { onSuccess(any()) } doReturn nativeAdCallback
-    }
+  private val nativeAdCallback = FakeMediationNativeAdCallback()
+  private val nativeAdLoadCallback =
+    FakeMediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>(nativeAdCallback)
   private val metaNativeAdLoadConfig: NativeAdBase.NativeLoadAdConfig = mock()
   private val metaNativeAdLoadConfigBuilder: NativeAdBase.NativeAdLoadConfigBuilder = mock {
     on { withBid(any()) } doReturn this.mock
@@ -139,7 +135,7 @@ class FacebookRtbNativeAdTest {
         "Ad Loaded is not a Native Ad.",
         FacebookMediationAdapter.ERROR_DOMAIN,
       )
-    verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -156,7 +152,7 @@ class FacebookRtbNativeAdTest {
         "Ad from Meta Audience Network doesn't have all required assets.",
         FacebookMediationAdapter.ERROR_DOMAIN,
       )
-    verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -173,7 +169,7 @@ class FacebookRtbNativeAdTest {
         "Ad from Meta Audience Network doesn't have all required assets.",
         FacebookMediationAdapter.ERROR_DOMAIN,
       )
-    verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -190,7 +186,7 @@ class FacebookRtbNativeAdTest {
         "Ad from Meta Audience Network doesn't have all required assets.",
         FacebookMediationAdapter.ERROR_DOMAIN,
       )
-    verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -207,7 +203,7 @@ class FacebookRtbNativeAdTest {
         "Ad from Meta Audience Network doesn't have all required assets.",
         FacebookMediationAdapter.ERROR_DOMAIN,
       )
-    verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -224,7 +220,7 @@ class FacebookRtbNativeAdTest {
         "Ad from Meta Audience Network doesn't have all required assets.",
         FacebookMediationAdapter.ERROR_DOMAIN,
       )
-    verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -241,7 +237,7 @@ class FacebookRtbNativeAdTest {
         "Ad from Meta Audience Network doesn't have all required assets.",
         FacebookMediationAdapter.ERROR_DOMAIN,
       )
-    verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -258,7 +254,7 @@ class FacebookRtbNativeAdTest {
         metaAdLoadError.errorMessage,
         FacebookMediationAdapter.FACEBOOK_SDK_ERROR_DOMAIN,
       )
-    verify(nativeAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -288,7 +284,7 @@ class FacebookRtbNativeAdTest {
     assertThat(extras).string(KEY_ID).isEqualTo(META_AD_ID)
     assertThat(extras).containsKey(KEY_SOCIAL_CONTEXT_ASSET)
     assertThat(extras).string(KEY_SOCIAL_CONTEXT_ASSET).isEqualTo(META_AD_SOCIAL_CONTEXT)
-    verify(nativeAdLoadCallback).onSuccess(eq(facebookRtbNativeAd))
+    assertThat(nativeAdLoadCallback).hasSucceededWith(facebookRtbNativeAd)
   }
 
   @Test
@@ -329,7 +325,7 @@ class FacebookRtbNativeAdTest {
     assertThat(extras).string(KEY_ID).isEqualTo(META_AD_ID)
     assertThat(extras).containsKey(KEY_SOCIAL_CONTEXT_ASSET)
     assertThat(extras).string(KEY_SOCIAL_CONTEXT_ASSET).isEqualTo(META_AD_SOCIAL_CONTEXT)
-    verify(nativeAdLoadCallback).onSuccess(eq(facebookRtbNativeAd))
+    assertThat(nativeAdLoadCallback).hasSucceededWith(facebookRtbNativeAd)
   }
 
   @Test
@@ -354,7 +350,7 @@ class FacebookRtbNativeAdTest {
 
     nativeAdListener.onLoggingImpression(metaNativeAd)
 
-    verify(nativeAdCallback).reportAdImpression()
+    assertThat(nativeAdCallback.isImpressionReported).isTrue()
   }
 
   @Test
@@ -367,9 +363,9 @@ class FacebookRtbNativeAdTest {
 
     nativeAdListener.onAdClicked(metaNativeAd)
 
-    verify(nativeAdCallback).reportAdClicked()
-    verify(nativeAdCallback).onAdOpened()
-    verify(nativeAdCallback).onAdLeftApplication()
+    assertThat(nativeAdCallback.isClicked).isTrue()
+    assertThat(nativeAdCallback.isOpened).isTrue()
+    assertThat(nativeAdCallback.isLeftApplication).isTrue()
   }
 
   @Test
@@ -384,7 +380,7 @@ class FacebookRtbNativeAdTest {
 
     mediaViewListenerCaptor.firstValue.onComplete(metaMediaView)
 
-    verify(nativeAdCallback).onVideoComplete()
+    assertThat(nativeAdCallback.isVideoCompleted).isTrue()
   }
 
   @Test
