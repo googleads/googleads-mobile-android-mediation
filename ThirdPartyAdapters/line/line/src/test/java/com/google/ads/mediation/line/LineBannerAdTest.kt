@@ -361,7 +361,7 @@ class LineBannerAdTest {
 
     val expectedError =
       AdError(
-        LineBannerAd.ERROR_CODE_MISMATCH_AD_SIZE,
+        LineMediationAdapter.ERROR_CODE_MISMATCH_AD_SIZE,
         "Unexpected ad size loaded. Expected 320x50 but received 320x100.",
         LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
       )

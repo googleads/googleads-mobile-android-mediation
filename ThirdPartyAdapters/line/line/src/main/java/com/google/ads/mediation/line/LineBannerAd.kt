@@ -123,7 +123,7 @@ private constructor(
       val closestSize = mediationUtils.findClosestSize(it.context, adSize, listOf(returnedAdSize))
       if (closestSize == null) {
         val logMessage =
-          ERROR_MSG_MISMATCH_AD_SIZE.format(
+          LineMediationAdapter.ERROR_MSG_MISMATCH_AD_SIZE.format(
             adSize.width,
             adSize.height,
             it.logicalWidth,
@@ -132,7 +132,7 @@ private constructor(
         Log.w(TAG, logMessage)
         val adError =
           AdError(
-            ERROR_CODE_MISMATCH_AD_SIZE,
+            LineMediationAdapter.ERROR_CODE_MISMATCH_AD_SIZE,
             logMessage,
             LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
           )
@@ -207,9 +207,6 @@ private constructor(
 
   companion object {
     private val TAG = LineBannerAd::class.simpleName
-    const val ERROR_CODE_MISMATCH_AD_SIZE = 103
-    const val ERROR_MSG_MISMATCH_AD_SIZE =
-      "Unexpected ad size loaded. Expected %sx%s but received %sx%s."
 
     fun newInstance(
       mediationBannerAdConfiguration: MediationBannerAdConfiguration,
