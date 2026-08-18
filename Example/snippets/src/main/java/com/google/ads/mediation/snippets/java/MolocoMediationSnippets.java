@@ -29,7 +29,7 @@ public class MolocoMediationSnippets {
     // [START set_user_consent]
     PrivacySettings privacySettings =
         new PrivacySettings(
-            /* isUserConsent= */ true, /* isAgeRestrictedUser= */ false, /* isDoNotSell= */ false);
+            /* isUserConsent= */ false, /* isAgeRestrictedUser= */ false, /* isDoNotSell= */ true);
     MolocoPrivacy.setPrivacy(privacySettings);
     // [END set_user_consent]
   }
