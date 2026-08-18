@@ -22,6 +22,8 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.util.DisplayMetrics;
 import androidx.annotation.VisibleForTesting;
+import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
@@ -41,6 +43,22 @@ class ImageDownloaderAsyncTask extends AsyncTask<Object, Void, HashMap<String, D
   static final String KEY_IMAGE = "image_key";
 
   static final String KEY_ICON = "icon_key";
+
+  /**
+   * Maximum image width in pixels (px). 1024px is chosen as a reasonable upper bound for native ad
+   * image assets to ensure high quality on high-density displays while preventing excessive memory
+   * consumption (OutOfMemoryError) when decoding large images.
+   */
+  @VisibleForTesting static final int MAX_IMAGE_WIDTH = 1024;
+
+  /**
+   * Maximum image height in pixels (px). 1024px is chosen as a reasonable upper bound for native ad
+   * image assets to ensure high quality on high-density displays while preventing excessive memory
+   * consumption (OutOfMemoryError) when decoding large images.
+   */
+  @VisibleForTesting static final int MAX_IMAGE_HEIGHT = 1024;
+
+  @VisibleForTesting static final int STREAM_BUFFER_SIZE = MAX_IMAGE_WIDTH * MAX_IMAGE_HEIGHT;
 
   private final long drawableFutureTimeoutSeconds;
 
@@ -76,7 +94,6 @@ class ImageDownloaderAsyncTask extends AsyncTask<Object, Void, HashMap<String, D
   protected HashMap<String, Drawable> doInBackground(Object... params) {
     HashMap<String, URL> urlsMap = (HashMap<String, URL>) params[0];
     ExecutorService executorService = Executors.newCachedThreadPool();
-    Drawable imageDrawable;
     Drawable iconDrawable;
 
     try {
@@ -99,20 +116,61 @@ class ImageDownloaderAsyncTask extends AsyncTask<Object, Void, HashMap<String, D
   }
 
   private Future<Drawable> getDrawableFuture(final URL url, ExecutorService executorService) {
-    return executorService.submit(new Callable<Drawable>() {
+    return executorService.submit(
+        new Callable<Drawable>() {
+          @Override
+          public Drawable call() throws Exception {
+            try (InputStream inputStream = url.openStream();
+                var bufferedInputStream = new BufferedInputStream(inputStream)) {
+              bufferedInputStream.mark(STREAM_BUFFER_SIZE);
 
-      @Override
+              // 1. Decode bounds first to check dimensions without allocating memory for pixels.
+              var options = new BitmapFactory.Options();
+              options.inJustDecodeBounds = true;
+              BitmapFactory.decodeStream(bufferedInputStream, /* outPadding= */ null, options);
 
-      public Drawable call() throws Exception {
-        InputStream in = url.openStream();
-        Bitmap bitmap = BitmapFactory.decodeStream(in);
-        // Defaulting to a scale of 1.
-        bitmap.setDensity(DisplayMetrics.DENSITY_DEFAULT);
-        return new BitmapDrawable(Resources.getSystem(), bitmap);
-      }
+              // 2. Reset stream to the beginning and calculate inSampleSize.
+              bufferedInputStream.reset();
+              options.inSampleSize =
+                  calculateInSampleSize(options, MAX_IMAGE_WIDTH, MAX_IMAGE_HEIGHT);
 
-    });
+              // 3. Decode the actual bitmap with inSampleSize set.
+              options.inJustDecodeBounds = false;
+              Bitmap bitmap =
+                  BitmapFactory.decodeStream(bufferedInputStream, /* outPadding= */ null, options);
 
+              if (bitmap == null) {
+                throw new IOException("Failed to decode bitmap from URL: " + url);
+              }
+
+              // Defaulting to a scale of 1.
+              bitmap.setDensity(DisplayMetrics.DENSITY_DEFAULT);
+              return new BitmapDrawable(Resources.getSystem(), bitmap);
+            }
+          }
+        });
+  }
+
+  /**
+   * Calculates the inSampleSize value to downsample the image if it exceeds the requested bounds.
+   */
+  @VisibleForTesting
+  static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+    final int height = options.outHeight;
+    final int width = options.outWidth;
+
+    if (reqWidth <= 0 || reqHeight <= 0 || height <= 0 || width <= 0) {
+      return 1;
+    }
+
+    final int heightRatio = height / reqHeight;
+    final int widthRatio = width / reqWidth;
+
+    // Find the smallest ratio to ensure both dimensions stay larger than requested.
+    final int minRatio = Math.min(heightRatio, widthRatio);
+
+    // Round down to the nearest power of 2 (returns 1 if minRatio < 1).
+    return Math.max(1, Integer.highestOneBit(minRatio));
   }
 
   /**

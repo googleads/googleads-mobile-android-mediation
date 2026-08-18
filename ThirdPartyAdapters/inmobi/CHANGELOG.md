@@ -1,5 +1,8 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Next Version
+- Use `BitmapFactory.Options` with downsampling to prevent potential OOM errors when downloading images.
+
 #### Version 11.4.1.0 (In progress)
 
 #### Version 11.4.0.0
