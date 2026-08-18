@@ -8,9 +8,6 @@ import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
 import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
 import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.unity.UnityAdsAdapterUtils.getMediationErrorCode
-import com.google.ads.mediation.unity.UnityMediationAdapter.ADAPTER_ERROR_DOMAIN
-import com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY
-import com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_NON_ACTIVITY
 import com.google.ads.mediation.unity.UnityMediationAdapter.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationRewardedAd
@@ -27,6 +24,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -194,15 +192,15 @@ class UnityRewardedAdTest {
   }
 
   @Test
-  fun showAd_withNonActivityContext_invokesOnAdFailedToShow() {
+  fun showAd_withNonActivityContext_callsShowWithNullActivity() {
+    val unityAdsShowOptions: UnityAdsShowOptions = mock()
+    whenever(unityAdsLoader.createUnityAdsShowOptionsWithId(anyOrNull())) doReturn
+      unityAdsShowOptions
     unityRewardedAd.unityLoadListener.onUnityAdsAdLoaded(TEST_PLACEMENT_ID)
-    val expectedAdError =
-      AdError(ERROR_CONTEXT_NOT_ACTIVITY, ERROR_MSG_NON_ACTIVITY, ADAPTER_ERROR_DOMAIN)
 
     unityRewardedAd.showAd(ApplicationProvider.getApplicationContext())
 
-    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
-    assertThat(rewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
+    verify(unityAdsLoader).show(isNull(), any(), any(), any())
   }
 
   @Test

@@ -2,6 +2,7 @@ package com.google.ads.mediation.unity
 
 import android.app.Activity
 import androidx.core.os.bundleOf
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
 import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallback
@@ -23,9 +24,11 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.notNull
 import org.mockito.kotlin.spy
@@ -127,6 +130,18 @@ class UnityInterstitialAdTest {
       )
     assertThat(interstitialAdCallback.isFailedToShow).isTrue()
     assertThat(interstitialAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
+  }
+
+  @Test
+  fun showAd_withNonActivityContext_callsShowWithNullActivity() {
+    val unityAdsShowOptions: UnityAdsShowOptions = mock()
+    whenever(unityAdsLoader.createUnityAdsShowOptionsWithId(anyOrNull())) doReturn
+      unityAdsShowOptions
+    unityInterstitialAd.onUnityAdsAdLoaded(PLACEMENT_ID)
+
+    unityInterstitialAd.showAd(ApplicationProvider.getApplicationContext())
+
+    verify(unityAdsLoader).show(isNull(), any(), any(), any())
   }
 
   @Test

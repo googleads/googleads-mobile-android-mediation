@@ -16,10 +16,8 @@ package com.google.ads.mediation.unity;
 
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ADAPTER_ERROR_DOMAIN;
-import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_MISSING_PARAMETERS;
-import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_NON_ACTIVITY;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.KEY_WATERMARK;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.TAG;
 
@@ -139,22 +137,12 @@ public class UnityRewardedAd implements MediationRewardedAd {
 
   @Override
   public void showAd(@NonNull Context context) {
-    if (!(context instanceof Activity)) {
-      AdError showError =
-          new AdError(ERROR_CONTEXT_NOT_ACTIVITY, ERROR_MSG_NON_ACTIVITY, ADAPTER_ERROR_DOMAIN);
-      Log.e(TAG, showError.toString());
-      if (mediationRewardedAdCallback != null) {
-        mediationRewardedAdCallback.onAdFailedToShow(showError);
-      }
-      return;
-    }
-    Activity activity = (Activity) context;
-
     // Check if the placement is ready before showing
     if (placementId == null) {
       Log.w(TAG, "Unity Ads received call to show before successfully loading an ad.");
     }
 
+    Activity activity = context instanceof Activity ? (Activity) context : null;
     UnityAdsShowOptions unityAdsShowOptions =
         unityAdsLoader.createUnityAdsShowOptionsWithId(objectId);
     unityAdsShowOptions.set(KEY_WATERMARK, watermark);

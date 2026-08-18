@@ -19,10 +19,8 @@ import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.createSDKError
 import static com.google.ads.mediation.unity.UnityAdsAdapterUtils.getMediationErrorCode;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ADAPTER_ERROR_DOMAIN;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_MISSING_PARAMETERS;
-import static com.google.ads.mediation.unity.UnityMediationAdapter.ERROR_MSG_NON_ACTIVITY;
 import static com.google.ads.mediation.unity.UnityMediationAdapter.KEY_WATERMARK;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -176,18 +174,6 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
       return;
     }
 
-    if (!(context instanceof Activity)) {
-      AdError adError =
-          new AdError(
-              UnityMediationAdapter.ERROR_CONTEXT_NOT_ACTIVITY,
-              ERROR_MSG_NON_ACTIVITY,
-              ADAPTER_ERROR_DOMAIN);
-      Log.w(UnityMediationAdapter.TAG, adError.toString());
-      mediationBannerAdLoadCallback.onFailure(adError);
-      return;
-    }
-    final Activity activity = (Activity) context;
-
     final String adMarkup = mediationBannerAdConfiguration.getBidResponse();
 
     // It is RTB if adMarkup is not empty.
@@ -224,7 +210,7 @@ public class UnityMediationBannerAd implements MediationBannerAd, BannerView.ILi
             if (unityBannerViewWrapper == null) {
               unityBannerViewWrapper =
                   unityBannerViewFactory.createBannerView(
-                      activity, bannerPlacementId, unityBannerSize);
+                      context, bannerPlacementId, unityBannerSize);
             }
 
             unityBannerViewWrapper.setListener(UnityMediationBannerAd.this);
