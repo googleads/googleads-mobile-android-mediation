@@ -1,5 +1,7 @@
 ## Bigo Android Mediation Adapter Changelog
 
+#### Version 6.0.0.0 (In progress)
+
 #### Version 5.10.1.0
 - Verified compatibility with Bigo Ads SDK 5.10.1.
 

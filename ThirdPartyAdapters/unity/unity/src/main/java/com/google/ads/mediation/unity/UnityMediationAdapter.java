@@ -78,20 +78,18 @@ public class UnityMediationAdapter extends RtbAdapter {
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(
       value = {
-          ERROR_INVALID_SERVER_PARAMETERS,
-          ERROR_PLACEMENT_STATE_NO_FILL,
-          ERROR_PLACEMENT_STATE_DISABLED,
-          ERROR_NULL_CONTEXT,
-          ERROR_AD_NOT_READY,
-          ERROR_UNITY_ADS_NOT_SUPPORTED,
-          ERROR_FINISH,
-          ERROR_BANNER_SIZE_MISMATCH,
-          ERROR_INITIALIZATION_FAILURE,
-          ERROR_TOKEN_GENERATION_FAILED
+        ERROR_INVALID_SERVER_PARAMETERS,
+        ERROR_PLACEMENT_STATE_NO_FILL,
+        ERROR_PLACEMENT_STATE_DISABLED,
+        ERROR_NULL_CONTEXT,
+        ERROR_AD_NOT_READY,
+        ERROR_UNITY_ADS_NOT_SUPPORTED,
+        ERROR_FINISH,
+        ERROR_BANNER_SIZE_MISMATCH,
+        ERROR_INITIALIZATION_FAILURE,
+        ERROR_TOKEN_GENERATION_FAILED
       })
-  @interface AdapterError {
-
-  }
+  @interface AdapterError {}
 
   /**
    * Invalid server parameters.

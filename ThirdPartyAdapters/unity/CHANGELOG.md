@@ -1,5 +1,13 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Next version
+
+- Removed adapter requirement of an Activity context for loading banner ads.
+- Updated bidding signal collection to fail and report an error if an empty
+  signal is received.
+
+#### Version 4.20.0.0 (In progress)
+
 #### Version 4.19.0.1
 - Adapter now automatically forwards GDPR consent found inside `IABTCF_AddtlConsent` to the Unity Ads SDK if GDPR applies.
 - Updated to report ad impression when Unity's interstitial ad is displayed.

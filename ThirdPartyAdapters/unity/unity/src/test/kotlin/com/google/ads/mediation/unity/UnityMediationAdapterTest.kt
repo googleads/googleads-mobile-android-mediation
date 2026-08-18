@@ -310,7 +310,7 @@ class UnityMediationAdapterTest {
   // endregion
 
   @Test
-  fun collectSignals_forBannerFormatAndNonActivityContext_invokesSignalCallbacks() {
+  fun collectSignals_forBannerFormatAndNonActivityContext_invokesSuccessCallback() {
     whenever(unityAdsWrapper.getToken(any(), any())) doAnswer
       { invocation ->
         val callback = invocation.arguments[1] as IUnityAdsTokenListener
@@ -328,6 +328,9 @@ class UnityMediationAdapterTest {
     unityMediationAdapter.collectSignals(rtbSignalData, signalCallbacks)
 
     assertThat(signalCallbacks).hasSucceededWith(TEST_TOKEN)
+    val tokenConfigCaptor = argumentCaptor<TokenConfiguration>()
+    verify(unityAdsWrapper).getToken(tokenConfigCaptor.capture(), any())
+    assertEquals(com.unity3d.ads.AdFormat.BANNER, tokenConfigCaptor.firstValue.adFormat)
   }
 
   @Test
@@ -448,8 +451,7 @@ class UnityMediationAdapterTest {
 
     unityMediationAdapter.collectSignals(rtbSignalData, signalCallbacks)
 
-    assertThat(signalCallbacks)
-      .hasFailedWith(ERROR_TOKEN_GENERATION_FAILED, ADAPTER_ERROR_DOMAIN)
+    assertThat(signalCallbacks).hasFailedWith(ERROR_TOKEN_GENERATION_FAILED, ADAPTER_ERROR_DOMAIN)
   }
 
   @Test
@@ -470,8 +472,7 @@ class UnityMediationAdapterTest {
 
     unityMediationAdapter.collectSignals(rtbSignalData, signalCallbacks)
 
-    assertThat(signalCallbacks).hasFailed()
-    assertThat(signalCallbacks).hasNotSucceeded()
+    assertThat(signalCallbacks).hasFailedWith(ERROR_TOKEN_GENERATION_FAILED, ADAPTER_ERROR_DOMAIN)
   }
 
   @Test
@@ -578,8 +579,9 @@ class UnityMediationAdapterTest {
   @Test
   fun loadBannerAd_withNonActivityContext_callsInitializeUnityAds() {
     mediationBannerAdConfiguration = initializeBannerAd(nonActivityContext)
-    whenever(mediationUtils.findClosestSize(eq(nonActivityContext), eq(AdSize.BANNER), any())) doReturn
-      AdSize.BANNER
+    whenever(
+      mediationUtils.findClosestSize(eq(nonActivityContext), eq(AdSize.BANNER), any())
+    ) doReturn AdSize.BANNER
 
     unityMediationAdapter.loadBannerAd(
       mediationBannerAdConfiguration,

@@ -194,7 +194,8 @@ class UnityRewardedAdTest {
   @Test
   fun showAd_withNonActivityContext_callsShowWithNullActivity() {
     val unityAdsShowOptions: UnityAdsShowOptions = mock()
-    whenever(unityAdsLoader.createUnityAdsShowOptionsWithId(anyOrNull())) doReturn unityAdsShowOptions
+    whenever(unityAdsLoader.createUnityAdsShowOptionsWithId(anyOrNull())) doReturn
+      unityAdsShowOptions
     unityRewardedAd.unityLoadListener.onUnityAdsAdLoaded(TEST_PLACEMENT_ID)
 
     unityRewardedAd.showAd(ApplicationProvider.getApplicationContext())

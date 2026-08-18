@@ -135,7 +135,8 @@ class UnityInterstitialAdTest {
   @Test
   fun showAd_withNonActivityContext_callsShowWithNullActivity() {
     val unityAdsShowOptions: UnityAdsShowOptions = mock()
-    whenever(unityAdsLoader.createUnityAdsShowOptionsWithId(anyOrNull())) doReturn unityAdsShowOptions
+    whenever(unityAdsLoader.createUnityAdsShowOptionsWithId(anyOrNull())) doReturn
+      unityAdsShowOptions
     unityInterstitialAd.onUnityAdsAdLoaded(PLACEMENT_ID)
 
     unityInterstitialAd.showAd(ApplicationProvider.getApplicationContext())
