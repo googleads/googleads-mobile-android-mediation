@@ -13,6 +13,8 @@ import com.applovin.mediation.AppLovinUtils.ERROR_MSG_CHILD_USER
 import com.applovin.sdk.AppLovinAdService
 import com.applovin.sdk.AppLovinAdSize
 import com.applovin.sdk.AppLovinSdk
+import com.applovin.sdk.AppLovinSdkSettings
+import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.FakeInitializationCompleteCallback
 import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
 import com.google.ads.mediation.adaptertestkit.FakeSignalCallbacks
@@ -87,7 +89,11 @@ class AppLovinMediationAdapterTest {
   private val mediationRewardedAdLoadCallback =
     FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>()
   private val appLovinAdService: AppLovinAdService = mock()
-  private val appLovinSdk: AppLovinSdk = mock { on { getAdService() } doReturn appLovinAdService }
+  private val appLovinSdkSettings: AppLovinSdkSettings = mock()
+  private val appLovinSdk: AppLovinSdk = mock {
+    on { getAdService() } doReturn appLovinAdService
+    on { getSettings() } doReturn appLovinSdkSettings
+  }
   private val appLovinSdkWrapper: AppLovinSdkWrapper = mock {
     on { getInstance(any()) } doReturn appLovinSdk
   }

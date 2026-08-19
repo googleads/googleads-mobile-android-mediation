@@ -17,6 +17,7 @@ package com.applovin.mediation.rtb;
 import static com.applovin.mediation.AppLovinExtras.Keys.KEY_WATERMARK;
 
 import android.content.Context;
+import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.applovin.adview.AppLovinInterstitialAdDialog;
@@ -58,6 +59,8 @@ public final class AppLovinRtbInterstitialRenderer extends AppLovinInterstitialR
     interstitialAd.setAdVideoPlaybackListener(this);
     interstitialAd.setExtraInfo(KEY_WATERMARK, interstitialAdConfiguration.getWatermark());
     networkExtras = interstitialAdConfiguration.getMediationExtras();
+    Bundle networkExtras = interstitialAdConfiguration.getMediationExtras();
+    sdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(networkExtras));
 
     // Load ad!
     sdk.getAdService().loadNextAdForAdToken(interstitialAdConfiguration.getBidResponse(), this);
@@ -65,10 +68,6 @@ public final class AppLovinRtbInterstitialRenderer extends AppLovinInterstitialR
 
   @Override
   public void showAd(@NonNull Context context) {
-    // Update mute state
-    boolean muted = AppLovinUtils.shouldMuteAudio(networkExtras);
-    sdk.getSettings().setMuted(muted);
-
     interstitialAd.showAndRender(appLovinInterstitialAd);
   }
 }
