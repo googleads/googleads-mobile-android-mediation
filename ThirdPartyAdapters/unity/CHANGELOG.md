@@ -17,6 +17,7 @@ Built and tested with:
 #### Version 4.19.0.1
 - Adapter now automatically forwards GDPR consent found inside `IABTCF_AddtlConsent` to the Unity Ads SDK if GDPR applies.
 - Updated to report ad impression when Unity's interstitial ad is displayed.
+- Maps `AgeRestrictedTreatment` to Unity Ads SDK's privacy settings.
 
 Built and tested with:
 - Google Mobile Ads SDK version 25.4.0.

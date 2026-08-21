@@ -28,7 +28,6 @@ import com.unity3d.ads.UnityAds.UnityAdsLoadError;
 import com.unity3d.ads.UnityAds.UnityAdsShowError;
 import com.unity3d.ads.UnityAdsLoadOptions;
 import com.unity3d.ads.UnityAdsShowOptions;
-import com.unity3d.ads.metadata.MetaData;
 import java.util.UUID;
 
 /**
@@ -178,8 +177,7 @@ public class UnityInterstitialAd
                         + "and can now load interstitial ad with placement ID: %s",
                     gameId, placementId);
             Log.d(UnityMediationAdapter.TAG, logMessage);
-            UnityAdsAdapterUtils.setUnityAdsPrivacy(
-                MobileAds.getRequestConfiguration(), new MetaData(context));
+            UnityAdsAdapterUtils.setUnityAdsPrivacy(MobileAds.getRequestConfiguration());
 
             objectId = UUID.randomUUID().toString();
             UnityAdsLoadOptions unityAdsLoadOptions =
