@@ -1,6 +1,6 @@
 ## Common Mediation Library Changelog
 
-### 1.1.0 (In progress)
+### 1.1.0
 
 - Added support for child age restricted treatment.
 
