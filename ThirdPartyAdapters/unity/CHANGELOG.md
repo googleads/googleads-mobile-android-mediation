@@ -6,7 +6,13 @@
 - Updated bidding signal collection to fail and report an error if an empty
   signal is received.
 
-#### Version 4.20.0.0 (In progress)
+#### Version 4.20.0.0
+- Verified compatibility with Unity Ads SDK 4.20.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.3.1.
+- Unity Ads SDK version 4.20.0.
 
 #### Version 4.19.0.1
 - Adapter now automatically forwards GDPR consent found inside `IABTCF_AddtlConsent` to the Unity Ads SDK if GDPR applies.
