@@ -283,6 +283,30 @@ class ChartboostInterstitialAdTest {
   }
 
   @Test
+  fun onAdDismiss_doesNotDestroyInterstitialAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationInterstitialAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+      )
+
+    mockConstruction(Interstitial::class.java).use { mockedInterstitialConstruction ->
+      interstitialAd.loadAd(config)
+      val createdInterstitial = mockedInterstitialConstruction.constructed().first()
+
+      interstitialAd.onAdDismiss(dismissEvent)
+
+      verify(createdInterstitial, never()).destroy()
+    }
+  }
+
+  @Test
   fun onImpressionRecorded_invokesReportAdImpression() {
     interstitialAd.onAdLoaded(cacheEvent, null)
 
@@ -305,6 +329,33 @@ class ChartboostInterstitialAdTest {
   }
 
   @Test
+  fun onAdShown_withShowError_destroysInterstitialAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationInterstitialAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+      )
+    whenever(showError.code) doReturn showErrorCode
+    whenever(showErrorCode.errorCode) doReturn ERROR_CODE
+    whenever(showError.toString()) doReturn ERROR_MESSAGE
+
+    mockConstruction(Interstitial::class.java).use { mockedInterstitialConstruction ->
+      interstitialAd.loadAd(config)
+      val createdInterstitial = mockedInterstitialConstruction.constructed().first()
+
+      interstitialAd.onAdShown(showEvent, showError)
+
+      verify(createdInterstitial).destroy()
+    }
+  }
+
+  @Test
   fun onAdShown_withoutShowError_invokesOnAdOpened() {
     interstitialAd.onAdLoaded(cacheEvent, null)
 
@@ -324,6 +375,81 @@ class ChartboostInterstitialAdTest {
 
     verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
     verify(mediationAdLoadCallback, never()).onSuccess(any())
+  }
+
+  @Test
+  fun onAdLoaded_withCacheError_destroysInterstitialAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationInterstitialAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+      )
+    whenever(cacheError.code) doReturn cacheErrorCode
+    whenever(cacheErrorCode.errorCode) doReturn ERROR_CODE
+    whenever(cacheError.toString()) doReturn ERROR_MESSAGE
+
+    mockConstruction(Interstitial::class.java).use { mockedInterstitialConstruction ->
+      interstitialAd.loadAd(config)
+      val createdInterstitial = mockedInterstitialConstruction.constructed().first()
+
+      interstitialAd.onAdLoaded(cacheEvent, cacheError)
+
+      verify(createdInterstitial).destroy()
+    }
+  }
+
+  @Test
+  fun onAdLoaded_withoutCacheError_doesNotDestroyInterstitialAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationInterstitialAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+      )
+
+    mockConstruction(Interstitial::class.java).use { mockedConstruction ->
+      interstitialAd.loadAd(config)
+      val createdInterstitial = mockedConstruction.constructed().first()
+
+      interstitialAd.onAdLoaded(cacheEvent, null)
+
+      verify(createdInterstitial, never()).destroy()
+    }
+  }
+
+  @Test
+  fun onAdShown_withoutShowError_doesNotDestroyInterstitialAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationInterstitialAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+      )
+
+    mockConstruction(Interstitial::class.java).use { mockedConstruction ->
+      interstitialAd.loadAd(config)
+      val createdInterstitial = mockedConstruction.constructed().first()
+
+      interstitialAd.onAdShown(showEvent, null)
+
+      verify(createdInterstitial, never()).destroy()
+    }
   }
 
   @Test

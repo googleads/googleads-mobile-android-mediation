@@ -129,6 +129,8 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
     if (rewardedAdCallback != null) {
       rewardedAdCallback.onAdClosed();
     }
+    // Intentionally not destroyed here. Destroying from inside onAdDismiss makes
+    // the SDK report a second close to the publisher.
   }
 
   @Override
@@ -153,6 +155,7 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
       if (rewardedAdCallback != null) {
         rewardedAdCallback.onAdFailedToShow(error);
       }
+      destroyChartboostRewardedAd();
     }
   }
 
@@ -174,6 +177,7 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
       if (mediationAdLoadCallback != null) {
         mediationAdLoadCallback.onFailure(error);
       }
+      destroyChartboostRewardedAd();
     }
   }
 
@@ -193,5 +197,12 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
   @Override
   public void onAdExpired(@NonNull final ExpirationEvent expirationEvent) {
     Log.d(TAG, "Chartboost banner ad Expired.");
+  }
+
+  // Releases the ad once GMA is done with it, on load failure or show failure.
+  private void destroyChartboostRewardedAd() {
+    if (chartboostRewardedAd != null) {
+      chartboostRewardedAd.destroy();
+    }
   }
 }

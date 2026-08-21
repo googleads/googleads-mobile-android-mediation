@@ -244,6 +244,27 @@ class ChartboostRewardedAdTest {
   }
 
   @Test
+  fun onAdDismiss_doesNotDestroyRewardedAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationRewardedAdConfiguration(context = context, serverParameters = serverParameters)
+
+    mockConstruction(Rewarded::class.java).use { mockedRewardedConstruction ->
+      rewardedAd.loadAd(config)
+      val createdRewarded = mockedRewardedConstruction.constructed().first()
+
+      rewardedAd.onAdDismiss(dismissEvent)
+
+      verify(createdRewarded, never()).destroy()
+    }
+  }
+
+  @Test
   fun onImpressionRecorded_invokesReportAdImpression() {
     rewardedAd.onAdLoaded(cacheEvent, null)
 
@@ -263,6 +284,30 @@ class ChartboostRewardedAdTest {
     rewardedAd.onAdShown(showEvent, showError)
 
     verify(rewardedAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun onAdShown_withShowError_destroysRewardedAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationRewardedAdConfiguration(context = context, serverParameters = serverParameters)
+    whenever(showError.code) doReturn showErrorCode
+    whenever(showErrorCode.errorCode) doReturn ERROR_CODE
+    whenever(showError.toString()) doReturn ERROR_MESSAGE
+
+    mockConstruction(Rewarded::class.java).use { mockedRewardedConstruction ->
+      rewardedAd.loadAd(config)
+      val createdRewarded = mockedRewardedConstruction.constructed().first()
+
+      rewardedAd.onAdShown(showEvent, showError)
+
+      verify(createdRewarded).destroy()
+    }
   }
 
   @Test
@@ -286,6 +331,78 @@ class ChartboostRewardedAdTest {
 
     verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
     verify(mediationAdLoadCallback, never()).onSuccess(any())
+  }
+
+  @Test
+  fun onAdLoaded_withCacheError_destroysRewardedAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationRewardedAdConfiguration(context = context, serverParameters = serverParameters)
+    whenever(cacheError.code) doReturn cacheErrorCode
+    whenever(cacheErrorCode.errorCode) doReturn ERROR_CODE
+    whenever(cacheError.toString()) doReturn ERROR_MESSAGE
+
+    mockConstruction(Rewarded::class.java).use { mockedRewardedConstruction ->
+      rewardedAd.loadAd(config)
+      val createdRewarded = mockedRewardedConstruction.constructed().first()
+
+      rewardedAd.onAdLoaded(cacheEvent, cacheError)
+
+      verify(createdRewarded).destroy()
+    }
+  }
+
+  @Test
+  fun onAdLoaded_withoutCacheError_doesNotDestroyRewardedAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationRewardedAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+      )
+
+    mockConstruction(Rewarded::class.java).use { mockedConstruction ->
+      rewardedAd.loadAd(config)
+      val createdRewarded = mockedConstruction.constructed().first()
+
+      rewardedAd.onAdLoaded(cacheEvent, null)
+
+      verify(createdRewarded, never()).destroy()
+    }
+  }
+
+  @Test
+  fun onAdShown_withoutShowError_doesNotDestroyRewardedAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationRewardedAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+      )
+
+    mockConstruction(Rewarded::class.java).use { mockedConstruction ->
+      rewardedAd.loadAd(config)
+      val createdRewarded = mockedConstruction.constructed().first()
+
+      rewardedAd.onAdShown(showEvent, null)
+
+      verify(createdRewarded, never()).destroy()
+    }
   }
 
   @Test
