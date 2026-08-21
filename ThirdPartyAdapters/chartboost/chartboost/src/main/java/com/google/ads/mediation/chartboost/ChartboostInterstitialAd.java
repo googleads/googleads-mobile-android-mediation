@@ -96,11 +96,14 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
 
   @Override
   public void showAd(@NonNull Context context) {
-    if (chartboostInterstitialAd == null || !chartboostInterstitialAd.isCached()) {
+    if (chartboostInterstitialAd == null) {
       AdError error =
           ChartboostConstants.createAdapterError(
               ERROR_AD_NOT_READY, "Chartboost interstitial ad is not yet ready to be shown.");
       Log.w(TAG, error.toString());
+      if (interstitialAdCallback != null) {
+        interstitialAdCallback.onAdFailedToShow(error);
+      }
       return;
     }
     chartboostInterstitialAd.show();

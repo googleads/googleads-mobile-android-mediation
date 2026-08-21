@@ -178,11 +178,7 @@ class ChartboostRewardedAdTest {
   }
 
   @Test
-  fun showAd_adNotCachedOrNull_logsWarningAndDoesNotShow() {
-    // When ad is null
-    rewardedAd.showAd(context)
-
-    // When ad is not cached
+  fun showAd_adNotCached_stillCallsShow() {
     val serverParameters =
       bundleOf(
         KEY_APP_ID to TEST_APP_ID,
@@ -198,8 +194,13 @@ class ChartboostRewardedAdTest {
         rewardedAd.showAd(context)
 
         val createdRewarded = mockedRewardedConstruction.constructed().first()
-        verify(createdRewarded, never()).show()
+        verify(createdRewarded).show()
       }
+  }
+
+  @Test
+  fun showAd_adIsNull_doesNotThrowException() {
+    rewardedAd.showAd(context)
   }
 
   @Test

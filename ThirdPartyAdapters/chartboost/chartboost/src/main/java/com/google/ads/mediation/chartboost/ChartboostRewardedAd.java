@@ -101,11 +101,14 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
 
   @Override
   public void showAd(@NonNull Context context) {
-    if (chartboostRewardedAd == null || !chartboostRewardedAd.isCached()) {
+    if (chartboostRewardedAd == null) {
       AdError error =
           ChartboostConstants.createAdapterError(
               ERROR_AD_NOT_READY, "Chartboost rewarded ad is not yet ready to be shown.");
       Log.w(TAG, error.toString());
+      if (rewardedAdCallback != null) {
+        rewardedAdCallback.onAdFailedToShow(error);
+      }
       return;
     }
     chartboostRewardedAd.show();

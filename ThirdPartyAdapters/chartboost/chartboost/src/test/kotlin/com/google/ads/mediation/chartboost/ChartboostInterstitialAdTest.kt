@@ -217,11 +217,7 @@ class ChartboostInterstitialAdTest {
   }
 
   @Test
-  fun showAd_adNotCachedOrNull_logsWarningAndDoesNotShow() {
-    // When ad is null
-    interstitialAd.showAd(context)
-
-    // When ad is not cached
+  fun showAd_adNotCached_stillCallsShow() {
     val serverParameters =
       bundleOf(
         KEY_APP_ID to TEST_APP_ID,
@@ -242,8 +238,13 @@ class ChartboostInterstitialAdTest {
         interstitialAd.showAd(context)
 
         val createdInterstitial = mockedInterstitialConstruction.constructed().first()
-        verify(createdInterstitial, never()).show()
+        verify(createdInterstitial).show()
       }
+  }
+
+  @Test
+  fun showAd_adIsNull_doesNotThrowException() {
+    interstitialAd.showAd(context)
   }
 
   @Test
