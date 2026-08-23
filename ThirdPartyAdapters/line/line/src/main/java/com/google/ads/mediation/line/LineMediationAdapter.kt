@@ -161,7 +161,8 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
     val adConfig = LineInitializer.getFiveAdConfig(initAppId)
     val adLoader = AdLoader.forConfig(signalData.context, adConfig)
     if (adLoader == null) {
-      val adError = AdError(ERROR_CODE_NULL_AD_LOADER, ERROR_MSG_NULL_AD_LOADER, SDK_ERROR_DOMAIN)
+      val adError =
+        AdError(ERROR_CODE_NULL_AD_LOADER, ERROR_MSG_NULL_AD_LOADER, ADAPTER_ERROR_DOMAIN)
       signalCallbacks.onFailure(adError)
       return
     }
@@ -272,6 +273,9 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
     const val ERROR_MSG_NULL_AD_LOADER = "Null AdLoader from Five Ad SDK."
     const val ERROR_CODE_MISSING_APP_ID = 101
     const val ERROR_CODE_MISSING_SLOT_ID = 102
+    const val ERROR_CODE_MISMATCH_AD_SIZE = 103
+    const val ERROR_MSG_MISMATCH_AD_SIZE =
+      "Unexpected ad size loaded. Expected %sx%s but received %sx%s."
     const val ERROR_MSG_AD_LOADING = "FiveAd SDK returned a load error with code %s."
     const val ERROR_MSG_AD_SHOWING = "FiveAd SDK could not show ad with error with code %s."
     // An error code that's no longer logged. Left as a comment for future reference.

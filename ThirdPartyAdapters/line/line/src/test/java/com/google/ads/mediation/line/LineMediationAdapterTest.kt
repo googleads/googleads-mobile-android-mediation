@@ -543,7 +543,7 @@ class LineMediationAdapterTest {
       lineMediationAdapter.collectSignals(signalData, signalCallbacks)
 
       val expectedAdError =
-        AdError(ERROR_CODE_NULL_AD_LOADER, ERROR_MSG_NULL_AD_LOADER, SDK_ERROR_DOMAIN)
+        AdError(ERROR_CODE_NULL_AD_LOADER, ERROR_MSG_NULL_AD_LOADER, ADAPTER_ERROR_DOMAIN)
       assertThat(signalCallbacks).hasFailedWith(expectedAdError)
     }
   }
