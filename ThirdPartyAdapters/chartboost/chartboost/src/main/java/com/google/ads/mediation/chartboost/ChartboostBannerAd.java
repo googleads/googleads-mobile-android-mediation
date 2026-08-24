@@ -49,6 +49,8 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
   /** A container view that holds Chartboost's {@link Banner} view. */
   private FrameLayout bannerContainer;
 
+  private Banner chartboostBannerAd;
+
   private final MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
       mediationAdLoadCallback;
   private MediationBannerAdCallback bannerAdCallback;
@@ -128,7 +130,7 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
     FrameLayout.LayoutParams paramsLayout =
         new FrameLayout.LayoutParams(
             closestSize.getWidthInPixels(context), closestSize.getHeightInPixels(context));
-    Banner chartboostBannerAd =
+    chartboostBannerAd =
         new Banner(
             context,
             location,
@@ -153,6 +155,7 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
     if (showError != null) {
       AdError error = ChartboostConstants.createSDKError(showError);
       Log.w(TAG, error.toString());
+      detachChartboostBannerAd();
       return;
     }
 
@@ -173,6 +176,7 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
       AdError error = ChartboostConstants.createSDKError(cacheError);
       Log.w(TAG, error.toString());
       mediationAdLoadCallback.onFailure(error);
+      detachChartboostBannerAd();
       return;
     }
 
@@ -204,5 +208,12 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
   @Override
   public View getView() {
     return bannerContainer;
+  }
+
+  // Releases the ad once GMA is done with it, on load failure or show failure.
+  private void detachChartboostBannerAd() {
+    if (chartboostBannerAd != null) {
+      chartboostBannerAd.detach();
+    }
   }
 }
