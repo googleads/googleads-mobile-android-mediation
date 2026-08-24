@@ -201,7 +201,7 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
 
   @Override
   public void onAdExpired(@NonNull final ExpirationEvent expirationEvent) {
-    Log.d(TAG, "Chartboost interstitial ad Expired.");
+    Log.d(TAG, "Chartboost interstitial ad expired. Reason: " + expirationEvent.getReason() + ".");
   }
 
   // Releases the ad once GMA is done with it, on load failure or show failure.

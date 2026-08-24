@@ -201,7 +201,7 @@ public class ChartboostBannerAd implements MediationBannerAd, BannerCallback {
 
   @Override
   public void onAdExpired(@NonNull final ExpirationEvent expirationEvent) {
-    Log.d(TAG, "Chartboost banner ad Expired.");
+    Log.d(TAG, "Chartboost banner ad expired. Reason: " + expirationEvent.getReason() + ".");
   }
 
   @NonNull

@@ -32,6 +32,7 @@ import com.chartboost.sdk.events.RewardEvent
 import com.chartboost.sdk.events.ShowError
 import com.chartboost.sdk.events.ShowEvent
 import com.chartboost.sdk.events.StartError
+import com.chartboost.sdk.internal.caching.ExpirationReason
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.chartboost.ChartboostAdapterUtils.KEY_AD_LOCATION
@@ -496,6 +497,8 @@ class ChartboostRewardedAdTest {
 
   @Test
   fun onAdExpired_doesNotThrowException() {
+    whenever(expirationEvent.reason) doReturn ExpirationReason.TTL_EXPIRED
+
     rewardedAd.onAdExpired(expirationEvent)
   }
 

@@ -208,7 +208,7 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
 
   @Override
   public void onAdExpired(@NonNull final ExpirationEvent expirationEvent) {
-    Log.d(TAG, "Chartboost banner ad Expired.");
+    Log.d(TAG, "Chartboost rewarded ad expired. Reason: " + expirationEvent.getReason() + ".");
   }
 
   // Releases the ad once GMA is done with it, on load failure or show failure.
