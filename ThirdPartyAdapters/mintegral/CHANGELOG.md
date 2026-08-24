@@ -1,6 +1,6 @@
 ## Mintegral Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 17.1.81.0 (In progress)
 
 - Updated to report ad impression when native ad is displayed.
 
