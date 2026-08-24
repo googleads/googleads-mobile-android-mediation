@@ -207,6 +207,65 @@ class ChartboostInitializerTest {
   }
 
   @Test
+  fun initialize_calledWhileAlreadyInitialized_appliesGdprConsentAgain() {
+    mockStatic(ChartboostAdapterUtils::class.java).use { mockAdapterUtils ->
+      mockAdapterUtils
+        .`when`<ChartboostAdapterUtils.ConsentResult> {
+          ChartboostAdapterUtils.hasACConsent(any(), eq(AD_TECHNOLOGY_PROVIDER_ID))
+        }
+        .thenReturn(
+          ChartboostAdapterUtils.ConsentResult.TRUE,
+          ChartboostAdapterUtils.ConsentResult.FALSE,
+        )
+
+      // First initialization succeeds, leaving the initializer in the isInitialized state.
+      val callbackCaptor = argumentCaptor<StartCallback>()
+      ChartboostInitializer.getInstance().initialize(context, chartboostParams, listener)
+      mockChartboost.verify {
+        Chartboost.startWithAppId(any(), any(), any(), callbackCaptor.capture())
+      }
+      callbackCaptor.firstValue.onStartCompleted(null)
+
+      // Second call hits the isInitialized early return, but consent must still be applied.
+      val gdprCaptor = argumentCaptor<GDPR>()
+      ChartboostInitializer.getInstance().initialize(context, chartboostParams, listener2)
+
+      mockChartboost.verify(
+        { Chartboost.addDataUseConsent(eq(context), gdprCaptor.capture()) },
+        times(2),
+      )
+      assertThat(gdprCaptor.secondValue.consent).isEqualTo(GDPR.GDPR_CONSENT.NON_BEHAVIORAL.value)
+    }
+  }
+
+  @Test
+  fun initialize_calledWhileAlreadyInitializing_appliesGdprConsentAgain() {
+    mockStatic(ChartboostAdapterUtils::class.java).use { mockAdapterUtils ->
+      mockAdapterUtils
+        .`when`<ChartboostAdapterUtils.ConsentResult> {
+          ChartboostAdapterUtils.hasACConsent(any(), eq(AD_TECHNOLOGY_PROVIDER_ID))
+        }
+        .thenReturn(
+          ChartboostAdapterUtils.ConsentResult.TRUE,
+          ChartboostAdapterUtils.ConsentResult.FALSE,
+        )
+
+      // Start first initialization and leave it in progress (isInitializing stays true).
+      ChartboostInitializer.getInstance().initialize(context, chartboostParams, listener)
+
+      // Second call hits the isInitializing early return, but consent must still be applied.
+      val gdprCaptor = argumentCaptor<GDPR>()
+      ChartboostInitializer.getInstance().initialize(context, chartboostParams, listener2)
+
+      mockChartboost.verify(
+        { Chartboost.addDataUseConsent(eq(context), gdprCaptor.capture()) },
+        times(2),
+      )
+      assertThat(gdprCaptor.secondValue.consent).isEqualTo(GDPR.GDPR_CONSENT.NON_BEHAVIORAL.value)
+    }
+  }
+
+  @Test
   fun initialize_withACConsentTrue_addsBehavioralConsent() {
     mockStatic(ChartboostAdapterUtils::class.java).use { mockAdapterUtils ->
       mockAdapterUtils

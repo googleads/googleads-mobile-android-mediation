@@ -53,6 +53,8 @@ public class ChartboostInitializer {
 
   public void initialize(@NonNull final Context context,
       @NonNull ChartboostParams chartboostParams, @NonNull final Listener listener) {
+    applyGdprConsent(context);
+
     if (isInitializing) {
       initListeners.add(listener);
       return;
@@ -65,16 +67,6 @@ public class ChartboostInitializer {
 
     isInitializing = true;
     initListeners.add(listener);
-
-    ConsentResult consentResult =
-        ChartboostAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID);
-    if (consentResult == ChartboostAdapterUtils.ConsentResult.TRUE) {
-      DataUseConsent dataUseConsent = new GDPR(GDPR_CONSENT.BEHAVIORAL);
-      Chartboost.addDataUseConsent(context, dataUseConsent);
-    } else if (consentResult == ChartboostAdapterUtils.ConsentResult.FALSE) {
-      DataUseConsent dataUseConsent = new GDPR(GDPR_CONSENT.NON_BEHAVIORAL);
-      Chartboost.addDataUseConsent(context, dataUseConsent);
-    }
 
     ChartboostAdapterUtils.updateCoppaStatus(context, MobileAds.getRequestConfiguration());
     Chartboost.startWithAppId(context, chartboostParams.getAppId(),
@@ -99,6 +91,20 @@ public class ChartboostInitializer {
             initListeners.clear();
           }
         });
+  }
+
+  // Runs on every initialize call, not just the first, so a consent change made mid session is
+  // not dropped by the early returns.
+  private void applyGdprConsent(@NonNull Context context) {
+    ConsentResult consentResult =
+        ChartboostAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID);
+    if (consentResult == ChartboostAdapterUtils.ConsentResult.TRUE) {
+      DataUseConsent dataUseConsent = new GDPR(GDPR_CONSENT.BEHAVIORAL);
+      Chartboost.addDataUseConsent(context, dataUseConsent);
+    } else if (consentResult == ChartboostAdapterUtils.ConsentResult.FALSE) {
+      DataUseConsent dataUseConsent = new GDPR(GDPR_CONSENT.NON_BEHAVIORAL);
+      Chartboost.addDataUseConsent(context, dataUseConsent);
+    }
   }
 
   interface Listener {
