@@ -131,6 +131,62 @@ class ChartboostRewardedAdTest {
   }
 
   @Test
+  fun loadAd_emptyLocation_invokesOnFailureWithInvalidServerParametersError() {
+    val serverParameters =
+      bundleOf(KEY_APP_ID to TEST_APP_ID, KEY_APP_SIGNATURE to TEST_APP_SIGNATURE)
+    val config =
+      createMediationRewardedAdConfiguration(context = context, serverParameters = serverParameters)
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid location.", ERROR_DOMAIN)
+
+    mockStatic(ChartboostAdapterUtils::class.java).use { mockAdapterUtils ->
+      val params =
+        ChartboostParams().apply {
+          appId = TEST_APP_ID
+          appSignature = TEST_APP_SIGNATURE
+          location = ""
+        }
+      mockAdapterUtils
+        .`when`<ChartboostParams> { ChartboostAdapterUtils.createChartboostParams(any()) }
+        .thenReturn(params)
+      mockAdapterUtils
+        .`when`<Boolean> { ChartboostAdapterUtils.isValidChartboostParams(params) }
+        .thenReturn(true)
+
+      mockConstruction(Rewarded::class.java).use { mockedRewardedConstruction ->
+        rewardedAd.loadAd(config)
+
+        verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+        assertThat(mockedRewardedConstruction.constructed()).isEmpty()
+      }
+    }
+  }
+
+  @Test
+  fun loadAd_whitespaceOnlyLocation_invokesOnFailureWithInvalidServerParametersError() {
+    // A whitespace-only Ad Location is not empty, so createChartboostParams does not replace it
+    // with the default location. It trims down to an empty string instead. This drives that real
+    // parsing path rather than mocking it.
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to "   ",
+      )
+    val config =
+      createMediationRewardedAdConfiguration(context = context, serverParameters = serverParameters)
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid location.", ERROR_DOMAIN)
+
+    mockConstruction(Rewarded::class.java).use { mockedRewardedConstruction ->
+      rewardedAd.loadAd(config)
+
+      verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+      assertThat(mockedRewardedConstruction.constructed()).isEmpty()
+    }
+  }
+
+  @Test
   fun loadAd_sdkInitializationFails_invokesOnFailureWithSdkError() {
     mockChartboost
       .`when`<Unit> { Chartboost.startWithAppId(any(), any(), any(), any()) }

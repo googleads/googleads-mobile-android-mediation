@@ -20,6 +20,7 @@ import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -83,12 +84,7 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
             new ChartboostInitializer.Listener() {
               @Override
               public void onInitializationSucceeded() {
-                chartboostRewardedAd =
-                    new Rewarded(
-                        location,
-                        ChartboostRewardedAd.this,
-                        ChartboostAdapterUtils.getChartboostMediation());
-                chartboostRewardedAd.cache();
+                createAndLoadRewardedAd(location);
               }
 
               @Override
@@ -112,6 +108,22 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
       return;
     }
     chartboostRewardedAd.show();
+  }
+
+  private void createAndLoadRewardedAd(@Nullable String location) {
+    if (TextUtils.isEmpty(location)) {
+      AdError error =
+          ChartboostConstants.createAdapterError(
+              ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid location.");
+      Log.w(TAG, error.toString());
+      mediationAdLoadCallback.onFailure(error);
+      return;
+    }
+
+    chartboostRewardedAd =
+        new Rewarded(
+            location, ChartboostRewardedAd.this, ChartboostAdapterUtils.getChartboostMediation());
+    chartboostRewardedAd.cache();
   }
 
   @Override
