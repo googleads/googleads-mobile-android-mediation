@@ -1,5 +1,7 @@
 ## Chartboost Android Mediation Adapter Changelog
 
+#### Version 9.14.0.0 (In progress)
+
 #### Version 9.13.0.0
 - Adapter now automatically forwards GDPR consent found inside `IABTCF_AddtlConsent` to the Chartboost SDK if GDPR applies.
 - Verified compatibility with Chartboost SDK version 9.13.0.
