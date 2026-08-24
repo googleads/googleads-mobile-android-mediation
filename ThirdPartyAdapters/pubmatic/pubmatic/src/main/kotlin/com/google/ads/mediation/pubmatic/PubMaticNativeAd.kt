@@ -170,6 +170,10 @@ private constructor(
     mediationNativeAdCallback?.onAdClosed()
   }
 
+  override fun onNativeAdExpired(pobNativeAd: POBNativeAd) {
+    // No-op. GMA SDK doesn't have an equivalent callback.
+  }
+
   override fun trackViews(
     containerView: View,
     clickableAssetViews: Map<String, View>,
