@@ -1,5 +1,14 @@
 ## Chartboost Android Mediation Adapter Changelog
 
+#### Next version
+- Fixed a bug where calling `show()` on an interstitial or rewarded ad that was no longer cached (for example, because it had already been shown or had expired) failed silently instead of invoking `onAdFailedToShow()`.
+- Fixed a bug where interstitial and rewarded ads were not released after a failed load or show.
+- Fixed a bug where banner ads were never detached from the Chartboost SDK after a load or show failure.
+- Fixed a bug where a GDPR consent change made after the Chartboost SDK had already initialized was not forwarded to the SDK.
+- Fixed a bug where a whitespace-only ad location on a rewarded ad request produced a misleading "session not started" error instead of an invalid location error.
+- Fixed a bug where the rewarded ad's expiration log referred to a banner ad. The expiration log for all three ad formats now includes the expiration reason.
+- Adapter now supports Chartboost's 300x600 half page banner size.
+
 #### Version 9.14.0.0 (In progress)
 
 #### Version 9.13.0.0
