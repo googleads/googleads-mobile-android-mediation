@@ -8,6 +8,7 @@
 - Fixed a bug where a whitespace-only ad location on a rewarded ad request produced a misleading "session not started" error instead of an invalid location error.
 - Fixed a bug where the rewarded ad's expiration log referred to a banner ad. The expiration log for all three ad formats now includes the expiration reason.
 - Adapter now supports Chartboost's 300x600 half page banner size.
+- Fixed the default ad location used when no Ad Location is set in the AdMob UI. It is now `Default`, matching the name Chartboost aggregates unnamed locations under, instead of `default`.
 
 #### Version 9.14.0.0 (In progress)
 

@@ -85,6 +85,13 @@ class ChartboostAdapterUtilsTest {
   }
 
   @Test
+  fun locationDefault_matchesChartboostReportingBucketName() {
+    // Pinned to the literal rather than the constant. Chartboost aggregates unnamed locations
+    // under "Default", so a change in case here silently splits publisher reporting.
+    assertThat(LOCATION_DEFAULT).isEqualTo("Default")
+  }
+
+  @Test
   fun createChartboostParams_withWhitespace_trimsValues() {
     val serverParameters =
       bundleOf(

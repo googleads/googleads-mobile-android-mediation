@@ -67,9 +67,10 @@ class ChartboostAdapterUtils {
   static final String KEY_AD_LOCATION = "adLocation";
 
   /**
-   * Default location for Chartboost ads.
+   * Default location for Chartboost ads. Chartboost aggregates reporting for ads with no named
+   * location under "Default", so this must match that name exactly.
    */
-  static final String LOCATION_DEFAULT = "default";
+  static final String LOCATION_DEFAULT = "Default";
 
   /**
    * Chartboost mediation object.
