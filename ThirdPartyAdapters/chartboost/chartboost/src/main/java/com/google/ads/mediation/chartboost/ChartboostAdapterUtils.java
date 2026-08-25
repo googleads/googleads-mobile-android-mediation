@@ -151,11 +151,15 @@ class ChartboostAdapterUtils {
         new AdSize(
             Banner.BannerSize.LEADERBOARD.getWidth(),
             Banner.BannerSize.LEADERBOARD.getHeight());
+    AdSize halfPageSize =
+        new AdSize(
+            Banner.BannerSize.HALFPAGE.getWidth(), Banner.BannerSize.HALFPAGE.getHeight());
 
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(standardSize);
     potentials.add(mediumSize);
     potentials.add(leaderboardSize);
+    potentials.add(halfPageSize);
 
     AdSize supportedAdSize = MediationUtils.findClosestSize(context, adSize, potentials);
     if (supportedAdSize == null) {
@@ -168,6 +172,8 @@ class ChartboostAdapterUtils {
       return Banner.BannerSize.MEDIUM;
     } else if (supportedAdSize.equals(leaderboardSize)) {
       return Banner.BannerSize.LEADERBOARD;
+    } else if (supportedAdSize.equals(halfPageSize)) {
+      return Banner.BannerSize.HALFPAGE;
     }
     return null;
   }

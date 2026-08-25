@@ -196,6 +196,20 @@ class ChartboostAdapterUtilsTest {
   }
 
   @Test
+  fun findClosestBannerSize_halfPageSize_returnsHalfPageBannerSize() {
+    val halfPage = AdSize(300, 600)
+    mockStatic(MediationUtils::class.java).use { mockMediationUtils ->
+      mockMediationUtils
+        .`when`<AdSize> { MediationUtils.findClosestSize(eq(appContext), eq(halfPage), any()) }
+        .thenAnswer { (it.arguments[2] as List<AdSize>)[3] }
+
+      val bannerSize = ChartboostAdapterUtils.findClosestBannerSize(appContext, halfPage)
+
+      assertThat(bannerSize).isEqualTo(Banner.BannerSize.HALFPAGE)
+    }
+  }
+
+  @Test
   fun findClosestBannerSize_unsupportedSize_returnsNull() {
     val unsupportedSize = AdSize(123, 456)
     mockStatic(MediationUtils::class.java).use { mockMediationUtils ->
