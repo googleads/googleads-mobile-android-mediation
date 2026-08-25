@@ -22,10 +22,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.chartboost.sdk.Chartboost
 import com.chartboost.sdk.Mediation
 import com.chartboost.sdk.ads.Banner
+import com.chartboost.sdk.privacy.model.CCPA.CCPA_CONSENT
 import com.chartboost.sdk.privacy.model.COPPA
 import com.google.ads.mediation.chartboost.ChartboostAdapterUtils.KEY_AD_LOCATION
 import com.google.ads.mediation.chartboost.ChartboostAdapterUtils.KEY_APP_ID
 import com.google.ads.mediation.chartboost.ChartboostAdapterUtils.KEY_APP_SIGNATURE
+import com.google.ads.mediation.chartboost.ChartboostAdapterUtils.KEY_US_PRIVACY_STRING
 import com.google.ads.mediation.chartboost.ChartboostAdapterUtils.LOCATION_DEFAULT
 import com.google.ads.mediation.chartboost.ChartboostConstants.AD_TECHNOLOGY_PROVIDER_ID
 import com.google.android.gms.ads.AdSize
@@ -550,6 +552,97 @@ class ChartboostAdapterUtilsTest {
     val consentResult = ChartboostAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID)
 
     assertThat(consentResult).isEqualTo(ChartboostAdapterUtils.ConsentResult.FALSE)
+  }
+
+  // endregion
+
+  // region readUsPrivacyConsent() Tests
+  @Test
+  fun readUsPrivacyConsent_optOutSaleIsY_returnsOptOutSale() {
+    sharedPreferences.stub { on { getString(eq(KEY_US_PRIVACY_STRING), any()) } doReturn "1YYN" }
+
+    val consent = ChartboostAdapterUtils.readUsPrivacyConsent(context)
+
+    assertThat(consent).isEqualTo(CCPA_CONSENT.OPT_OUT_SALE)
+  }
+
+  @Test
+  fun readUsPrivacyConsent_optOutSaleIsN_returnsOptInSale() {
+    sharedPreferences.stub { on { getString(eq(KEY_US_PRIVACY_STRING), any()) } doReturn "1YNN" }
+
+    val consent = ChartboostAdapterUtils.readUsPrivacyConsent(context)
+
+    assertThat(consent).isEqualTo(CCPA_CONSENT.OPT_IN_SALE)
+  }
+
+  @Test
+  fun readUsPrivacyConsent_optOutSaleIsNotApplicable_returnsNull() {
+    sharedPreferences.stub { on { getString(eq(KEY_US_PRIVACY_STRING), any()) } doReturn "1---" }
+
+    val consent = ChartboostAdapterUtils.readUsPrivacyConsent(context)
+
+    assertThat(consent).isNull()
+  }
+
+  @Test
+  fun readUsPrivacyConsent_onlyOptOutSaleCharacterDiffers_stillMapsCorrectly() {
+    // "1YYN" and "1YNN" differ only at index 2, the opt-out-of-sale character. If the reader
+    // were off by one, these two strings would resolve to the same consent value.
+    sharedPreferences.stub { on { getString(eq(KEY_US_PRIVACY_STRING), any()) } doReturn "1YYN" }
+    val optOutSaleConsent = ChartboostAdapterUtils.readUsPrivacyConsent(context)
+
+    sharedPreferences.stub { on { getString(eq(KEY_US_PRIVACY_STRING), any()) } doReturn "1YNN" }
+    val optInSaleConsent = ChartboostAdapterUtils.readUsPrivacyConsent(context)
+
+    assertThat(optOutSaleConsent).isNotEqualTo(optInSaleConsent)
+  }
+
+  @Test
+  fun readUsPrivacyConsent_keyAbsent_returnsNull() {
+    // getString() is never stubbed, so Mockito returns null. A real SharedPreferences returns the
+    // default ("") for an absent key, so this pins the null guard that protects the length check.
+
+    val consent = ChartboostAdapterUtils.readUsPrivacyConsent(context)
+
+    assertThat(consent).isNull()
+  }
+
+  @Test
+  fun readUsPrivacyConsent_emptyString_returnsNull() {
+    sharedPreferences.stub { on { getString(eq(KEY_US_PRIVACY_STRING), any()) } doReturn "" }
+
+    val consent = ChartboostAdapterUtils.readUsPrivacyConsent(context)
+
+    assertThat(consent).isNull()
+  }
+
+  @Test
+  fun readUsPrivacyConsent_tooShort_returnsNull() {
+    sharedPreferences.stub { on { getString(eq(KEY_US_PRIVACY_STRING), any()) } doReturn "1Y" }
+
+    val consent = ChartboostAdapterUtils.readUsPrivacyConsent(context)
+
+    assertThat(consent).isNull()
+  }
+
+  @Test
+  fun readUsPrivacyConsent_wrongSpecVersion_returnsNull() {
+    sharedPreferences.stub { on { getString(eq(KEY_US_PRIVACY_STRING), any()) } doReturn "2YNN" }
+
+    val consent = ChartboostAdapterUtils.readUsPrivacyConsent(context)
+
+    assertThat(consent).isNull()
+  }
+
+  @Test
+  fun readUsPrivacyConsent_valueStoredWithWrongType_returnsNullWithoutCrashing() {
+    sharedPreferences.stub {
+      on { getString(eq(KEY_US_PRIVACY_STRING), any()) } doThrow ClassCastException::class
+    }
+
+    val consent = ChartboostAdapterUtils.readUsPrivacyConsent(context)
+
+    assertThat(consent).isNull()
   }
 
   // endregion

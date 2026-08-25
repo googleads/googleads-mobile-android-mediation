@@ -9,6 +9,7 @@
 - Fixed a bug where the rewarded ad's expiration log referred to a banner ad. The expiration log for all three ad formats now includes the expiration reason.
 - Adapter now supports Chartboost's 300x600 half page banner size.
 - Fixed the default ad location used when no Ad Location is set in the AdMob UI. It is now `Default`, matching the name Chartboost aggregates unnamed locations under, instead of `default`.
+- Adapter now automatically forwards CCPA consent found inside `IABUSPrivacy_String` to the Chartboost SDK. A value written by the app's CMP takes precedence over a CCPA consent the app set on the Chartboost SDK itself.
 
 #### Version 9.14.0.0 (In progress)
 
