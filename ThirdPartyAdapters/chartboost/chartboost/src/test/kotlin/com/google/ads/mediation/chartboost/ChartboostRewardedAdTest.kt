@@ -32,6 +32,7 @@ import com.chartboost.sdk.events.RewardEvent
 import com.chartboost.sdk.events.ShowError
 import com.chartboost.sdk.events.ShowEvent
 import com.chartboost.sdk.events.StartError
+import com.chartboost.sdk.internal.caching.ExpirationReason
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.chartboost.ChartboostAdapterUtils.KEY_AD_LOCATION
@@ -131,6 +132,62 @@ class ChartboostRewardedAdTest {
   }
 
   @Test
+  fun loadAd_emptyLocation_invokesOnFailureWithInvalidServerParametersError() {
+    val serverParameters =
+      bundleOf(KEY_APP_ID to TEST_APP_ID, KEY_APP_SIGNATURE to TEST_APP_SIGNATURE)
+    val config =
+      createMediationRewardedAdConfiguration(context = context, serverParameters = serverParameters)
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid location.", ERROR_DOMAIN)
+
+    mockStatic(ChartboostAdapterUtils::class.java).use { mockAdapterUtils ->
+      val params =
+        ChartboostParams().apply {
+          appId = TEST_APP_ID
+          appSignature = TEST_APP_SIGNATURE
+          location = ""
+        }
+      mockAdapterUtils
+        .`when`<ChartboostParams> { ChartboostAdapterUtils.createChartboostParams(any()) }
+        .thenReturn(params)
+      mockAdapterUtils
+        .`when`<Boolean> { ChartboostAdapterUtils.isValidChartboostParams(params) }
+        .thenReturn(true)
+
+      mockConstruction(Rewarded::class.java).use { mockedRewardedConstruction ->
+        rewardedAd.loadAd(config)
+
+        verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+        assertThat(mockedRewardedConstruction.constructed()).isEmpty()
+      }
+    }
+  }
+
+  @Test
+  fun loadAd_whitespaceOnlyLocation_invokesOnFailureWithInvalidServerParametersError() {
+    // A whitespace-only Ad Location is not empty, so createChartboostParams does not replace it
+    // with the default location. It trims down to an empty string instead. This drives that real
+    // parsing path rather than mocking it.
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to "   ",
+      )
+    val config =
+      createMediationRewardedAdConfiguration(context = context, serverParameters = serverParameters)
+    val expectedAdError =
+      AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid location.", ERROR_DOMAIN)
+
+    mockConstruction(Rewarded::class.java).use { mockedRewardedConstruction ->
+      rewardedAd.loadAd(config)
+
+      verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
+      assertThat(mockedRewardedConstruction.constructed()).isEmpty()
+    }
+  }
+
+  @Test
   fun loadAd_sdkInitializationFails_invokesOnFailureWithSdkError() {
     mockChartboost
       .`when`<Unit> { Chartboost.startWithAppId(any(), any(), any(), any()) }
@@ -178,11 +235,7 @@ class ChartboostRewardedAdTest {
   }
 
   @Test
-  fun showAd_adNotCachedOrNull_logsWarningAndDoesNotShow() {
-    // When ad is null
-    rewardedAd.showAd(context)
-
-    // When ad is not cached
+  fun showAd_adNotCached_stillCallsShow() {
     val serverParameters =
       bundleOf(
         KEY_APP_ID to TEST_APP_ID,
@@ -198,8 +251,13 @@ class ChartboostRewardedAdTest {
         rewardedAd.showAd(context)
 
         val createdRewarded = mockedRewardedConstruction.constructed().first()
-        verify(createdRewarded, never()).show()
+        verify(createdRewarded).show()
       }
+  }
+
+  @Test
+  fun showAd_adIsNull_doesNotThrowException() {
+    rewardedAd.showAd(context)
   }
 
   @Test
@@ -243,6 +301,27 @@ class ChartboostRewardedAdTest {
   }
 
   @Test
+  fun onAdDismiss_doesNotDestroyRewardedAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationRewardedAdConfiguration(context = context, serverParameters = serverParameters)
+
+    mockConstruction(Rewarded::class.java).use { mockedRewardedConstruction ->
+      rewardedAd.loadAd(config)
+      val createdRewarded = mockedRewardedConstruction.constructed().first()
+
+      rewardedAd.onAdDismiss(dismissEvent)
+
+      verify(createdRewarded, never()).destroy()
+    }
+  }
+
+  @Test
   fun onImpressionRecorded_invokesReportAdImpression() {
     rewardedAd.onAdLoaded(cacheEvent, null)
 
@@ -262,6 +341,30 @@ class ChartboostRewardedAdTest {
     rewardedAd.onAdShown(showEvent, showError)
 
     verify(rewardedAdCallback).onAdFailedToShow(argThat(AdErrorMatcher(expectedAdError)))
+  }
+
+  @Test
+  fun onAdShown_withShowError_destroysRewardedAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationRewardedAdConfiguration(context = context, serverParameters = serverParameters)
+    whenever(showError.code) doReturn showErrorCode
+    whenever(showErrorCode.errorCode) doReturn ERROR_CODE
+    whenever(showError.toString()) doReturn ERROR_MESSAGE
+
+    mockConstruction(Rewarded::class.java).use { mockedRewardedConstruction ->
+      rewardedAd.loadAd(config)
+      val createdRewarded = mockedRewardedConstruction.constructed().first()
+
+      rewardedAd.onAdShown(showEvent, showError)
+
+      verify(createdRewarded).destroy()
+    }
   }
 
   @Test
@@ -285,6 +388,78 @@ class ChartboostRewardedAdTest {
 
     verify(mediationAdLoadCallback).onFailure(argThat(AdErrorMatcher(expectedAdError)))
     verify(mediationAdLoadCallback, never()).onSuccess(any())
+  }
+
+  @Test
+  fun onAdLoaded_withCacheError_destroysRewardedAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationRewardedAdConfiguration(context = context, serverParameters = serverParameters)
+    whenever(cacheError.code) doReturn cacheErrorCode
+    whenever(cacheErrorCode.errorCode) doReturn ERROR_CODE
+    whenever(cacheError.toString()) doReturn ERROR_MESSAGE
+
+    mockConstruction(Rewarded::class.java).use { mockedRewardedConstruction ->
+      rewardedAd.loadAd(config)
+      val createdRewarded = mockedRewardedConstruction.constructed().first()
+
+      rewardedAd.onAdLoaded(cacheEvent, cacheError)
+
+      verify(createdRewarded).destroy()
+    }
+  }
+
+  @Test
+  fun onAdLoaded_withoutCacheError_doesNotDestroyRewardedAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationRewardedAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+      )
+
+    mockConstruction(Rewarded::class.java).use { mockedConstruction ->
+      rewardedAd.loadAd(config)
+      val createdRewarded = mockedConstruction.constructed().first()
+
+      rewardedAd.onAdLoaded(cacheEvent, null)
+
+      verify(createdRewarded, never()).destroy()
+    }
+  }
+
+  @Test
+  fun onAdShown_withoutShowError_doesNotDestroyRewardedAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationRewardedAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+      )
+
+    mockConstruction(Rewarded::class.java).use { mockedConstruction ->
+      rewardedAd.loadAd(config)
+      val createdRewarded = mockedConstruction.constructed().first()
+
+      rewardedAd.onAdShown(showEvent, null)
+
+      verify(createdRewarded, never()).destroy()
+    }
   }
 
   @Test
@@ -322,6 +497,8 @@ class ChartboostRewardedAdTest {
 
   @Test
   fun onAdExpired_doesNotThrowException() {
+    whenever(expirationEvent.reason) doReturn ExpirationReason.TTL_EXPIRED
+
     rewardedAd.onAdExpired(expirationEvent)
   }
 

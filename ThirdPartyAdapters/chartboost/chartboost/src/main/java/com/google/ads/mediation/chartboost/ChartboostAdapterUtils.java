@@ -27,6 +27,7 @@ import androidx.preference.PreferenceManager;
 import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.Mediation;
 import com.chartboost.sdk.ads.Banner;
+import com.chartboost.sdk.privacy.model.CCPA.CCPA_CONSENT;
 import com.chartboost.sdk.privacy.model.COPPA;
 import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils;
 import com.google.android.gms.ads.AdSize;
@@ -67,9 +68,37 @@ class ChartboostAdapterUtils {
   static final String KEY_AD_LOCATION = "adLocation";
 
   /**
-   * Default location for Chartboost ads.
+   * Default location for Chartboost ads. Chartboost aggregates reporting for ads with no named
+   * location under "Default", so this must match that name exactly.
    */
-  static final String LOCATION_DEFAULT = "default";
+  static final String LOCATION_DEFAULT = "Default";
+
+  /**
+   * Key used by IAB-compliant consent management platforms (CMPs) to write the US Privacy String
+   * to {@link android.content.SharedPreferences}.
+   */
+  static final String KEY_US_PRIVACY_STRING = "IABUSPrivacy_String";
+
+  /** Expected length of a well formed US Privacy String. */
+  private static final int US_PRIVACY_STRING_LENGTH = 4;
+
+  /** Index of the spec version character within the US Privacy String. */
+  private static final int US_PRIVACY_STRING_INDEX_VERSION = 0;
+
+  /** Index of the opt-out-of-sale character within the US Privacy String. */
+  private static final int US_PRIVACY_STRING_INDEX_OPT_OUT_SALE = 2;
+
+  /** The only spec version of the US Privacy String that this adapter understands. */
+  private static final char US_PRIVACY_STRING_VERSION_1 = '1';
+
+  /** Opt-out-of-sale character indicating the user opted out of the sale of their data. */
+  private static final char US_PRIVACY_OPT_OUT_SALE_YES = 'Y';
+
+  /** Opt-out-of-sale character indicating the user did not opt out of the sale of their data. */
+  private static final char US_PRIVACY_OPT_OUT_SALE_NO = 'N';
+
+  /** Opt-out-of-sale character indicating that opt-out of sale does not apply to the user. */
+  private static final char US_PRIVACY_OPT_OUT_SALE_NOT_APPLICABLE = '-';
 
   /**
    * Chartboost mediation object.
@@ -151,11 +180,15 @@ class ChartboostAdapterUtils {
         new AdSize(
             Banner.BannerSize.LEADERBOARD.getWidth(),
             Banner.BannerSize.LEADERBOARD.getHeight());
+    AdSize halfPageSize =
+        new AdSize(
+            Banner.BannerSize.HALFPAGE.getWidth(), Banner.BannerSize.HALFPAGE.getHeight());
 
     ArrayList<AdSize> potentials = new ArrayList<>();
     potentials.add(standardSize);
     potentials.add(mediumSize);
     potentials.add(leaderboardSize);
+    potentials.add(halfPageSize);
 
     AdSize supportedAdSize = MediationUtils.findClosestSize(context, adSize, potentials);
     if (supportedAdSize == null) {
@@ -168,6 +201,8 @@ class ChartboostAdapterUtils {
       return Banner.BannerSize.MEDIUM;
     } else if (supportedAdSize.equals(leaderboardSize)) {
       return Banner.BannerSize.LEADERBOARD;
+    } else if (supportedAdSize.equals(halfPageSize)) {
+      return Banner.BannerSize.HALFPAGE;
     }
     return null;
   }
@@ -318,6 +353,88 @@ class ChartboostAdapterUtils {
       Log.w(TAG, errorMessage);
       return ConsentResult.UNKNOWN;
     }
+  }
+
+
+  /**
+   * Reads the IAB US Privacy String written by the app's consent management platform (CMP) and
+   * maps it to a Chartboost {@link CCPA_CONSENT} value.
+   *
+   * <p>The US Privacy String is a 4 character string stored under the key {@code
+   * IABUSPrivacy_String}:
+   *
+   * <ul>
+   *   <li>index 0 - the spec version, expected to be {@code '1'}.
+   *   <li>index 1 - whether explicit notice was given.
+   *   <li>index 2 - whether the user opted out of the sale of their data. This is the only
+   *       character this method uses.
+   *   <li>index 3 - whether a limited service provider agreement applies.
+   * </ul>
+   *
+   * <p>Returns {@code null} (no consent signal, so the Chartboost SDK is not called) when the
+   * string is absent, empty, a different length than expected, on an unsupported spec version,
+   * or when the opt-out-of-sale character is {@code '-'} (not applicable) or any other
+   * unrecognized character.
+   *
+   * @param context {@link Context} object of your application.
+   * @return {@link CCPA_CONSENT#OPT_OUT_SALE} if the user opted out of the sale of their data,
+   *     {@link CCPA_CONSENT#OPT_IN_SALE} if the user did not, or {@code null} if no signal could
+   *     be determined.
+   * @see <a
+   *     href="https://github.com/InteractiveAdvertisingBureau/USPrivacy/blob/master/CCPA/US%20Privacy%20String.md">IAB
+   *     US Privacy String spec</a>
+   */
+  static @Nullable CCPA_CONSENT readUsPrivacyConsent(@NonNull Context context) {
+    SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+
+    String usPrivacyString = "";
+    try {
+      usPrivacyString = sharedPref.getString(KEY_US_PRIVACY_STRING, "");
+    } catch (ClassCastException exception) {
+      Log.w(
+          TAG,
+          "Could not parse IABUSPrivacy_String as a string. Did your CMP write it correctly?",
+          exception);
+    }
+
+    if (TextUtils.isEmpty(usPrivacyString)) {
+      return null;
+    }
+
+    if (usPrivacyString.length() != US_PRIVACY_STRING_LENGTH) {
+      Log.w(
+          TAG,
+          "Ignoring an IABUSPrivacy_String of length "
+              + usPrivacyString.length()
+              + ". Expected "
+              + US_PRIVACY_STRING_LENGTH
+              + " characters. Did your CMP write it correctly?");
+      return null;
+    }
+
+    if (usPrivacyString.charAt(US_PRIVACY_STRING_INDEX_VERSION) != US_PRIVACY_STRING_VERSION_1) {
+      Log.w(
+          TAG,
+          "Ignoring an IABUSPrivacy_String on unsupported spec version "
+              + usPrivacyString.charAt(US_PRIVACY_STRING_INDEX_VERSION)
+              + ". This adapter only understands version "
+              + US_PRIVACY_STRING_VERSION_1
+              + ".");
+      return null;
+    }
+
+    char optOutOfSale = usPrivacyString.charAt(US_PRIVACY_STRING_INDEX_OPT_OUT_SALE);
+    if (optOutOfSale == US_PRIVACY_OPT_OUT_SALE_YES) {
+      return CCPA_CONSENT.OPT_OUT_SALE;
+    }
+
+    if (optOutOfSale == US_PRIVACY_OPT_OUT_SALE_NO) {
+      return CCPA_CONSENT.OPT_IN_SALE;
+    }
+
+    // optOutOfSale is either US_PRIVACY_OPT_OUT_SALE_NOT_APPLICABLE or an unrecognized
+    // character; either way there is no consent signal to report.
+    return null;
   }
 
   static void updateCoppaStatus(

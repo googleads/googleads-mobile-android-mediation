@@ -56,10 +56,6 @@ public class ChartboostMediationAdapter extends Adapter {
 
   static final String TAG = ChartboostMediationAdapter.class.getSimpleName();
 
-  private ChartboostBannerAd bannerAd;
-  private ChartboostInterstitialAd interstitialAd;
-  private ChartboostRewardedAd rewardedAd;
-
   /**
    * Preferred Chartboost App ID.
    */
@@ -213,7 +209,7 @@ public class ChartboostMediationAdapter extends Adapter {
       @NonNull MediationRewardedAdConfiguration mediationRewardedAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
           mediationAdLoadCallback) {
-    rewardedAd = new ChartboostRewardedAd(mediationAdLoadCallback);
+    ChartboostRewardedAd rewardedAd = new ChartboostRewardedAd(mediationAdLoadCallback);
     rewardedAd.loadAd(mediationRewardedAdConfiguration);
   }
 
@@ -221,14 +217,14 @@ public class ChartboostMediationAdapter extends Adapter {
   public void loadInterstitialAd(
       @NonNull MediationInterstitialAdConfiguration mediationInterstitialAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback> mediationAdLoadCallback) {
-    interstitialAd = new ChartboostInterstitialAd(mediationAdLoadCallback);
+    ChartboostInterstitialAd interstitialAd = new ChartboostInterstitialAd(mediationAdLoadCallback);
     interstitialAd.loadAd(mediationInterstitialAdConfiguration);
   }
 
   @Override
   public void loadBannerAd(@NonNull MediationBannerAdConfiguration mediationBannerAdConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> mediationAdLoadCallback) {
-    bannerAd = new ChartboostBannerAd(mediationAdLoadCallback);
+    ChartboostBannerAd bannerAd = new ChartboostBannerAd(mediationAdLoadCallback);
     bannerAd.loadAd(mediationBannerAdConfiguration);
   }
 

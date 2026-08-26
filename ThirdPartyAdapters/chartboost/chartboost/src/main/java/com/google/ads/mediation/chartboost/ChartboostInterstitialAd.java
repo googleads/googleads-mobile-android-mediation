@@ -96,11 +96,14 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
 
   @Override
   public void showAd(@NonNull Context context) {
-    if (chartboostInterstitialAd == null || !chartboostInterstitialAd.isCached()) {
+    if (chartboostInterstitialAd == null) {
       AdError error =
           ChartboostConstants.createAdapterError(
               ERROR_AD_NOT_READY, "Chartboost interstitial ad is not yet ready to be shown.");
       Log.w(TAG, error.toString());
+      if (interstitialAdCallback != null) {
+        interstitialAdCallback.onAdFailedToShow(error);
+      }
       return;
     }
     chartboostInterstitialAd.show();
@@ -132,6 +135,8 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
     if (interstitialAdCallback != null) {
       interstitialAdCallback.onAdClosed();
     }
+    // Intentionally not destroyed here. Destroying from inside onAdDismiss makes
+    // the SDK report a second close to the publisher.
   }
 
   @Override
@@ -155,6 +160,7 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
       if (interstitialAdCallback != null) {
         interstitialAdCallback.onAdFailedToShow(error);
       }
+      destroyChartboostInterstitialAd();
     }
   }
 
@@ -176,6 +182,7 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
       if (mediationAdLoadCallback != null) {
         mediationAdLoadCallback.onFailure(error);
       }
+      destroyChartboostInterstitialAd();
     }
   }
 
@@ -194,6 +201,13 @@ public class ChartboostInterstitialAd implements MediationInterstitialAd, Inters
 
   @Override
   public void onAdExpired(@NonNull final ExpirationEvent expirationEvent) {
-    Log.d(TAG, "Chartboost interstitial ad Expired.");
+    Log.d(TAG, "Chartboost interstitial ad expired. Reason: " + expirationEvent.getReason() + ".");
+  }
+
+  // Releases the ad once GMA is done with it, on load failure or show failure.
+  private void destroyChartboostInterstitialAd() {
+    if (chartboostInterstitialAd != null) {
+      chartboostInterstitialAd.destroy();
+    }
   }
 }

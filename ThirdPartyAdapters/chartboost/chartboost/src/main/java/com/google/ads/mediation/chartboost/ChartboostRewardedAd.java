@@ -20,6 +20,7 @@ import static com.google.ads.mediation.chartboost.ChartboostMediationAdapter.TAG
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -83,12 +84,7 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
             new ChartboostInitializer.Listener() {
               @Override
               public void onInitializationSucceeded() {
-                chartboostRewardedAd =
-                    new Rewarded(
-                        location,
-                        ChartboostRewardedAd.this,
-                        ChartboostAdapterUtils.getChartboostMediation());
-                chartboostRewardedAd.cache();
+                createAndLoadRewardedAd(location);
               }
 
               @Override
@@ -101,14 +97,33 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
 
   @Override
   public void showAd(@NonNull Context context) {
-    if (chartboostRewardedAd == null || !chartboostRewardedAd.isCached()) {
+    if (chartboostRewardedAd == null) {
       AdError error =
           ChartboostConstants.createAdapterError(
               ERROR_AD_NOT_READY, "Chartboost rewarded ad is not yet ready to be shown.");
       Log.w(TAG, error.toString());
+      if (rewardedAdCallback != null) {
+        rewardedAdCallback.onAdFailedToShow(error);
+      }
       return;
     }
     chartboostRewardedAd.show();
+  }
+
+  private void createAndLoadRewardedAd(@Nullable String location) {
+    if (TextUtils.isEmpty(location)) {
+      AdError error =
+          ChartboostConstants.createAdapterError(
+              ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid location.");
+      Log.w(TAG, error.toString());
+      mediationAdLoadCallback.onFailure(error);
+      return;
+    }
+
+    chartboostRewardedAd =
+        new Rewarded(
+            location, ChartboostRewardedAd.this, ChartboostAdapterUtils.getChartboostMediation());
+    chartboostRewardedAd.cache();
   }
 
   @Override
@@ -126,6 +141,8 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
     if (rewardedAdCallback != null) {
       rewardedAdCallback.onAdClosed();
     }
+    // Intentionally not destroyed here. Destroying from inside onAdDismiss makes
+    // the SDK report a second close to the publisher.
   }
 
   @Override
@@ -150,6 +167,7 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
       if (rewardedAdCallback != null) {
         rewardedAdCallback.onAdFailedToShow(error);
       }
+      destroyChartboostRewardedAd();
     }
   }
 
@@ -171,6 +189,7 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
       if (mediationAdLoadCallback != null) {
         mediationAdLoadCallback.onFailure(error);
       }
+      destroyChartboostRewardedAd();
     }
   }
 
@@ -189,6 +208,13 @@ public class ChartboostRewardedAd implements MediationRewardedAd, RewardedCallba
 
   @Override
   public void onAdExpired(@NonNull final ExpirationEvent expirationEvent) {
-    Log.d(TAG, "Chartboost banner ad Expired.");
+    Log.d(TAG, "Chartboost rewarded ad expired. Reason: " + expirationEvent.getReason() + ".");
+  }
+
+  // Releases the ad once GMA is done with it, on load failure or show failure.
+  private void destroyChartboostRewardedAd() {
+    if (chartboostRewardedAd != null) {
+      chartboostRewardedAd.destroy();
+    }
   }
 }
