@@ -70,6 +70,10 @@ dependencies {
         implementation 'com.google.android.gms:play-services-ads:25.4.0'
     }
 
+    // Explicitly pin Kotlin stdlib to 1.9.0. This matches the min Kotlin
+    // version supported by the GMA NextGen SDK. Don't upgrade this version
+    // unless GMA NextGen SDK upgrades its min Kotlin version.
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.0'
 
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
     testImplementation 'androidx.core:core-ktx:1.8.0'
