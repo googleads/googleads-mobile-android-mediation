@@ -55,7 +55,7 @@ class DTExchangeWaterfallInterstitialAd :
   private lateinit var adLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
 
-  private lateinit var interstitialSpot: InneractiveAdSpot
+  private var interstitialSpot: InneractiveAdSpot? = null;
 
   private var interstitialAdCallback: MediationInterstitialAdCallback? = null
 
@@ -113,13 +113,13 @@ class DTExchangeWaterfallInterstitialAd :
           interstitialSpot = InneractiveAdSpotManager.get().createSpot()
 
           val controller = InneractiveFullscreenUnitController()
-          interstitialSpot.addUnitController(controller)
+          interstitialSpot!!.addUnitController(controller)
 
-          interstitialSpot.setRequestListener(this@DTExchangeWaterfallInterstitialAd)
+          interstitialSpot!!.setRequestListener(this@DTExchangeWaterfallInterstitialAd)
 
           FyberAdapterUtils.updateFyberExtraParams(interstitialAdConfig.mediationExtras)
           val request = InneractiveAdRequest(spotId)
-          interstitialSpot.requestAd(request)
+          interstitialSpot!!.requestAd(request)
         }
       },
     )
@@ -127,25 +127,25 @@ class DTExchangeWaterfallInterstitialAd :
 
   // region MediationInterstitialAd implementation
   override fun showAd(context: Context) {
-    if (interstitialSpot.selectedUnitController !is InneractiveFullscreenUnitController) {
+    if (interstitialSpot?.selectedUnitController !is InneractiveFullscreenUnitController) {
       val errorMessage =
         "showInterstitial called, but wrong spot has been used (should not happen)."
       Log.w(TAG, errorMessage)
       val error = AdError(ERROR_WRONG_CONTROLLER_TYPE, errorMessage, ERROR_DOMAIN)
       interstitialAdCallback?.onAdFailedToShow(error)
-      interstitialSpot.destroy()
+      destroyAdSpot()
       return
     }
-    val controller = interstitialSpot.selectedUnitController as InneractiveFullscreenUnitController
+    val controller = interstitialSpot!!.selectedUnitController as InneractiveFullscreenUnitController
 
-    if (!interstitialSpot.isReady) {
+    if (interstitialSpot?.isReady == false) {
       // Shouldn't really happen since GMA SDK hands the ad object to the publisher only after the
       // ad is ready (i.e. is loaded).
       val errorMessage = "showInterstitial called, but the ad is not ready."
       Log.w(TAG, errorMessage)
       val error = AdError(ERROR_AD_NOT_READY, errorMessage, ERROR_DOMAIN)
       interstitialAdCallback?.onAdFailedToShow(error)
-      interstitialSpot.destroy()
+      destroyAdSpot()
       return
     }
 
@@ -157,21 +157,21 @@ class DTExchangeWaterfallInterstitialAd :
 
   // region InneractiveAdSpot.RequestListener implementation
   override fun onInneractiveSuccessfulAdRequest(adSpot: InneractiveAdSpot?) {
-    if (interstitialSpot.selectedUnitController !is InneractiveFullscreenUnitController) {
+    if (interstitialSpot?.selectedUnitController !is InneractiveFullscreenUnitController) {
       val message =
         java.lang.String.format(
-          "Unexpected controller type. Expected: %s. Actual: %s",
-          InneractiveUnitController::class.java.getName(),
-          interstitialSpot.selectedUnitController.javaClass.getName(),
+            "Unexpected controller type. Expected: %s. Actual: %s",
+            InneractiveFullscreenUnitController::class.java.name,
+            interstitialSpot?.selectedUnitController?.javaClass?.name,
         )
       val error = AdError(ERROR_WRONG_CONTROLLER_TYPE, message, ERROR_DOMAIN)
       Log.w(TAG, error.message)
       adLoadCallback.onFailure(error)
-      interstitialSpot.destroy()
+      destroyAdSpot()
       return
     }
 
-    val controller = interstitialSpot.selectedUnitController as InneractiveFullscreenUnitController
+    val controller = interstitialSpot!!.selectedUnitController as InneractiveFullscreenUnitController
     controller.eventsListener = this
 
     interstitialAdCallback = adLoadCallback.onSuccess(this)
@@ -185,7 +185,7 @@ class DTExchangeWaterfallInterstitialAd :
     val error: AdError = getAdError(inneractiveErrorCode)
     Log.w(TAG, error.message)
     adLoadCallback.onFailure(error)
-    interstitialSpot.destroy()
+    destroyAdSpot()
   }
 
   // endregion
@@ -210,7 +210,7 @@ class DTExchangeWaterfallInterstitialAd :
   ) {
     val error = AdError(ERROR_AD_FAILED_TO_DISPLAY, adDisplayError?.message ?: "", ERROR_DOMAIN)
     interstitialAdCallback?.onAdFailedToShow(error)
-    interstitialSpot.destroy()
+    destroyAdSpot()
   }
 
   override fun onAdWillCloseInternalBrowser(p0: InneractiveAdSpot?) {
@@ -219,7 +219,12 @@ class DTExchangeWaterfallInterstitialAd :
 
   override fun onAdDismissed(p0: InneractiveAdSpot?) {
     interstitialAdCallback?.onAdClosed()
-    interstitialSpot.destroy()
+    destroyAdSpot()
+  }
+
+  fun destroyAdSpot() {
+    interstitialSpot?.destroy()
+    interstitialSpot = null;
   }
 
   // endregion
