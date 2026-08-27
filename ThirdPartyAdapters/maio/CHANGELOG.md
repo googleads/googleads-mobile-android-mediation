@@ -1,5 +1,10 @@
 ## maio Android Mediation Adapter Changelog
 
+#### Next version
+
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
+
 #### Next Version
 - Fixed fall-through behavior on age-restricted failure branches during ad initialization and ad load requests.
 
