@@ -1,7 +1,12 @@
 ## InMobi Android Mediation Adapter Changelog
 
-#### Version 11.4.1.1 (In progress)
+#### Version 11.4.1.1
 - Use `BitmapFactory.Options` with downsampling to prevent potential OOM errors when downloading images.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.4.0.
+- InMobi Kotlin SDK version 11.4.1.
 
 #### Version 11.4.1.0
 - Verified compatibility with InMobi Kotlin SDK version 11.4.1.
