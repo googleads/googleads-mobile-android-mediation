@@ -141,6 +141,11 @@ dependencies {
     }
     implementation 'io.bidmachine:ads:3.7.1'
 
+    // Explicitly pin Kotlin stdlib to 1.9.0. This matches the min Kotlin
+    // version supported by the GMA NextGen SDK. Don't upgrade this version
+    // unless GMA NextGen SDK upgrades its min Kotlin version.
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.0'
+
     testImplementation 'androidx.test:core:1.6.1'
     testImplementation 'androidx.test.espresso:espresso-core:3.7.0'
     testImplementation 'androidx.test.ext:junit-ktx:1.2.1'
@@ -148,7 +153,6 @@ dependencies {
     testImplementation "com.google.truth:truth:1.2.0"
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
-    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.10'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
     testImplementation 'org.robolectric:robolectric:4.10.3'
     testImplementation project(':adaptertestkit')
