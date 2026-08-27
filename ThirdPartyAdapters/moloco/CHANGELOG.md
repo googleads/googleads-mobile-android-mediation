@@ -1,5 +1,10 @@
 ## Moloco Android Mediation Adapter Changelog
 
+#### Next version
+
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
+
 #### Version 4.11.1.0
 - Updated to report an ad impression when a native ad is displayed.
 - Fixed banner ads to call the `onAdOpened` callback when clicked instead of shown.
