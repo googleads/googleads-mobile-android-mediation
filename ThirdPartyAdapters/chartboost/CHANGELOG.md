@@ -1,6 +1,12 @@
 ## Chartboost Android Mediation Adapter Changelog
 
-#### Version 9.14.0.0 (In progress)
+#### Version 9.14.0.0
+- Verified compatibility with Chartboost SDK version 9.14.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.4.0.
+- Chartboost SDK version 9.14.0.
 
 #### Version 9.13.0.0
 - Adapter now automatically forwards GDPR consent found inside `IABTCF_AddtlConsent` to the Chartboost SDK if GDPR applies.
