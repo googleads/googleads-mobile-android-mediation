@@ -1,5 +1,10 @@
 ## Mintegral Android Mediation Adapter Changelog
 
+#### Next version
+
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
+
 #### Version 17.1.81.0
 - Updated to report ad impression when native ad is displayed.
 - Verified compatibility with Mintegral SDK 17.1.81.
