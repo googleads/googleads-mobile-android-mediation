@@ -1,10 +1,14 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
-#### Version 4.20.0.1 (In progress)
-
+#### Version 4.20.0.1
 - Removed adapter requirement of an Activity context for loading banner ads.
 - Updated bidding signal collection to fail and report an error if an empty
   signal is received.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.4.0.
+- Unity Ads SDK version 4.20.0.
 
 #### Version 4.20.0.0
 - Verified compatibility with Unity Ads SDK 4.20.0.
