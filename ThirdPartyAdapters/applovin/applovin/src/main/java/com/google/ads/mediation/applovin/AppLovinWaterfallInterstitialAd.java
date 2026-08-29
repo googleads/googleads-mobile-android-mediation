@@ -105,6 +105,7 @@ public class AppLovinWaterfallInterstitialAd extends AppLovinInterstitialRendere
 
             // Store parent objects.
             sdk = appLovinInitializer.retrieveSdk(context);
+            sdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(networkExtras));
 
             Log.d(TAG, "Requesting interstitial for zone: " + zoneId);
 
@@ -119,9 +120,6 @@ public class AppLovinWaterfallInterstitialAd extends AppLovinInterstitialRendere
 
   @Override
   public void showAd(Context context) {
-    // Update mute state.
-    sdk.getSettings().setMuted(AppLovinUtils.shouldMuteAudio(networkExtras));
-
     final AppLovinInterstitialAdDialog interstitialAdDialog =
         appLovinAdFactory.createInterstitialAdDialog(sdk, context);
 

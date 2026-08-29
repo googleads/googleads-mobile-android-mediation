@@ -14,7 +14,6 @@
 
 package com.google.ads.mediation.applovin;
 
-import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -57,8 +56,6 @@ public abstract class AppLovinRewardedRenderer
   protected final AppLovinAdFactory appLovinAdFactory;
 
   protected final AppLovinSdkUtilsWrapper appLovinSdkUtilsWrapper;
-
-  protected Bundle networkExtras;
 
   /**
    * Mediation callback for rewarded ad events.
