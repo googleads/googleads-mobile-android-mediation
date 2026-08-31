@@ -1,5 +1,7 @@
 ## Moloco Android Mediation Adapter Changelog
 
+#### Version 4.12.0.0 (In progress)
+
 #### Version 4.11.1.0
 - Updated to report an ad impression when a native ad is displayed.
 - Fixed banner ads to call the `onAdOpened` callback when clicked instead of shown.
