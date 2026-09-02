@@ -1,5 +1,10 @@
 ## PubMatic Android Mediation Adapter Changelog
 
+#### Next version
+
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
+
 #### Version 5.3.0.0
 - Verified compatibility with Pubmatic SDK 5.3.0.
 
