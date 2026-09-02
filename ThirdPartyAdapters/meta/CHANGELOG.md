@@ -2,6 +2,11 @@
 
 #### Next version
 
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
+
+#### Next version
+
 - Updated to report native ad impression when Meta logs impression for native
   ads.
 
