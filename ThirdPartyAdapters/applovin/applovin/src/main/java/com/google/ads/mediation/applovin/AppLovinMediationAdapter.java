@@ -23,6 +23,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import com.applovin.mediation.AppLovinUtils.ServerParameterKeys;
 import com.applovin.mediation.BuildConfig;
@@ -190,6 +191,15 @@ public class AppLovinMediationAdapter extends RtbAdapter {
   @NonNull
   public static AppLovinSdkSettings getSdkSettings(@NonNull Context context) {
     return AppLovinSdk.getInstance(context).getSettings();
+  }
+
+  /**
+   * Sets the list of test device advertising IDs (GAIDs) for AppLovin SDK test mode.
+   *
+   * <p>Must be called before initializing the Google Mobile Ads SDK.
+   */
+  public static void setTestDeviceAdvertisingIds(@Nullable List<String> testDeviceAdvertisingIds) {
+    AppLovinInitializer.getInstance().setTestDeviceAdvertisingIds(testDeviceAdvertisingIds);
   }
 
   @Override
