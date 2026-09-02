@@ -1,5 +1,10 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Next Version
+
+- Added `setTestDeviceAdvertisingIds` API to `AppLovinMediationAdapter` and `AppLovinInitializer` to support AppLovin SDK test mode registration.
+- Updated mediation test applications to configure AppLovin test mode via reflection.
+
 #### Version 13.6.4.1
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
   by GMA Next-Gen SDK).
