@@ -1,5 +1,8 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Version 11.4.1.2
+- Override `UnifiedNativeAdMapper.destroy()` to call `InMobiNative.destroy()` when GMA invokes full native ad teardown. `untrackView()` still only calls `unTrackViews()` so feed refresh/swap can re-track.
+
 #### Version 11.4.1.1
 - Use `BitmapFactory.Options` with downsampling to prevent potential OOM errors when downloading images.
 

@@ -180,6 +180,15 @@ class InMobiRtbNativeAdTest {
   }
 
   @Test
+  fun destroy_invokesDestroy() {
+    rtbNativeAd.onAdLoadSucceeded(inMobiNativeWrapper.inMobiNative, adMetaInfo)
+
+    rtbNativeAd.inMobiUnifiedNativeAdMapper.destroy()
+
+    verify(wrappedNativeAd).destroy()
+  }
+
+  @Test
   fun onAdLoadSucceeded_whenShouldReturnUrlsForImageAssetsFalse_downloadsDrawables_invokesOnSuccessCallback() {
     ShadowBitmapFactory.setAllowInvalidImageData(true)
     val bitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888)

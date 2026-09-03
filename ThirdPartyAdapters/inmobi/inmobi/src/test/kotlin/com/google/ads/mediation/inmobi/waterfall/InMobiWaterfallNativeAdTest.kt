@@ -185,6 +185,15 @@ class InMobiWaterfallNativeAdTest {
   }
 
   @Test
+  fun destroy_invokesDestroy() {
+    waterfallNativeAd.onAdLoadSucceeded(inMobiNativeWrapper.inMobiNative, adMetaInfo)
+
+    waterfallNativeAd.inMobiUnifiedNativeAdMapper.destroy()
+
+    verify(wrappedNativeAd).destroy()
+  }
+
+  @Test
   fun onAdLoadSucceeded_whenShouldReturnUrlsForImageAssetsFalse_downloadsDrawables_invokesOnSuccessCallback() {
     ShadowBitmapFactory.setAllowInvalidImageData(true)
     val bitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888)
