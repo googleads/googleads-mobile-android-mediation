@@ -13,6 +13,7 @@ import com.applovin.mediation.AppLovinUtils.ERROR_MSG_CHILD_USER
 import com.applovin.sdk.AppLovinAdService
 import com.applovin.sdk.AppLovinAdSize
 import com.applovin.sdk.AppLovinSdk
+import com.applovin.sdk.AppLovinSdkInitializationConfiguration
 import com.google.ads.mediation.adaptertestkit.FakeInitializationCompleteCallback
 import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
 import com.google.ads.mediation.adaptertestkit.FakeSignalCallbacks
@@ -55,6 +56,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -285,6 +287,36 @@ class AppLovinMediationAdapterTest {
     val sdkSettings = AppLovinMediationAdapter.getSdkSettings(context)
 
     assertThat(sdkSettings).isNotNull()
+  }
+
+  @Test
+  fun initialize_withTestDeviceAdvertisingIds_setsTestDeviceAdvertisingIdsOnInitializationConfig() {
+    val testInitializer = AppLovinInitializer(appLovinSdkWrapper)
+    val testDeviceIds =
+      listOf("00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002")
+    testInitializer.setTestDeviceAdvertisingIds(testDeviceIds)
+
+    testInitializer.initialize(context, TEST_SDK_KEY, mock<OnInitializeSuccessListener>())
+
+    val initConfigCaptor = argumentCaptor<AppLovinSdkInitializationConfiguration>()
+    verify(appLovinSdk).initialize(initConfigCaptor.capture(), any())
+    assertThat(initConfigCaptor.firstValue.testDeviceAdvertisingIds)
+      .containsExactly(
+        "00000000-0000-0000-0000-000000000001",
+        "00000000-0000-0000-0000-000000000002",
+      )
+  }
+
+  @Test
+  fun initialize_withoutTestDeviceAdvertisingIds_doesNotSetTestDeviceAdvertisingIds() {
+    val testInitializer = AppLovinInitializer(appLovinSdkWrapper)
+    testInitializer.setTestDeviceAdvertisingIds(null)
+
+    testInitializer.initialize(context, TEST_SDK_KEY, mock<OnInitializeSuccessListener>())
+
+    val initConfigCaptor = argumentCaptor<AppLovinSdkInitializationConfiguration>()
+    verify(appLovinSdk).initialize(initConfigCaptor.capture(), any())
+    assertThat(initConfigCaptor.firstValue.testDeviceAdvertisingIds).isEmpty()
   }
 
   @Test
