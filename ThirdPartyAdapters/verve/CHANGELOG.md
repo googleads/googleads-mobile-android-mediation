@@ -1,5 +1,10 @@
 ## Verve Android Mediation Adapter Changelog
 
+#### Next version
+
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
+
 #### Version 3.9.1.0
 - Verified compatibility with Verve HyBid SDK version 3.9.1.
 

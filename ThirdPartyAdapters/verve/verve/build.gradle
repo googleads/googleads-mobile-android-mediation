@@ -132,6 +132,11 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
+    // Explicitly pin Kotlin stdlib to 1.9.0. This matches the min Kotlin
+    // version supported by the GMA NextGen SDK. Don't upgrade this version
+    // unless GMA NextGen SDK upgrades its min Kotlin version.
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.0'
+
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'com.google.ads.mediation:common:1.1.0'
     // Check for a 'useNextGenGma' flag to use the next generation GMA SDK.
@@ -149,7 +154,6 @@ dependencies {
     testImplementation "com.google.truth:truth:1.1.5"
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
-    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.3.0'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
     testImplementation 'org.robolectric:robolectric:4.9'
     testImplementation project(':adaptertestkit')
