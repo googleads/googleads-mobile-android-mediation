@@ -1,5 +1,10 @@
 ## Pangle Android Mediation Adapter Changelog
 
+#### Next version
+
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
+
 #### Version 8.2.0.4.0
 - Verified compatibility with Pangle SDK version 8.2.0.4.
 
