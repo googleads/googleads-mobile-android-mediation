@@ -1,5 +1,10 @@
 ## LINE Android Mediation Adapter Changelog
 
+#### Next version
+
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
+
 #### Version 3.1.1.1
 - Maps `AgeRestrictedTreatment` to Line's ChildDirectedTreatment API.
 
