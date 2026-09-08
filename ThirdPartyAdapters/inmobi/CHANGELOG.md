@@ -1,5 +1,10 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Next version
+
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
+
 #### Version 11.4.1.1
 - Use `BitmapFactory.Options` with downsampling to prevent potential OOM errors when downloading images.
 
