@@ -1,5 +1,10 @@
 ## myTarget Android Mediation Adapter Changelog
 
+#### Next version
+
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
+
 #### Version 5.51.2.0
 - Adapter now automatically forwards GDPR consent found inside `IABTCF_AddtlConsent` to the myTarget SDK if GDPR applies.
 - Verified compatibility with myTarget SDK version 5.51.2.
