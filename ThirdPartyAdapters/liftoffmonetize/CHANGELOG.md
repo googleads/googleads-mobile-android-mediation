@@ -1,5 +1,10 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Next version
+
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
+
 #### Version 7.7.8.0
 - Verified compatibility with Vungle SDK 7.7.8.
 
