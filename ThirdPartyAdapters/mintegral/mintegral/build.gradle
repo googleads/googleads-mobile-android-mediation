@@ -10,7 +10,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Mintegral"
     // String property to store version name.
-    stringVersion = "17.1.81.0"
+    stringVersion = "17.1.81.1"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -27,7 +27,7 @@ android {
             minSdk 23
         }
         targetSdk 33
-        versionCode 17018100
+        versionCode 17018101
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
         multiDexEnabled true
