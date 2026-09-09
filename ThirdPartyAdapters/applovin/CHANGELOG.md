@@ -1,6 +1,6 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 13.6.4.2 (In progress)
 
 - Added `setTestDeviceAdvertisingIds` API to `AppLovinMediationAdapter` to support AppLovin SDK test mode registration.
 
