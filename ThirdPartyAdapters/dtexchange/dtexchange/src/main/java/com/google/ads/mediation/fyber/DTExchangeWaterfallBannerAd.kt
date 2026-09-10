@@ -103,22 +103,23 @@ class DTExchangeWaterfallBannerAd(
             return
           }
 
-          bannerSpot = InneractiveAdSpotManager.get().createSpot()
+          val spot = InneractiveAdSpotManager.get().createSpot()
+          bannerSpot = spot
 
           val controller = InneractiveAdViewUnitController()
-          bannerSpot!!.addUnitController(controller)
+          spot.addUnitController(controller)
 
           // Prepare wrapper view before making request.
           bannerWrapperView = RelativeLayout(adConfiguration.context)
 
           val requestListener: RequestListener = this@DTExchangeWaterfallBannerAd
-          bannerSpot!!.setRequestListener(requestListener)
+          spot.setRequestListener(requestListener)
 
           requestedAdSize = adConfiguration.adSize
 
           FyberAdapterUtils.updateFyberExtraParams(adConfiguration.mediationExtras)
           val request = InneractiveAdRequest(spotId)
-          bannerSpot!!.requestAd(request)
+          spot.requestAd(request)
         }
       },
     )

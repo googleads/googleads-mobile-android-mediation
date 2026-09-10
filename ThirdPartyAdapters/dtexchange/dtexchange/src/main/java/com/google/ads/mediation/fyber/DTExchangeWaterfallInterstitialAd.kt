@@ -110,16 +110,17 @@ class DTExchangeWaterfallInterstitialAd :
             return
           }
 
-          interstitialSpot = InneractiveAdSpotManager.get().createSpot()
+          val spot = InneractiveAdSpotManager.get().createSpot()
+          interstitialSpot = spot
 
           val controller = InneractiveFullscreenUnitController()
-          interstitialSpot!!.addUnitController(controller)
+          spot.addUnitController(controller)
 
-          interstitialSpot!!.setRequestListener(this@DTExchangeWaterfallInterstitialAd)
+          spot.setRequestListener(this@DTExchangeWaterfallInterstitialAd)
 
           FyberAdapterUtils.updateFyberExtraParams(interstitialAdConfig.mediationExtras)
           val request = InneractiveAdRequest(spotId)
-          interstitialSpot!!.requestAd(request)
+          spot.requestAd(request)
         }
       },
     )

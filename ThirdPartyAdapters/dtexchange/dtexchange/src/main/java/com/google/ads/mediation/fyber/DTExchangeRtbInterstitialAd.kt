@@ -50,14 +50,15 @@ class DTExchangeRtbInterstitialAd(
     InneractiveAdManager.setMediationVersion(MobileAds.getVersion().toString())
 
     val bidResponse = mediationInterstitialAdConfiguration.bidResponse
-    adSpot = InneractiveAdSpotManager.get().createSpot()
+    val spot = InneractiveAdSpotManager.get().createSpot()
+    adSpot = spot
     val controller = InneractiveFullscreenUnitController()
-    adSpot!!.addUnitController(controller)
-    adSpot!!.setRequestListener(this)
+    spot.addUnitController(controller)
+    spot.setRequestListener(this)
     controller.eventsListener = this
     FyberAdapterUtils.updateFyberExtraParams(mediationInterstitialAdConfiguration.mediationExtras)
     val watermark = mediationInterstitialAdConfiguration.watermark
-    adSpot!!.loadAd(bidResponse, watermark)
+    spot.loadAd(bidResponse, watermark)
   }
 
   override fun showAd(context: Context) {
@@ -94,7 +95,7 @@ class DTExchangeRtbInterstitialAd(
   ) {
     val adError = DTExchangeErrorCodes.getAdError(errorCode)
     mediationAdLoadCallback.onFailure(adError)
-    iAdSpot?.destroy()
+    destroyAdSpot()
   }
 
   override fun onAdImpression(iAdSpot: InneractiveAdSpot?) {

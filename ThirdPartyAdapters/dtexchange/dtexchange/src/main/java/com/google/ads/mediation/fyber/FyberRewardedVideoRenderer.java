@@ -217,7 +217,7 @@ public class FyberRewardedVideoRenderer
   @Override
   public void onAdEnteredErrorState(
       @NonNull InneractiveAdSpot inneractiveAdSpot, @NonNull AdDisplayError adDisplayError) {
-    // No relevant events to be forwarded to the GMA SDK.
+    destroyAdSpot();
   }
 
   @Override
