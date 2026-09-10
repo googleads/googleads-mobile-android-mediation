@@ -181,8 +181,6 @@ class DTExchangeNativeAdMapper(
     super.destroy()
     nativeAdSpot?.destroy()
     nativeAdSpot = null
-
-    adContent?.destroy()
     adContent = null
 
     mediationNativeAdCallback = null
