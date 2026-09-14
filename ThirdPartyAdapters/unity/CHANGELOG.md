@@ -1,5 +1,7 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Version 4.20.1.0 (In progress)
+
 #### Version 4.20.0.2 (In progress)
 
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
