@@ -1,5 +1,7 @@
 ## Chartboost Android Mediation Adapter Changelog
 
+#### Version 9.14.1.0 (In progress)
+
 #### Version 9.14.0.1 (In progress)
 
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
