@@ -1,9 +1,13 @@
 ## LINE Android Mediation Adapter Changelog
 
-#### Version 3.1.1.2 (In progress)
-
+#### Version 3.1.1.2
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
   by GMA NextGen SDK).
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.4.0.
+- FiveAd SDK version 3.1.1.1.
 
 #### Version 3.1.1.1
 - Maps `AgeRestrictedTreatment` to Line's ChildDirectedTreatment API.
