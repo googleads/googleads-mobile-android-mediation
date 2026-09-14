@@ -39,7 +39,7 @@ class DTExchangeRtbBannerAd(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
 ) : MediationBannerAd, InneractiveAdSpot.RequestListener, InneractiveAdViewEventsListener {
-  private lateinit var adSpot: InneractiveAdSpot
+  private var adSpot: InneractiveAdSpot? = null
   private lateinit var wrapperView: RelativeLayout
   private var bannerAdCallback: MediationBannerAdCallback? = null
 
@@ -48,9 +48,10 @@ class DTExchangeRtbBannerAd(
     InneractiveAdManager.setMediationVersion(MobileAds.getVersion().toString())
 
     val bidResponse = mediationBannerAdConfiguration.bidResponse
-    adSpot = InneractiveAdSpotManager.get().createSpot()
+    val spot = InneractiveAdSpotManager.get().createSpot()
+    adSpot = spot
     val controller = InneractiveAdViewUnitController()
-    adSpot.addUnitController(controller)
+    spot.addUnitController(controller)
     val pubRequestedSize = mediationBannerAdConfiguration.adSize
     val context = mediationBannerAdConfiguration.context
     val wrapperViewLayoutParams =
@@ -60,15 +61,15 @@ class DTExchangeRtbBannerAd(
       )
     wrapperView = RelativeLayout(context)
     wrapperView.layoutParams = wrapperViewLayoutParams
-    adSpot.setRequestListener(this)
+    spot.setRequestListener(this)
     controller.eventsListener = this
     FyberAdapterUtils.updateFyberExtraParams(mediationBannerAdConfiguration.mediationExtras)
     val watermark = mediationBannerAdConfiguration.watermark
-    adSpot.loadAd(bidResponse, watermark)
+    spot.loadAd(bidResponse, watermark)
   }
 
   override fun onInneractiveSuccessfulAdRequest(iAdSpot: InneractiveAdSpot?) {
-    if (!adSpot.isReady) {
+    if (adSpot?.isReady == false) {
       val adError =
         AdError(
           DTExchangeErrorCodes.ERROR_AD_NOT_READY,
@@ -77,11 +78,12 @@ class DTExchangeRtbBannerAd(
         )
       Log.w(TAG, adError.message)
       mediationAdLoadCallback.onFailure(adError)
-      adSpot.destroy()
+      destroyAdSpot()
       return
     }
 
-    val controller = adSpot.selectedUnitController as? InneractiveAdViewUnitController
+    val spot = adSpot ?: return
+    val controller = spot.selectedUnitController as? InneractiveAdViewUnitController
     if (controller == null) {
       val message = "Unexpected controller type."
       val adError =
@@ -92,7 +94,7 @@ class DTExchangeRtbBannerAd(
         )
       Log.w(TAG, adError.message)
       mediationAdLoadCallback.onFailure(adError)
-      adSpot.destroy()
+      destroyAdSpot()
       return
     }
 
@@ -147,6 +149,11 @@ class DTExchangeRtbBannerAd(
 
   override fun onAdCollapsed(adSpot: InneractiveAdSpot?) {
     // No relevant events to be forwarded to the GMA SDK.
+  }
+
+  fun destroyAdSpot() {
+    adSpot?.destroy()
+    adSpot = null
   }
 
   companion object {
