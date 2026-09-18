@@ -1,9 +1,13 @@
 ## Bigo Android Mediation Adapter Changelog
 
-#### Version 6.0.1.0 (In progress)
-
+#### Version 6.0.0.1
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
   by GMA NextGen SDK).
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.4.0.
+- Bigo Ads SDK version 6.0.0.
 
 #### Version 6.0.0.0
 - Verified compatibility with Bigo Ads SDK 6.0.0.
