@@ -1,9 +1,13 @@
 ## Mintegral Android Mediation Adapter Changelog
 
-#### Version 17.1.81.1 (In progress)
-
+#### Version 17.1.81.1
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
   by GMA NextGen SDK).
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.4.0.
+- Mintegral SDK version 17.1.81.
 
 #### Version 17.1.81.0
 - Updated to report ad impression when native ad is displayed.
