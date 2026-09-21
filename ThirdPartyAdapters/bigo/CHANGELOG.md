@@ -1,5 +1,7 @@
 ## Bigo Android Mediation Adapter Changelog
 
+#### Version 6.1.0.0 (In progress)
+
 #### Version 6.0.0.1
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
   by GMA NextGen SDK).
