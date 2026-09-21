@@ -1,8 +1,12 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Version 13.6.4.2 (In progress)
-
+#### Version 13.6.4.2
 - Added `setTestDeviceAdvertisingIds` API to `AppLovinMediationAdapter` to support AppLovin SDK test mode registration.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.4.0.
+- AppLovin SDK version 13.6.4.
 
 #### Version 13.6.4.1
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
