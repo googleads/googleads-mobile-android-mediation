@@ -14,15 +14,18 @@ import com.google.ads.mediation.inmobi.InMobiAdapterUtils.KEY_PLACEMENT_ID
 import com.google.ads.mediation.inmobi.InMobiConstants
 import com.google.ads.mediation.inmobi.InMobiInitializer
 import com.google.ads.mediation.inmobi.InMobiInterstitialWrapper
+import com.google.ads.mediation.inmobi.InMobiNetworkKeys
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.google.common.truth.Truth.assertThat
 import com.inmobi.ads.AdMetaInfo
 import com.inmobi.ads.InMobiAdRequestStatus
+import com.inmobi.sdk.InMobiSdk
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
@@ -104,6 +107,27 @@ class InMobiWaterfallInterstitialAdTest {
     assertThat(mediationInterstitialAdCallback.isFailedToShow).isTrue()
     assertThat(mediationInterstitialAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
     verify(inMobiInterstitialWrapper, never()).show()
+  }
+
+  @Test
+  fun loadAd_withMuteAudioTrue_setsApplicationMutedTrueOnInMobiSdk() {
+    val initializerListenerCaptor = argumentCaptor<InMobiInitializer.Listener>()
+    whenever(inMobiAdFactory.createInMobiInterstitialWrapper(any(), any(), any()))
+      .thenReturn(inMobiInterstitialWrapper)
+    val placementId = 67890L
+    whenever(interstitialAdConfiguration.serverParameters) doReturn
+      bundleOf(KEY_ACCOUNT_ID to "accountTest", KEY_PLACEMENT_ID to placementId.toString())
+    whenever(interstitialAdConfiguration.mediationExtras) doReturn
+      bundleOf(InMobiNetworkKeys.MUTE_AUDIO to true)
+
+    mockStatic(InMobiSdk::class.java).use { mockedInMobiSdk ->
+      waterfallInterstitialAd.loadAd(interstitialAdConfiguration)
+      verify(inMobiInitializer)
+        .init(eq(context), eq("accountTest"), initializerListenerCaptor.capture())
+      initializerListenerCaptor.firstValue.onInitializeSuccess()
+
+      mockedInMobiSdk.verify { InMobiSdk.setApplicationMuted(true) }
+    }
   }
 
   @Test
