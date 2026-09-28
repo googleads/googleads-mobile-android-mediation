@@ -325,6 +325,25 @@ class DTExchangeWaterfallInterstitialAdTest {
     verify(interstitialSpot).destroy()
   }
 
+  @Test
+  fun showAd_withNonActivityContext_fails() {
+    val mockFullscreenController = mock<InneractiveFullscreenUnitController>()
+    val interstitialSpot =
+      mock<InneractiveAdSpot> {
+        on { selectedUnitController } doReturn mockFullscreenController
+        on { isReady } doReturn true
+      }
+    setupLoadedAd(interstitialSpot)
+
+    // Create a plain Context (not an Activity) to simulate the GMA SDK's background fallback
+    // behavior
+    val nonActivityContext = mock<android.content.Context>()
+
+    waterfallInterstitialAd.showAd(nonActivityContext)
+
+    verify(mockFullscreenController).show(context)
+  }
+
   // endregion
 
   private fun setupLoadedAd(interstitialSpot: InneractiveAdSpot) {
