@@ -1,5 +1,7 @@
 ## myTarget Android Mediation Adapter Changelog
 
+#### Version 5.52.5.0 (In progress)
+
 #### Version 5.51.2.1
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
   by GMA NextGen SDK).
