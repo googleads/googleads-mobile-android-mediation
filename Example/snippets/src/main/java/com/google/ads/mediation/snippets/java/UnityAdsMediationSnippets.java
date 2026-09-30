@@ -25,14 +25,6 @@ import com.unity3d.ads.metadata.MetaData;
  */
 public class UnityAdsMediationSnippets extends Activity {
 
-  private void setGdprMetaData() {
-    // [START set_gdpr_meta_data]
-    MetaData gdprMetaData = new MetaData(this);
-    gdprMetaData.set("gdpr.consent", true);
-    gdprMetaData.commit();
-    // [END set_gdpr_meta_data]
-  }
-
   private void setCcpaMetaData() {
     // [START set_ccpa_meta_data]
     MetaData ccpaMetaData = new MetaData(this);

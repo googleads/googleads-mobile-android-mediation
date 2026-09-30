@@ -26,13 +26,6 @@ import com.mbridge.msdk.out.MBridgeSDKFactory
  */
 class MintegralMediationSnippets {
 
-  private fun setUserConsent(context: Context) {
-    // [START set_user_consent]
-    val sdk = MBridgeSDKFactory.getMBridgeSDK()
-    sdk.setConsentStatus(context, MBridgeConstans.IS_SWITCH_ON)
-    // [END set_user_consent]
-  }
-
   private fun setDoNotTrackStatus() {
     // [START set_do_not_track_status]
     val sdk = MBridgeSDKFactory.getMBridgeSDK()

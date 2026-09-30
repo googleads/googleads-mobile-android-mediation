@@ -1,5 +1,17 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
+#### Next Version
+- Fixed an issue where native ads invoked the `onAdOpened()` callback on impression.
+
+#### Version 8.4.7.1
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.4.0.
+- DT Exchange SDK version 8.4.7.
+
 #### Version 8.4.7.0
 - Verified compatibility with DT Exchange SDK 8.4.7.
 

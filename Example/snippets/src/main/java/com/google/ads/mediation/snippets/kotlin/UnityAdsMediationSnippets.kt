@@ -25,14 +25,6 @@ import com.unity3d.ads.metadata.MetaData
  */
 class UnityAdsMediationSnippets : Activity() {
 
-  private fun setGdprMetaData() {
-    // [START set_gdpr_meta_data]
-    val gdprMetaData = MetaData(this)
-    gdprMetaData["gdpr.consent"] = true
-    gdprMetaData.commit()
-    // [END set_gdpr_meta_data]
-  }
-
   private fun setCcpaMetaData() {
     // [START set_ccpa_meta_data]
     val ccpaMetaData = MetaData(this)

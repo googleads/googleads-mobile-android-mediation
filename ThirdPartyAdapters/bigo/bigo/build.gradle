@@ -12,7 +12,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Bigo"
     // String property to store version name.
-    stringVersion = "6.0.0.0"
+    stringVersion = "6.1.0.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -24,13 +24,9 @@ android {
     compileSdk 34
 
     defaultConfig {
-        if (project.hasProperty('useNextGenGma')) {
-            minSdk 24
-        } else {
-            minSdk 23
-        }
+        minSdk 24
         targetSdk 33
-        versionCode 6000000
+        versionCode 6010000
         versionName stringVersion
         multiDexEnabled true
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
@@ -131,15 +127,20 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
+    // Explicitly pin Kotlin stdlib to 1.9.0. This matches the min Kotlin
+    // version supported by the GMA NextGen SDK. Don't upgrade this version
+    // unless GMA NextGen SDK upgrades its min Kotlin version.
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.0'
+
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'com.google.ads.mediation:common:1.1.0'
     // Check for a 'useNextGenGma' flag to use the next generation GMA SDK.
     if (project.hasProperty('useNextGenGma')) {
-        implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.3.1'
+        implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.4.0'
     } else {
-        implementation 'com.google.android.gms:play-services-ads:25.4.0'
+        implementation 'com.google.android.gms:play-services-ads:25.5.0'
     }
-    implementation 'com.bigossp:bigo-ads:6.0.0'
+    implementation 'com.bigossp:bigo-ads:6.1.0'
 
     testImplementation 'androidx.test:core:1.7.0'
     testImplementation 'androidx.test.espresso:espresso-core:3.6.1'
@@ -148,7 +149,6 @@ dependencies {
     testImplementation "com.google.truth:truth:1.4.5"
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
-    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.20'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:6.0.0'
     testImplementation 'org.robolectric:robolectric:4.9'
     testImplementation project(':adaptertestkit')
