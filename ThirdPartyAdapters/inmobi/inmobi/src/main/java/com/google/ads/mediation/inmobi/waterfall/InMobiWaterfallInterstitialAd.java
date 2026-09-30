@@ -77,6 +77,7 @@ public class InMobiWaterfallInterstitialAd extends InMobiInterstitialAd {
             InMobiAdapterUtils.PROTOCOL_WATERFALL);
     inMobiInterstitialWrapper.setExtras(inMobiExtras.getParameterMap());
     inMobiInterstitialWrapper.setKeywords(inMobiExtras.getKeywords());
+    InMobiAdapterUtils.setApplicationMuted(inMobiExtras);
 
     inMobiInterstitialWrapper.load();
   }
