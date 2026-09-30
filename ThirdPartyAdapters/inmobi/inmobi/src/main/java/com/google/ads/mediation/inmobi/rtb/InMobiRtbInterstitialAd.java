@@ -46,6 +46,7 @@ public class InMobiRtbInterstitialAd extends InMobiInterstitialAd {
             InMobiAdapterUtils.PROTOCOL_RTB);
     inMobiInterstitialWrapper.setExtras(inMobiExtras.getParameterMap());
     inMobiInterstitialWrapper.setKeywords(inMobiExtras.getKeywords());
+    InMobiAdapterUtils.setApplicationMuted(inMobiExtras);
 
     String bidToken = mediationInterstitialAdConfiguration.getBidResponse();
     inMobiInterstitialWrapper.load(bidToken.getBytes());
