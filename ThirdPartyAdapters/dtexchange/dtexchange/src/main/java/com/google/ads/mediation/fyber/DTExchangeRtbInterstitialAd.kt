@@ -17,6 +17,7 @@ package com.google.ads.mediation.fyber
 import android.app.Activity
 import android.content.Context
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.fyber.inneractive.sdk.external.InneractiveAdManager
 import com.fyber.inneractive.sdk.external.InneractiveAdSpot
 import com.fyber.inneractive.sdk.external.InneractiveAdSpotManager
@@ -42,7 +43,8 @@ class DTExchangeRtbInterstitialAd(
   MediationInterstitialAd,
   InneractiveAdSpot.RequestListener,
   InneractiveFullscreenAdEventsListener {
-  private var adSpot: InneractiveAdSpot? = null
+  @VisibleForTesting
+  var adSpot: InneractiveAdSpot? = null
   private var interstitialAdCallback: MediationInterstitialAdCallback? = null
 
   fun loadAd(mediationInterstitialAdConfiguration: MediationInterstitialAdConfiguration) {

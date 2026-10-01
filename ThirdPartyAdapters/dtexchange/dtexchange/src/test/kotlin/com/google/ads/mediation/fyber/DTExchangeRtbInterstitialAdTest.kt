@@ -103,19 +103,32 @@ class DTExchangeRtbInterstitialAdTest {
 
   @Test
   fun onInneractiveFailedAdRequest_invokesOnFailure() {
-    val mockAdSpot = mock<InneractiveAdSpot>()
-    val iErrorCode = InneractiveErrorCode.LOAD_TIMEOUT
-    val expectedAdError =
-      AdError(
+    /* Previously, onInneractiveFailedAdRequest called iAdSpot?.destroy() using the spot
+     * passed as a parameter. After the bc9bd5f refactor, the class owns the adSpot internally
+     * — it is set once in loadAd() and cleaned up via destroyAdSpot() which calls
+     * adSpot?.destroy() then nulls the reference. The iAdSpot parameter is no longer used
+     * for cleanup.
+     */
+    mockStatic(InneractiveAdSpotManager::class.java).use {
+      val mockAdSpot = mock<InneractiveAdSpot> { on { isReady } doReturn true }
+      val mockInneractiveAdSpotManager = mock<InneractiveAdSpotManager> {
+        on { createSpot() } doReturn mockAdSpot
+      }
+      whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
+      val iErrorCode = InneractiveErrorCode.LOAD_TIMEOUT
+      val expectedAdError = AdError(
         307,
         "DT Exchange failed to request ad with reason: Failed Due To load timeout",
         DTExchangeErrorCodes.ERROR_DOMAIN,
       )
+      dtExchangeRtbInterstitialAd.loadAd(adConfiguration)
+      assertThat(mockAdSpot).isEqualTo(dtExchangeRtbInterstitialAd.adSpot)
 
-    dtExchangeRtbInterstitialAd.onInneractiveFailedAdRequest(mockAdSpot, iErrorCode)
+      dtExchangeRtbInterstitialAd.onInneractiveFailedAdRequest(mock(), iErrorCode)
+      assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
+      verify(mockAdSpot).destroy()
 
-    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
-    verify(mockAdSpot).destroy()
+    }
   }
 
   @Test
