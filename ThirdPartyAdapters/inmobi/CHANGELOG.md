@@ -1,9 +1,17 @@
 ## InMobi Android Mediation Adapter Changelog
 
-#### Version 11.4.1.2
+#### Version 11.4.1.3 (In progress)
 - Override `UnifiedNativeAdMapper.destroy()` to call `InMobiNative.destroy()`.
 - Added support for application mute through `InMobiSdk.setApplicationMuted()`.
-- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported by GMA NextGen SDK).
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.4.0.
+- InMobi Kotlin SDK version 11.4.1.
+
+#### Version 11.4.1.2
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
 
 Built and tested with:
 - Google Mobile Ads SDK version 25.4.0.
