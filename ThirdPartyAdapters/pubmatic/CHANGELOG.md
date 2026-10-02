@@ -1,6 +1,13 @@
 ## PubMatic Android Mediation Adapter Changelog
 
-#### Version 5.4.1.0 (In progress)
+#### Version 5.4.1.0
+- Updated the minimum required Android API level to 24.
+- Verified compatibility with Pubmatic SDK 5.4.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.5.0.
+- Google Mobile Ads Next-Gen SDK version 1.5.0.
+- Pubmatic SDK version 5.4.1
 
 #### Version 5.4.0.0
 - Verified compatibility with Pubmatic SDK 5.4.0.
