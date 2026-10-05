@@ -200,6 +200,20 @@ public abstract class VungleBannerAd implements MediationBannerAd, BannerAdListe
     VungleAdSize vngAdSize =
         VungleAdSize.getValidAdSizeFromSize(adSize.getWidth(), adSize.getHeight(), placementId);
 
+    if (vngAdSize.getWidth() == VungleAdSize.BANNER.getWidth()
+        && vngAdSize.getHeight() == VungleAdSize.BANNER.getHeight()) {
+      vngAdSize = VungleAdSize.BANNER;
+    } else if (vngAdSize.getWidth() == VungleAdSize.BANNER_SHORT.getWidth()
+        && vngAdSize.getHeight() == VungleAdSize.BANNER_SHORT.getHeight()) {
+      vngAdSize = VungleAdSize.BANNER_SHORT;
+    } else if (vngAdSize.getWidth() == VungleAdSize.BANNER_LEADERBOARD.getWidth()
+        && vngAdSize.getHeight() == VungleAdSize.BANNER_LEADERBOARD.getHeight()) {
+      vngAdSize = VungleAdSize.BANNER_LEADERBOARD;
+    } else if (vngAdSize.getWidth() == VungleAdSize.MREC.getWidth()
+        && vngAdSize.getHeight() == VungleAdSize.MREC.getHeight()) {
+      vngAdSize = VungleAdSize.MREC;
+    }
+
     Log.d(
         TAG,
         "The requested ad size: "
