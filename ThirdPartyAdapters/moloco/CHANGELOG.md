@@ -1,5 +1,7 @@
 ## Moloco Android Mediation Adapter Changelog
 
+#### Version 4.13.0.0 (In progress)
+
 #### Version 4.12.0.1
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
   by GMA NextGen SDK).
