@@ -1,5 +1,7 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Version 11.5.0.0 (In progress)
+
 #### Version 11.4.1.2
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
   by GMA NextGen SDK).
