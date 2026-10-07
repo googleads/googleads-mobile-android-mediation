@@ -1,6 +1,12 @@
 ## IronSource Android Mediation Adapter Changelog
 
-#### Version 9.6.1.0 (In progress)
+#### Version 9.6.1.0
+- Verified compatibility with ironSource SDK version 9.6.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.5.0.
+- Google Mobile Ads Next-Gen SDK version 1.5.0.
+- IronSource SDK version 9.6.1.
 
 #### Version 9.6.0.1
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
