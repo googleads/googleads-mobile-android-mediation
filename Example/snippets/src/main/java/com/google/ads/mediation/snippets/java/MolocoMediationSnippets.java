@@ -25,12 +25,12 @@ import com.moloco.sdk.publisher.privacy.MolocoPrivacy.PrivacySettings;
  */
 public class MolocoMediationSnippets {
 
-  private void setUserConsent() {
-    // [START set_user_consent]
+  private void setDoNotSell() {
+    // [START set_do_not_sell]
     PrivacySettings privacySettings =
         new PrivacySettings(
-            /* isUserConsent= */ true, /* isAgeRestrictedUser= */ false, /* isDoNotSell= */ false);
+            /* isUserConsent= */ false, /* isAgeRestrictedUser= */ false, /* isDoNotSell= */ true);
     MolocoPrivacy.setPrivacy(privacySettings);
-    // [END set_user_consent]
+    // [END set_do_not_sell]
   }
 }

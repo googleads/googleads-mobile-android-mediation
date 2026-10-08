@@ -31,11 +31,4 @@ class MolocoMediationSnippets {
     MolocoPrivacy.setPrivacy(privacySettings)
     // [END set_do_not_sell]
   }
-
-  fun setUserConsent() {
-    // [START set_user_consent]
-    val privacySettings = PrivacySettings(isUserConsent = true)
-    MolocoPrivacy.setPrivacy(privacySettings)
-    // [END set_user_consent]
-  }
 }
