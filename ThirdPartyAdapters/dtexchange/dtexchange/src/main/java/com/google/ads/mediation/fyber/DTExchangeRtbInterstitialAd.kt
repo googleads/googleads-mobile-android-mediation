@@ -17,6 +17,7 @@ package com.google.ads.mediation.fyber
 import android.app.Activity
 import android.content.Context
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.fyber.inneractive.sdk.external.InneractiveAdManager
 import com.fyber.inneractive.sdk.external.InneractiveAdSpot
 import com.fyber.inneractive.sdk.external.InneractiveAdSpotManager
@@ -42,7 +43,8 @@ class DTExchangeRtbInterstitialAd(
   MediationInterstitialAd,
   InneractiveAdSpot.RequestListener,
   InneractiveFullscreenAdEventsListener {
-  private lateinit var adSpot: InneractiveAdSpot
+  @VisibleForTesting
+  var adSpot: InneractiveAdSpot? = null
   private var interstitialAdCallback: MediationInterstitialAdCallback? = null
 
   fun loadAd(mediationInterstitialAdConfiguration: MediationInterstitialAdConfiguration) {
@@ -50,30 +52,31 @@ class DTExchangeRtbInterstitialAd(
     InneractiveAdManager.setMediationVersion(MobileAds.getVersion().toString())
 
     val bidResponse = mediationInterstitialAdConfiguration.bidResponse
-    adSpot = InneractiveAdSpotManager.get().createSpot()
+    val spot = InneractiveAdSpotManager.get().createSpot()
+    adSpot = spot
     val controller = InneractiveFullscreenUnitController()
-    adSpot.addUnitController(controller)
-    adSpot.setRequestListener(this)
+    spot.addUnitController(controller)
+    spot.setRequestListener(this)
     controller.eventsListener = this
     FyberAdapterUtils.updateFyberExtraParams(mediationInterstitialAdConfiguration.mediationExtras)
     val watermark = mediationInterstitialAdConfiguration.watermark
-    adSpot.loadAd(bidResponse, watermark)
+    spot.loadAd(bidResponse, watermark)
   }
 
   override fun showAd(context: Context) {
-    val controller = adSpot.selectedUnitController as? InneractiveFullscreenUnitController
+    val controller = adSpot?.selectedUnitController as? InneractiveFullscreenUnitController
     if (controller == null) {
       Log.w(TAG, "showInterstitial called, but wrong spot has been used (should not happen).")
       interstitialAdCallback?.onAdOpened()
       interstitialAdCallback?.onAdClosed()
-      adSpot.destroy()
+      destroyAdSpot()
       return
     }
     controller.show(context as Activity)
   }
 
   override fun onInneractiveSuccessfulAdRequest(iAdSpot: InneractiveAdSpot?) {
-    if (!adSpot.isReady) {
+    if (adSpot?.isReady == false) {
       val adError =
         AdError(
           DTExchangeErrorCodes.ERROR_AD_NOT_READY,
@@ -82,7 +85,7 @@ class DTExchangeRtbInterstitialAd(
         )
       Log.w(TAG, adError.message)
       mediationAdLoadCallback.onFailure(adError)
-      adSpot.destroy()
+      destroyAdSpot()
       return
     }
     interstitialAdCallback = mediationAdLoadCallback.onSuccess(this)
@@ -94,7 +97,7 @@ class DTExchangeRtbInterstitialAd(
   ) {
     val adError = DTExchangeErrorCodes.getAdError(errorCode)
     mediationAdLoadCallback.onFailure(adError)
-    iAdSpot?.destroy()
+    destroyAdSpot()
   }
 
   override fun onAdImpression(iAdSpot: InneractiveAdSpot?) {
@@ -123,6 +126,12 @@ class DTExchangeRtbInterstitialAd(
 
   override fun onAdDismissed(iAdSpot: InneractiveAdSpot?) {
     interstitialAdCallback?.onAdClosed()
+    destroyAdSpot()
+  }
+
+  fun destroyAdSpot() {
+    adSpot?.destroy()
+    adSpot = null
   }
 
   companion object {
