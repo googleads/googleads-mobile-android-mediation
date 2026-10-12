@@ -152,6 +152,36 @@ class InMobiExtrasBuilderTest(
     assertThat(inMobiExtras.keywords).isEmpty()
   }
 
+  @Test
+  fun buildInMobiExtras_whenMuteAudioTrue_returnsInMobiExtrasWithIsMutedTrue() {
+    val bundle = mapToBundle(mediationExtras).apply { putBoolean(InMobiNetworkKeys.MUTE_AUDIO, true) }
+
+    val inMobiExtras = InMobiExtrasBuilder.build(context, bundle, protocol)
+
+    assertThat(inMobiExtras).isNotNull()
+    assertThat(inMobiExtras.isMuted).isTrue()
+    assertThat(inMobiExtras.parameterMap).doesNotContainKey(InMobiNetworkKeys.MUTE_AUDIO)
+  }
+
+  @Test
+  fun buildInMobiExtras_whenMuteAudioFalse_returnsInMobiExtrasWithIsMutedFalse() {
+    val bundle =
+      mapToBundle(mediationExtras).apply { putBoolean(InMobiNetworkKeys.MUTE_AUDIO, false) }
+
+    val inMobiExtras = InMobiExtrasBuilder.build(context, bundle, protocol)
+
+    assertThat(inMobiExtras).isNotNull()
+    assertThat(inMobiExtras.isMuted).isFalse()
+  }
+
+  @Test
+  fun buildInMobiExtras_whenMuteAudioNotSet_returnsInMobiExtrasWithIsMutedFalse() {
+    val inMobiExtras = InMobiExtrasBuilder.build(context, mapToBundle(mediationExtras), protocol)
+
+    assertThat(inMobiExtras).isNotNull()
+    assertThat(inMobiExtras.isMuted).isFalse()
+  }
+
   private fun mapToBundle(map: Map<String, String>?) =
     Bundle().apply { map?.entries?.forEach { this.putString(it.key, it.value) } }
 
