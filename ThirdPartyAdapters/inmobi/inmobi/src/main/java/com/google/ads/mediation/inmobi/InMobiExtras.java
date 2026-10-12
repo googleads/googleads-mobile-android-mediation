@@ -7,10 +7,13 @@ public final class InMobiExtras {
 
   private final HashMap<String, String> parameterMap;
   private final String keywords;
+  private final boolean isMuted;
 
-  public InMobiExtras(@NonNull HashMap<String, String> parameterMap, @NonNull String keywords) {
+  public InMobiExtras(
+      @NonNull HashMap<String, String> parameterMap, @NonNull String keywords, boolean isMuted) {
     this.parameterMap = parameterMap;
     this.keywords = keywords;
+    this.isMuted = isMuted;
   }
 
   public HashMap<String, String> getParameterMap() {
@@ -19,5 +22,9 @@ public final class InMobiExtras {
 
   public String getKeywords() {
     return this.keywords;
+  }
+
+  public boolean getIsMuted() {
+    return this.isMuted;
   }
 }
