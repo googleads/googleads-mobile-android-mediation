@@ -1,6 +1,6 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 8.5.0.0 (In progress)
 - Fixed an issue where native ads invoked the `onAdOpened()` callback on impression.
 
 #### Version 8.4.7.1
