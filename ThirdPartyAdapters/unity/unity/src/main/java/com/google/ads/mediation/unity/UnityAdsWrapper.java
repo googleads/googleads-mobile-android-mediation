@@ -12,7 +12,7 @@ import com.unity3d.ads.metadata.MetaData;
 /** Wrapper class for {@link UnityAds} */
 class UnityAdsWrapper {
   public void initialize(Context context, String gameId, IUnityAdsInitializationListener listener) {
-    UnityAds.initialize(context, gameId, false, listener);
+    UnityAds.initialize(context, gameId, UnityMediationAdapter.isTestMode(), listener);
   }
 
   public boolean isInitialized() {

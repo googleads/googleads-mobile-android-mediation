@@ -1,5 +1,8 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Next Version
+- Added `UnityMediationAdapter.setTestMode()` and `UnityMediationAdapter.isTestMode()` to allow enabling test mode on the Unity Ads SDK.
+
 #### Version 4.21.0.0
 - Verified compatibility with Unity Ads SDK 4.21.0.
 

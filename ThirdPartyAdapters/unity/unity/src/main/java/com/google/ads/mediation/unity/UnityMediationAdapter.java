@@ -46,6 +46,7 @@ import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.IUnityAdsTokenListener;
 import com.unity3d.ads.TokenConfiguration;
 import com.unity3d.ads.UnityAds;
+import com.unity3d.services.core.properties.SdkProperties;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
@@ -156,6 +157,24 @@ public class UnityMediationAdapter extends RtbAdapter {
   static final String KEY_PLACEMENT_ID = "zoneId";
 
   static final String KEY_WATERMARK = "watermark";
+
+  private static boolean testMode = false;
+
+  /**
+   * Sets whether the Unity Ads SDK should be initialized in test mode.
+   *
+   * <p>This should be set before initializing the Google Mobile Ads SDK. Ensure that you set test
+   * mode to {@code false} before publishing your app.
+   */
+  public static void setTestMode(boolean testMode) {
+    UnityMediationAdapter.testMode = testMode;
+    SdkProperties.setTestMode(testMode);
+  }
+
+  /** Returns whether the Unity Ads SDK is configured to run in test mode. */
+  public static boolean isTestMode() {
+    return testMode;
+  }
 
   private final UnityAdsWrapper unityAdsWrapper;
 
