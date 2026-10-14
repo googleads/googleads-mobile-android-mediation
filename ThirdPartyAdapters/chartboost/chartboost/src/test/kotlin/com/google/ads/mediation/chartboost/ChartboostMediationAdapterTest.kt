@@ -139,7 +139,7 @@ class ChartboostMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
+    assertThat(initializationCompleteCallback).hasFailedWith(adError)
   }
 
   @Test
@@ -161,7 +161,7 @@ class ChartboostMediationAdapterTest {
 
       adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-      assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
+      assertThat(initializationCompleteCallback).hasFailedWith(adError)
     }
   }
 
@@ -179,7 +179,7 @@ class ChartboostMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
+    assertThat(initializationCompleteCallback).hasFailedWith(adError)
   }
 
   @Test
@@ -259,7 +259,7 @@ class ChartboostMediationAdapterTest {
 
       adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-      assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
+      assertThat(initializationCompleteCallback).hasFailedWith(adError)
     }
   }
 

@@ -149,7 +149,7 @@ public class ChartboostMediationAdapter extends Adapter {
         AdError error =
             ChartboostConstants.createAdapterError(
                 ERROR_INVALID_SERVER_PARAMETERS, ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID);
-        initializationCompleteCallback.onInitializationFailed(error.toString());
+        initializationCompleteCallback.onInitializationFailed(error);
         Log.e(TAG, error.toString());
         return;
       }
@@ -171,7 +171,7 @@ public class ChartboostMediationAdapter extends Adapter {
         AdError error =
             ChartboostConstants.createAdapterError(
                 ERROR_INVALID_SERVER_PARAMETERS, ERROR_MESSAGE_INVALID_SERVER_PARAMETERS);
-        initializationCompleteCallback.onInitializationFailed(error.toString());
+        initializationCompleteCallback.onInitializationFailed(error);
         Log.e(TAG, error.toString());
         return;
       }
@@ -188,24 +188,26 @@ public class ChartboostMediationAdapter extends Adapter {
       AdError error =
           ChartboostConstants.createAdapterError(
               ERROR_INVALID_SERVER_PARAMETERS, ERROR_MESSAGE_INVALID_SERVER_PARAMETERS);
-      initializationCompleteCallback.onInitializationFailed(error.toString());
+      initializationCompleteCallback.onInitializationFailed(error);
       Log.e(TAG, error.toString());
       return;
     }
 
     ChartboostInitializer.getInstance()
-        .initialize(context, chartboostParams, new ChartboostInitializer.Listener() {
-          @Override
-          public void onInitializationSucceeded() {
-            initializationCompleteCallback.onInitializationSucceeded();
+        .initialize(
+            context,
+            chartboostParams,
+            new ChartboostInitializer.Listener() {
+              @Override
+              public void onInitializationSucceeded() {
+                initializationCompleteCallback.onInitializationSucceeded();
+              }
 
-          }
-
-          @Override
-          public void onInitializationFailed(@NonNull AdError error) {
-            initializationCompleteCallback.onInitializationFailed(error.toString());
-          }
-        });
+              @Override
+              public void onInitializationFailed(@NonNull AdError error) {
+                initializationCompleteCallback.onInitializationFailed(error);
+              }
+            });
   }
 
   @Override
