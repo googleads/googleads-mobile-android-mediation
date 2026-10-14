@@ -1,5 +1,8 @@
 ## Pangle Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+
 #### Version 8.3.0.4.0
 - Verified compatibility with Pangle SDK version 8.3.0.4.
 
