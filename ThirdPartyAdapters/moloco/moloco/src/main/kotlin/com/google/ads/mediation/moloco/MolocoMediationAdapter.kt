@@ -113,7 +113,9 @@ class MolocoMediationAdapter : RtbAdapter() {
     }
 
     if (appKeys.isEmpty()) {
-      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_APP_KEY)
+      val adError =
+        AdError(ERROR_CODE_MISSING_APP_KEY, ERROR_MSG_MISSING_APP_KEY, ADAPTER_ERROR_DOMAIN)
+      initializationCompleteCallback.onInitializationFailed(adError)
       return
     }
 
@@ -131,9 +133,13 @@ class MolocoMediationAdapter : RtbAdapter() {
         configurePrivacy()
         initializationCompleteCallback.onInitializationSucceeded()
       } else {
-        initializationCompleteCallback.onInitializationFailed(
-          "Moloco SDK failed to initialize: ${status.description}."
-        )
+        val adError =
+          AdError(
+            ERROR_CODE_SDK_INIT_FAILED,
+            "Moloco SDK failed to initialize: ${status.description}.",
+            ADAPTER_ERROR_DOMAIN,
+          )
+        initializationCompleteCallback.onInitializationFailed(adError)
       }
     }
   }
@@ -200,6 +206,7 @@ class MolocoMediationAdapter : RtbAdapter() {
     const val ERROR_CODE_MISSING_APP_KEY = 101
     const val ERROR_CODE_MISSING_AD_UNIT = 102
     const val ERROR_CODE_AD_IS_NULL = 103
+    const val ERROR_CODE_SDK_INIT_FAILED = 104
     const val ERROR_MSG_MISSING_APP_KEY =
       "Missing or invalid App Key configured for this ad source instance in the AdMob or Ad Manager UI."
     const val ERROR_MSG_MISSING_AD_UNIT =
