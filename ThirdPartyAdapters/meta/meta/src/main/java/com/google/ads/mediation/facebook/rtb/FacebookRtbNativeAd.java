@@ -411,6 +411,12 @@ public class FacebookRtbNativeAd extends NativeAdMapper {
     super.untrackView(view);
   }
 
+  @Override
+  public void destroy() {
+    destroyMetaAdAssets();
+    super.destroy();
+  }
+
   private static class FacebookAdapterNativeAdImage extends Image {
 
     /** A drawable for the Image. */

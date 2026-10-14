@@ -2,6 +2,7 @@
 
 #### Next Version
 - Clean up native ad assets on load and mapping failure paths.
+- Override `NativeAdMapper.destroy()` for native ad lifecycle cleanup.
 
 #### Version 6.22.0.1
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported

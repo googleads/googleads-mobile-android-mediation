@@ -637,6 +637,59 @@ class FacebookRtbNativeAdTest {
     verify(metaMediaView).destroy()
   }
 
+  @Test
+  fun destroy_destroysMetaAdAssets() {
+    facebookRtbNativeAd.render(mediationNativeAdConfiguration)
+
+    facebookRtbNativeAd.destroy()
+
+    verify(metaNativeAd).unregisterView()
+    verify(metaNativeAd).destroy()
+    verify(metaMediaView).destroy()
+  }
+
+  @Test
+  fun destroy_withoutRender_doesNotCrash() {
+    facebookRtbNativeAd.destroy()
+    // No crash indicates success.
+  }
+
+  @Test
+  fun destroy_multipleTimes_destroysMetaAdAssetsOnce() {
+    facebookRtbNativeAd.render(mediationNativeAdConfiguration)
+
+    facebookRtbNativeAd.destroy()
+    facebookRtbNativeAd.destroy()
+
+    verify(metaNativeAd).unregisterView()
+    verify(metaNativeAd).destroy()
+    verify(metaMediaView).destroy()
+  }
+
+  @Test
+  fun destroy_afterUntrackView_destroysMetaAdAssetsOnce() {
+    facebookRtbNativeAd.render(mediationNativeAdConfiguration)
+
+    facebookRtbNativeAd.untrackView(gmaContainerView)
+    facebookRtbNativeAd.destroy()
+
+    verify(metaNativeAd).unregisterView()
+    verify(metaNativeAd).destroy()
+    verify(metaMediaView).destroy()
+  }
+
+  @Test
+  fun untrackView_afterDestroy_destroysMetaAdAssetsOnce() {
+    facebookRtbNativeAd.render(mediationNativeAdConfiguration)
+
+    facebookRtbNativeAd.destroy()
+    facebookRtbNativeAd.untrackView(gmaContainerView)
+
+    verify(metaNativeAd).unregisterView()
+    verify(metaNativeAd).destroy()
+    verify(metaMediaView).destroy()
+  }
+
   private fun verifyNativeBannerAdAdChoicesPlacement(
     adChoicesPlacement: Int?,
     expectedPosition: NativeAdOptionsViewPosition?,
