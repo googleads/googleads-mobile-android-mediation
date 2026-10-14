@@ -1,5 +1,8 @@
 ## PubMatic Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+
 #### Version 5.4.1.0
 - Updated the minimum required Android API level to 24.
 - Verified compatibility with Pubmatic SDK 5.4.1.
