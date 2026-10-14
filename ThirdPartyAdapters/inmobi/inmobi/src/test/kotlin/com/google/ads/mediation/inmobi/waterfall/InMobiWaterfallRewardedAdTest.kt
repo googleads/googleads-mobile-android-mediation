@@ -15,17 +15,16 @@ import com.google.ads.mediation.inmobi.InMobiConstants
 import com.google.ads.mediation.inmobi.InMobiInitializer
 import com.google.ads.mediation.inmobi.InMobiInterstitialWrapper
 import com.google.ads.mediation.inmobi.InMobiNetworkKeys
+import com.google.ads.mediation.inmobi.InMobiSdkWrapper
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
 import com.google.common.truth.Truth.assertThat
 import com.inmobi.ads.AdMetaInfo
 import com.inmobi.ads.InMobiAdRequestStatus
-import com.inmobi.sdk.InMobiSdk
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
@@ -46,6 +45,7 @@ class InMobiWaterfallRewardedAdTest {
     )
   private val inMobiInitializer = mock<InMobiInitializer>()
   private val inMobiAdFactory = mock<InMobiAdFactory>()
+  private val inMobiSdkWrapper = mock<InMobiSdkWrapper>()
   private val inMobiRewardedWrapper = mock<InMobiInterstitialWrapper>()
 
   private lateinit var waterfallRewardedAd: InMobiWaterfallRewardedAd
@@ -55,7 +55,12 @@ class InMobiWaterfallRewardedAdTest {
   fun setUp() {
     adMetaInfo = AdMetaInfo("fake", null)
     waterfallRewardedAd =
-      InMobiWaterfallRewardedAd(mediationAdLoadCallback, inMobiInitializer, inMobiAdFactory)
+      InMobiWaterfallRewardedAd(
+        mediationAdLoadCallback,
+        inMobiInitializer,
+        inMobiAdFactory,
+        inMobiSdkWrapper,
+      )
   }
 
   @Test
@@ -117,14 +122,12 @@ class InMobiWaterfallRewardedAdTest {
     whenever(rewardedAdConfiguration.mediationExtras) doReturn
       bundleOf(InMobiNetworkKeys.MUTE_AUDIO to true)
 
-    mockStatic(InMobiSdk::class.java).use { mockedInMobiSdk ->
-      waterfallRewardedAd.loadAd(rewardedAdConfiguration)
-      verify(inMobiInitializer)
-        .init(eq(context), eq("accountTest"), initializerListenerCaptor.capture())
-      initializerListenerCaptor.firstValue.onInitializeSuccess()
+    waterfallRewardedAd.loadAd(rewardedAdConfiguration)
+    verify(inMobiInitializer)
+      .init(eq(context), eq("accountTest"), initializerListenerCaptor.capture())
+    initializerListenerCaptor.firstValue.onInitializeSuccess()
 
-      mockedInMobiSdk.verify { InMobiSdk.setApplicationMuted(true) }
-    }
+    verify(inMobiSdkWrapper).setApplicationMuted(true)
   }
 
   @Test
