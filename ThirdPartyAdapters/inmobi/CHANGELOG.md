@@ -1,5 +1,9 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Next version
+- Override `UnifiedNativeAdMapper.destroy()` to call `InMobiNative.destroy()`.
+- Added support for application mute through `InMobiSdk.setApplicationMuted()`.
+
 #### Version 11.5.0.0
 - Verified compatibility with InMobi Kotlin SDK version 11.5.0.
 

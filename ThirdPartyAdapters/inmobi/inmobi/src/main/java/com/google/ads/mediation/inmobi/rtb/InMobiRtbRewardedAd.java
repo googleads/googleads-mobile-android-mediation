@@ -45,6 +45,7 @@ public class InMobiRtbRewardedAd extends InMobiRewardedAd {
             InMobiAdapterUtils.PROTOCOL_RTB);
     inMobiRewardedAdWrapper.setExtras(inMobiExtras.getParameterMap());
     inMobiRewardedAdWrapper.setKeywords(inMobiExtras.getKeywords());
+    InMobiAdapterUtils.setApplicationMuted(inMobiExtras);
 
     String bidToken = mediationRewardedAdConfiguration.getBidResponse();
     inMobiRewardedAdWrapper.load(bidToken.getBytes());
