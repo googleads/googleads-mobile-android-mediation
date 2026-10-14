@@ -1,6 +1,12 @@
 ## Verve Android Mediation Adapter Changelog
 
-#### Version 3.9.3.0 (In progress)
+#### Version 3.9.3.0
+- Verified compatibility with Verve HyBid SDK version 3.9.3.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.5.0.
+- Google Mobile Ads Next-Gen SDK version 1.5.0.
+- Verve HyBid SDK version 3.9.3.
 
 #### Version 3.9.2.0
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
