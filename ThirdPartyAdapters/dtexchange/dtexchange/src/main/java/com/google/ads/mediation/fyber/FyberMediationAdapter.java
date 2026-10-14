@@ -157,7 +157,7 @@ public class FyberMediationAdapter extends RtbAdapter {
               "DT Exchange SDK requires an appId to be configured on the AdMob UI.",
               DTExchangeErrorCodes.ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      completionCallback.onInitializationFailed(error.getMessage());
+      completionCallback.onInitializationFailed(error);
       return;
     }
 
@@ -182,7 +182,7 @@ public class FyberMediationAdapter extends RtbAdapter {
             if (fyberInitStatus != FyberInitStatus.SUCCESSFULLY) {
               AdError error = DTExchangeErrorCodes.getAdError(fyberInitStatus);
               Log.w(TAG, error.getMessage());
-              completionCallback.onInitializationFailed(error.getMessage());
+              completionCallback.onInitializationFailed(error);
               return;
             }
             completionCallback.onInitializationSucceeded();
