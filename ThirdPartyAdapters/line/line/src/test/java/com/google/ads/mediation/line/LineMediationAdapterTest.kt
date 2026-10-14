@@ -28,8 +28,11 @@ import com.google.ads.mediation.adaptertestkit.FakeSignalCallbacks
 import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.line.LineExtras.Companion.KEY_ENABLE_AD_SOUND
 import com.google.ads.mediation.line.LineMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
+import com.google.ads.mediation.line.LineMediationAdapter.Companion.ERROR_CODE_INVALID_FIVE_AD_CONFIG
+import com.google.ads.mediation.line.LineMediationAdapter.Companion.ERROR_CODE_MISSING_APP_ID
 import com.google.ads.mediation.line.LineMediationAdapter.Companion.ERROR_CODE_MISSING_SLOT_ID
 import com.google.ads.mediation.line.LineMediationAdapter.Companion.ERROR_CODE_NULL_AD_LOADER
+import com.google.ads.mediation.line.LineMediationAdapter.Companion.ERROR_MSG_MISSING_APP_ID
 import com.google.ads.mediation.line.LineMediationAdapter.Companion.ERROR_MSG_MISSING_SLOT_ID
 import com.google.ads.mediation.line.LineMediationAdapter.Companion.ERROR_MSG_NULL_AD_LOADER
 import com.google.ads.mediation.line.LineMediationAdapter.Companion.KEY_APP_ID
@@ -184,8 +187,9 @@ class LineMediationAdapterTest {
       listOf(mediationConfiguration),
     )
 
-    assertThat(initializationCompleteCallback)
-      .hasFailedWith(LineMediationAdapter.ERROR_MSG_MISSING_APP_ID)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_APP_ID, ERROR_MSG_MISSING_APP_ID, ADAPTER_ERROR_DOMAIN)
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -199,8 +203,9 @@ class LineMediationAdapterTest {
       listOf(mediationConfiguration),
     )
 
-    assertThat(initializationCompleteCallback)
-      .hasFailedWith(LineMediationAdapter.ERROR_MSG_MISSING_APP_ID)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_APP_ID, ERROR_MSG_MISSING_APP_ID, ADAPTER_ERROR_DOMAIN)
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -264,7 +269,9 @@ class LineMediationAdapterTest {
       listOf(mediationConfiguration),
     )
 
-    assertThat(initializationCompleteCallback).hasFailedWith(TEST_INITIALIZE_ERROR_MSG)
+    val expectedAdError =
+      AdError(ERROR_CODE_INVALID_FIVE_AD_CONFIG, TEST_INITIALIZE_ERROR_MSG, ADAPTER_ERROR_DOMAIN)
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test

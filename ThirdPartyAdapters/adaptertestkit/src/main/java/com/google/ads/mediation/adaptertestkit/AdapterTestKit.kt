@@ -17,12 +17,14 @@ package com.google.ads.mediation.adaptertestkit
 import android.content.Context
 import android.os.Bundle
 import androidx.core.os.bundleOf
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.mediation.Adapter
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationConfiguration
 import com.google.common.truth.Truth.assertThat
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 
@@ -72,6 +74,25 @@ fun Adapter.mediationAdapterInitializeVerifyFailure(
 
 /**
  * Extension function of [Adapter] that calls its [Adapter.initialize] method using the given
+ * parameters and later verifies that [InitializationCompleteCallback.onInitializationFailed] is
+ * called once with the [expectedError].
+ */
+fun Adapter.mediationAdapterInitializeVerifyFailure(
+  context: Context,
+  initializationCompleteCallback: InitializationCompleteCallback,
+  serverParameters: Bundle,
+  expectedError: AdError,
+) {
+  val configs = listOf(createMediationConfiguration(serverParameters = serverParameters))
+
+  this.initialize(context, initializationCompleteCallback, configs)
+
+  verify(initializationCompleteCallback)
+    .onInitializationFailed(argThat(AdErrorMatcher(expectedError)))
+}
+
+/**
+ * Extension function of [Adapter] that calls its [Adapter.initialize] method using the given
  * parameters and later verifies that no [InitializationCompleteCallback.onInitializationFailed] was
  * triggered.
  */
@@ -84,7 +105,8 @@ fun Adapter.mediationAdapterInitializeVerifyNoFailure(
 
   this.initialize(context, initializationCompleteCallback, configs)
 
-  verify(initializationCompleteCallback, never()).onInitializationFailed(any())
+  verify(initializationCompleteCallback, never()).onInitializationFailed(any<String>())
+  verify(initializationCompleteCallback, never()).onInitializationFailed(any<AdError>())
 }
 
 /**

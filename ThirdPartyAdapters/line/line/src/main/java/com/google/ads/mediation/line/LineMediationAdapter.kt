@@ -114,7 +114,9 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
     }
 
     if (appIds.isEmpty()) {
-      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_APP_ID)
+      val adError =
+        AdError(ERROR_CODE_MISSING_APP_ID, ERROR_MSG_MISSING_APP_ID, ADAPTER_ERROR_DOMAIN)
+      initializationCompleteCallback.onInitializationFailed(adError)
       return
     }
 
@@ -128,7 +130,10 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
     try {
       LineInitializer.initialize(context, initAppId)
     } catch (exception: IllegalArgumentException) {
-      exception.message?.let { initializationCompleteCallback.onInitializationFailed(it) }
+      exception.message?.let {
+        val adError = AdError(ERROR_CODE_INVALID_FIVE_AD_CONFIG, it, ADAPTER_ERROR_DOMAIN)
+        initializationCompleteCallback.onInitializationFailed(adError)
+      }
       return
     }
 
@@ -284,6 +289,7 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
     const val ERROR_MSG_FAILED_TO_SHOW_FULLSCREEN = "Failed to show the ad in fullscreen."
     const val ERROR_CODE_MINIMUM_NATIVE_INFO_NOT_RECEIVED = 106
     const val ERROR_CODE_NULL_AD_LOADER = 107
+    const val ERROR_CODE_INVALID_FIVE_AD_CONFIG = 108
     const val ERROR_MSG_MINIMUM_NATIVE_INFO_NOT_RECEIVED =
       "Complete required data for Native ads was not received. Skipping Ad."
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.line"
