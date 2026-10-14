@@ -258,6 +258,62 @@ class FacebookRtbNativeAdTest {
   }
 
   @Test
+  fun render_onError_destroysMetaAdAssets() {
+    facebookRtbNativeAd.render(mediationNativeAdConfiguration)
+    verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
+    val metaAdLoadError = com.facebook.ads.AdError(101, "Load error from Meta")
+
+    nativeListenerCaptor.firstValue.onError(metaNativeAd, metaAdLoadError)
+
+    verify(metaNativeAd).unregisterView()
+    verify(metaNativeAd).destroy()
+    verify(metaMediaView).destroy()
+  }
+
+  @Test
+  fun render_onMappingFailed_destroysMetaAdAssets() {
+    whenever(metaNativeAd.adHeadline) doReturn null
+    facebookRtbNativeAd.render(mediationNativeAdConfiguration)
+    verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
+
+    nativeListenerCaptor.firstValue.onAdLoaded(metaNativeAd)
+
+    verify(metaNativeAd).unregisterView()
+    verify(metaNativeAd).destroy()
+    verify(metaMediaView).destroy()
+  }
+
+  @Test
+  fun render_fromBidPayloadThrowsException_destroysMetaAdAssetsAndInvokesFailure() {
+    whenever(metaFactory.createNativeAdFromBidPayload(any(), any(), any()))
+      .thenThrow(RuntimeException("Bid payload error"))
+
+    facebookRtbNativeAd.render(mediationNativeAdConfiguration)
+
+    val expectedAdError =
+      AdError(
+        FacebookMediationAdapter.ERROR_CREATE_NATIVE_AD_FROM_BID_PAYLOAD,
+        "Failed to create native ad from bid payload: Bid payload error",
+        FacebookMediationAdapter.ERROR_DOMAIN,
+      )
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
+    verify(metaMediaView).destroy()
+  }
+
+  @Test
+  fun render_onAdLoadedWithWrongAd_destroysMetaAdAssets() {
+    facebookRtbNativeAd.render(mediationNativeAdConfiguration)
+    verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
+    val aWrongNativeAd: NativeAdBase = mock()
+
+    nativeListenerCaptor.firstValue.onAdLoaded(aWrongNativeAd)
+
+    verify(metaNativeAd).unregisterView()
+    verify(metaNativeAd).destroy()
+    verify(metaMediaView).destroy()
+  }
+
+  @Test
   fun nativeAdListenerOnAdLoaded_setsNativeAdAssetsAndInvokesLoadSuccess() {
     facebookRtbNativeAd.render(mediationNativeAdConfiguration)
     verify(metaNativeAdLoadConfigBuilder).withAdListener(nativeListenerCaptor.capture())
