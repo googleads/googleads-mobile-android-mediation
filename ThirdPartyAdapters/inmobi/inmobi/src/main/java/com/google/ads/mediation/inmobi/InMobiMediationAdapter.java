@@ -183,7 +183,7 @@ public class InMobiMediationAdapter extends RtbAdapter {
     if (count <= 0) {
       AdError error = InMobiConstants.createAdapterError(ERROR_INVALID_SERVER_PARAMETERS,
           ERROR_MESSAGE_FOR_INVALID_ACCOUNTID);
-      initializationCompleteCallback.onInitializationFailed(error.toString());
+      initializationCompleteCallback.onInitializationFailed(error);
       return;
     }
 
@@ -196,17 +196,20 @@ public class InMobiMediationAdapter extends RtbAdapter {
       Log.w(TAG, message);
     }
 
-    inMobiInitializer.init(context, accountID, new Listener() {
-      @Override
-      public void onInitializeSuccess() {
-        initializationCompleteCallback.onInitializationSucceeded();
-      }
+    inMobiInitializer.init(
+        context,
+        accountID,
+        new Listener() {
+          @Override
+          public void onInitializeSuccess() {
+            initializationCompleteCallback.onInitializationSucceeded();
+          }
 
-      @Override
-      public void onInitializeError(@NonNull AdError error) {
-        initializationCompleteCallback.onInitializationFailed(error.toString());
-      }
-    });
+          @Override
+          public void onInitializeError(@NonNull AdError error) {
+            initializationCompleteCallback.onInitializationFailed(error);
+          }
+        });
   }
 
   @Override
