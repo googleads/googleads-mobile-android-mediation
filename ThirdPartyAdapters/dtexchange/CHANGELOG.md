@@ -2,6 +2,7 @@
 
 #### Version 8.5.0.0 (In progress)
 - Fixed an issue where native ads invoked the `onAdOpened()` callback on impression.
+- Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
 
 #### Version 8.4.7.1
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
