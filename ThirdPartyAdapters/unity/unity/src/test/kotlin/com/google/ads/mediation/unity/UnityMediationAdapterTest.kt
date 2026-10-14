@@ -159,7 +159,7 @@ class UnityMediationAdapterTest {
 
     val adError =
       AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid Game ID.", ADAPTER_ERROR_DOMAIN)
-    assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
+    assertThat(initializationCompleteCallback).hasFailedWith(adError)
   }
 
   @Test
@@ -210,7 +210,7 @@ class UnityMediationAdapterTest {
       mediationConfigurations,
     )
 
-    assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
+    assertThat(initializationCompleteCallback).hasFailedWith(adError)
   }
 
   @Test
