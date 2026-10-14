@@ -149,7 +149,9 @@ public class IMobileMediationAdapter extends Adapter {
       @NonNull InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> list) {
     if (AdapterHelper.isUserUnderAge()) {
-      initializationCompleteCallback.onInitializationFailed(ERROR_USER_IS_AGE_RESTRICTED_MSG);
+      initializationCompleteCallback.onInitializationFailed(
+          new AdError(
+              ERROR_USER_IS_AGE_RESTRICTED, ERROR_USER_IS_AGE_RESTRICTED_MSG, ERROR_DOMAIN));
       return;
     }
 
