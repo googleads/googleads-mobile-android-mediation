@@ -1,5 +1,8 @@
 ## InMobi Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+
 #### Version 11.5.0.0
 - Verified compatibility with InMobi Kotlin SDK version 11.5.0.
 
