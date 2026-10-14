@@ -154,7 +154,14 @@ class IronSourceMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    assertThat(initializationCompleteCallback).hasFailedWith(MISSING_OR_INVALID_APP_KEY_MESSAGE)
+    assertThat(initializationCompleteCallback)
+      .hasFailedWith(
+        AdError(
+          ERROR_INVALID_SERVER_PARAMETERS,
+          MISSING_OR_INVALID_APP_KEY_MESSAGE,
+          ADAPTER_ERROR_DOMAIN,
+        )
+      )
   }
 
   @Test
@@ -164,7 +171,14 @@ class IronSourceMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    assertThat(initializationCompleteCallback).hasFailedWith(MISSING_OR_INVALID_APP_KEY_MESSAGE)
+    assertThat(initializationCompleteCallback)
+      .hasFailedWith(
+        AdError(
+          ERROR_INVALID_SERVER_PARAMETERS,
+          MISSING_OR_INVALID_APP_KEY_MESSAGE,
+          ADAPTER_ERROR_DOMAIN,
+        )
+      )
   }
 
   @Test
