@@ -1,5 +1,8 @@
 ## Moloco Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+
 #### Version 4.13.0.0
 - Verified compatibility with Moloco SDK 4.13.0.
 

@@ -180,8 +180,13 @@ class MolocoMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    assertThat(initializationCompleteCallback)
-      .hasFailedWith(MolocoMediationAdapter.ERROR_MSG_MISSING_APP_KEY)
+    val expectedAdError =
+      AdError(
+        MolocoMediationAdapter.ERROR_CODE_MISSING_APP_KEY,
+        MolocoMediationAdapter.ERROR_MSG_MISSING_APP_KEY,
+        MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -191,8 +196,13 @@ class MolocoMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    assertThat(initializationCompleteCallback)
-      .hasFailedWith(MolocoMediationAdapter.ERROR_MSG_MISSING_APP_KEY)
+    val expectedAdError =
+      AdError(
+        MolocoMediationAdapter.ERROR_CODE_MISSING_APP_KEY,
+        MolocoMediationAdapter.ERROR_MSG_MISSING_APP_KEY,
+        MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -239,8 +249,13 @@ class MolocoMediationAdapterTest {
     molocoCallback.onMolocoInitializationStatus(
       MolocoInitStatus(Initialization.FAILURE, "TestError")
     )
-    assertThat(initializationCompleteCallback)
-      .hasFailedWith("Moloco SDK failed to initialize: TestError.")
+    val expectedAdError =
+      AdError(
+        MolocoMediationAdapter.ERROR_CODE_SDK_INIT_FAILED,
+        "Moloco SDK failed to initialize: TestError.",
+        MolocoMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
