@@ -88,6 +88,9 @@ public class FyberMediationAdapter extends RtbAdapter {
 
   private DTExchangeNativeAdMapper nativeAdMapper;
 
+  private DTExchangeWaterfallBannerAd bannerWaterfallAd;
+  private DTExchangeWaterfallInterstitialAd waterfallInterstitialAd;
+
   /** Default Constructor. */
   public FyberMediationAdapter() {}
 
@@ -243,7 +246,10 @@ public class FyberMediationAdapter extends RtbAdapter {
   public void loadBannerAd(
       @NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
-    DTExchangeWaterfallBannerAd bannerWaterfallAd = new DTExchangeWaterfallBannerAd(callback);
+    if (bannerWaterfallAd != null) {
+      bannerWaterfallAd.destroyAdSpot();
+    }
+    bannerWaterfallAd = new DTExchangeWaterfallBannerAd(callback);
     bannerWaterfallAd.loadAd(adConfiguration);
   }
 
@@ -253,8 +259,10 @@ public class FyberMediationAdapter extends RtbAdapter {
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               adLoadCallback) {
-    DTExchangeWaterfallInterstitialAd waterfallInterstitialAd =
-        new DTExchangeWaterfallInterstitialAd();
+    if (waterfallInterstitialAd != null) {
+      waterfallInterstitialAd.destroyAdSpot();
+    }
+    waterfallInterstitialAd = new DTExchangeWaterfallInterstitialAd();
     waterfallInterstitialAd.loadAd(mediationInterstitialAdConfiguration, adLoadCallback);
   }
 
@@ -262,6 +270,9 @@ public class FyberMediationAdapter extends RtbAdapter {
   public void loadRtbBannerAd(
       @NonNull MediationBannerAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback> callback) {
+    if (bannerRtbAd != null) {
+      bannerRtbAd.destroyAdSpot();
+    }
     bannerRtbAd = new DTExchangeRtbBannerAd(callback);
     bannerRtbAd.loadAd(adConfiguration);
   }
@@ -272,6 +283,9 @@ public class FyberMediationAdapter extends RtbAdapter {
       @NonNull
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               callback) {
+    if (interstitialRtbAd != null) {
+      interstitialRtbAd.destroyAdSpot();
+    }
     interstitialRtbAd = new DTExchangeRtbInterstitialAd(callback);
     interstitialRtbAd.loadAd(adConfiguration);
   }
@@ -280,6 +294,9 @@ public class FyberMediationAdapter extends RtbAdapter {
   public void loadRtbRewardedAd(
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
+    if (rewardedRenderer != null) {
+      rewardedRenderer.destroyAdSpot();
+    }
     rewardedRenderer = new FyberRewardedVideoRenderer(callback);
     InneractiveAdManager.setMediationName(MEDIATOR_NAME);
     InneractiveAdManager.setMediationVersion(MobileAds.getVersion().toString());
