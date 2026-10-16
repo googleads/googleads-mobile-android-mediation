@@ -229,7 +229,10 @@ class MaioMediationAdapterTest {
       /* mediationConfigurations= */ emptyList(),
     )
 
-    assertThat(initializationCompleteCallback).hasFailedWith(MAIO_IS_AGE_RESTRICTED_ERROR)
+    assertThat(initializationCompleteCallback)
+      .hasFailedWith(
+        AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN)
+      )
   }
 
   @Test
@@ -247,7 +250,10 @@ class MaioMediationAdapterTest {
       /* mediationConfigurations= */ emptyList(),
     )
 
-    assertThat(initializationCompleteCallback).hasFailedWith(MAIO_IS_AGE_RESTRICTED_ERROR)
+    assertThat(initializationCompleteCallback)
+      .hasFailedWith(
+        AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN)
+      )
   }
 
   @Test
@@ -266,7 +272,10 @@ class MaioMediationAdapterTest {
       /* mediationConfigurations= */ emptyList(),
     )
 
-    assertThat(initializationCompleteCallback).hasFailedWith(MAIO_IS_AGE_RESTRICTED_ERROR)
+    assertThat(initializationCompleteCallback)
+      .hasFailedWith(
+        AdError(ERROR_USER_IS_AGE_RESTRICTED, MAIO_IS_AGE_RESTRICTED_ERROR, ERROR_DOMAIN)
+      )
   }
 
   // endregion
