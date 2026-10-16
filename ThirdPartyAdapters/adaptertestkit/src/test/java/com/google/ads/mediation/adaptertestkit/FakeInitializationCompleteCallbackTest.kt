@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.adaptertestkit
 
+import com.google.android.gms.ads.AdError
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -33,6 +34,7 @@ class FakeInitializationCompleteCallbackTest {
     assertThat(callback.isInitializationFailed).isFalse()
     assertThat(callback.initializationFailedInvokeCount).isEqualTo(0)
     assertThat(callback.error).isNull()
+    assertThat(callback.adError).isNull()
   }
 
   @Test
@@ -65,5 +67,26 @@ class FakeInitializationCompleteCallbackTest {
     assertThat(callback.isInitializationFailedInvoked).isTrue()
     assertThat(callback.initializationFailedInvokeCount).isEqualTo(2)
     assertThat(callback.error).isEqualTo("Second failure")
+  }
+
+  @Test
+  fun onInitializationFailed_withAdError_recordsFailureAndAdError() {
+    val adError = AdError(101, "Initialization failed due to missing appId", "domain")
+
+    callback.onInitializationFailed(adError)
+
+    assertThat(callback.isInitializationFailedInvoked).isTrue()
+    assertThat(callback.isInitializationFailed).isTrue()
+    assertThat(callback.initializationFailedInvokeCount).isEqualTo(1)
+    assertThat(callback.adError).isEqualTo(adError)
+    assertThat(callback.error).isEqualTo(adError.toString())
+
+    val secondAdError = AdError(102, "Second failure", "domain")
+    callback.onInitializationFailed(secondAdError)
+
+    assertThat(callback.isInitializationFailedInvoked).isTrue()
+    assertThat(callback.initializationFailedInvokeCount).isEqualTo(2)
+    assertThat(callback.adError).isEqualTo(secondAdError)
+    assertThat(callback.error).isEqualTo(secondAdError.toString())
   }
 }
