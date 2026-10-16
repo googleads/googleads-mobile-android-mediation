@@ -1,5 +1,8 @@
 ## IronSource Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+
 #### Version 9.6.1.0
 - Verified compatibility with ironSource SDK version 9.6.1.
 
