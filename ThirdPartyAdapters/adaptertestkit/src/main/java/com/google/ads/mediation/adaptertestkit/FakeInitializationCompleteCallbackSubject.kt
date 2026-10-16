@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.adaptertestkit
 
+import com.google.android.gms.ads.AdError
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject
 import com.google.common.truth.Truth.assertAbout
@@ -43,6 +44,37 @@ class FakeInitializationCompleteCallbackSubject(
     isNotNull()
     check("isInitializationFailed").that(actual?.isInitializationFailed).isTrue()
     check("error").that(actual?.error).isEqualTo(expectedError)
+    return this
+  }
+
+  /** Asserts that initialization failed with the given [expectedError]. */
+  fun hasFailedWith(expectedError: AdError): FakeInitializationCompleteCallbackSubject {
+    isNotNull()
+    check("isInitializationFailed").that(actual?.isInitializationFailed).isTrue()
+    check("adError").about(AdErrorSubject.adErrors()).that(actual?.adError).isEqualTo(expectedError)
+    return this
+  }
+
+  /** Asserts that initialization failed with the given [errorCode] and [domain]. */
+  fun hasFailedWith(errorCode: Int, domain: String): FakeInitializationCompleteCallbackSubject {
+    isNotNull()
+    check("isInitializationFailed").that(actual?.isInitializationFailed).isTrue()
+    check("adError").about(AdErrorSubject.adErrors()).that(actual?.adError).hasCode(errorCode)
+    check("adError").about(AdErrorSubject.adErrors()).that(actual?.adError).hasDomain(domain)
+    return this
+  }
+
+  /** Asserts that initialization failed with the given [errorCode], [message], and [domain]. */
+  fun hasFailedWith(
+    errorCode: Int,
+    message: String,
+    domain: String,
+  ): FakeInitializationCompleteCallbackSubject {
+    isNotNull()
+    check("isInitializationFailed").that(actual?.isInitializationFailed).isTrue()
+    check("adError").about(AdErrorSubject.adErrors()).that(actual?.adError).hasCode(errorCode)
+    check("adError").about(AdErrorSubject.adErrors()).that(actual?.adError).hasMessage(message)
+    check("adError").about(AdErrorSubject.adErrors()).that(actual?.adError).hasDomain(domain)
     return this
   }
 
