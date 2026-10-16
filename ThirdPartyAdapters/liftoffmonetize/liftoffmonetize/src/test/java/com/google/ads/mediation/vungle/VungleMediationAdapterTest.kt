@@ -196,7 +196,7 @@ class VungleMediationAdapterTest {
       listOf(createMediationConfiguration(serverParameters = bundleOf())),
     )
 
-    assertThat(initializationCompleteCallback).hasFailedWith(error.toString())
+    assertThat(initializationCompleteCallback).hasFailedWith(error)
   }
 
   @Test
@@ -249,7 +249,7 @@ class VungleMediationAdapterTest {
 
       verify(mockVungleInitializer).initialize(eq(TEST_APP_ID_1), any(), listener.capture())
       listener.firstValue.onInitializeError(error)
-      assertThat(initializationCompleteCallback).hasFailedWith(error.toString())
+      assertThat(initializationCompleteCallback).hasFailedWith(error)
     }
   }
 

@@ -244,7 +244,7 @@ public class VungleMediationAdapter extends RtbAdapter
             new AdError(
                 ERROR_INVALID_SERVER_PARAMETERS, "Missing or Invalid App ID.", ERROR_DOMAIN);
         Log.w(TAG, error.toString());
-        initializationCompleteCallback.onInitializationFailed(error.toString());
+        initializationCompleteCallback.onInitializationFailed(error);
       }
       return;
     }
@@ -272,7 +272,7 @@ public class VungleMediationAdapter extends RtbAdapter
               @Override
               public void onInitializeError(AdError error) {
                 Log.w(TAG, error.toString());
-                initializationCompleteCallback.onInitializationFailed(error.toString());
+                initializationCompleteCallback.onInitializationFailed(error);
               }
             });
   }
