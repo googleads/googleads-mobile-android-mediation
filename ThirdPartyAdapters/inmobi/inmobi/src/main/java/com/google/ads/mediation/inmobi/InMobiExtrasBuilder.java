@@ -27,10 +27,15 @@ public class InMobiExtrasBuilder {
 
     if (mediationExtras != null && mediationExtras.keySet() != null) {
       for (String key : mediationExtras.keySet()) {
-        if(!key.contains(InMobiNetworkKeys.IAB_US_PRIVACY_STRING))
+        if (!key.contains(InMobiNetworkKeys.IAB_US_PRIVACY_STRING)
+            && !key.equals(InMobiNetworkKeys.MUTE_AUDIO)) {
           map.put(key, mediationExtras.getString(key));
+        }
       }
     }
+
+    boolean isMuted =
+        mediationExtras != null && mediationExtras.getBoolean(InMobiNetworkKeys.MUTE_AUDIO, false);
 
     // Forward U.S. Privacy String set in SharedPreferences to InMobi SDK.
     SharedPreferences sharedPreferences =
@@ -58,6 +63,6 @@ public class InMobiExtrasBuilder {
       map.put(COPPA, "0");
     }
 
-    return new InMobiExtras(map, keywords);
+    return new InMobiExtras(map, keywords, isMuted);
   }
 }

@@ -159,6 +159,26 @@ class InMobiAdapterUtilsTest {
   }
 
   @Test
+  fun setApplicationMuted_whenIsMutedTrue_setsApplicationMutedTrueOnInMobiSDK() {
+    val inMobiSdkWrapper = mock<InMobiSdkWrapper>()
+    val inMobiExtras = InMobiExtras(HashMap(), /* keywords= */ "", /* isMuted= */ true)
+
+    InMobiAdapterUtils.setApplicationMuted(inMobiExtras, inMobiSdkWrapper)
+
+    verify(inMobiSdkWrapper).setApplicationMuted(true)
+  }
+
+  @Test
+  fun setApplicationMuted_whenIsMutedFalse_setsApplicationMutedFalseOnInMobiSDK() {
+    val inMobiSdkWrapper = mock<InMobiSdkWrapper>()
+    val inMobiExtras = InMobiExtras(HashMap(), /* keywords= */ "", /* isMuted= */ false)
+
+    InMobiAdapterUtils.setApplicationMuted(inMobiExtras, inMobiSdkWrapper)
+
+    verify(inMobiSdkWrapper).setApplicationMuted(false)
+  }
+
+  @Test
   fun getAgeGroup_returnsCorrectAgeGroup() {
     invokeAndAssertGetAgeGroup(
       /* value= */ InMobiNetworkValues.BELOW_18,

@@ -1,9 +1,19 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
-#### Next version
+#### Next Version
+- Clean up native ad assets on load and mapping failure paths.
+- Override `NativeAdMapper.destroy()` for native ad lifecycle cleanup.
 
+#### Version 6.22.0.1
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
 - Updated to report native ad impression when Meta logs impression for native
   ads.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.5.0.
+- Meta Audience Network SDK version 6.22.0.
 
 #### Version 6.22.0.0
 - Verified compatibility with Meta Audience Network SDK v6.22.0.

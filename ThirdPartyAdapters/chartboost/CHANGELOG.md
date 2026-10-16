@@ -11,7 +11,23 @@
 - Fixed the default ad location used when no Ad Location is set in the AdMob UI. It is now `Default`, matching the name Chartboost aggregates unnamed locations under, instead of `default`.
 - Adapter now automatically forwards CCPA consent found inside `IABUSPrivacy_String` to the Chartboost SDK. A value written by the app's CMP takes precedence over a CCPA consent the app set on the Chartboost SDK itself.
 
-#### Version 9.14.0.0 (In progress)
+#### Version 9.14.1.0
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
+- Verified compatibility with Chartboost SDK version 9.14.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.4.0.
+- Chartboost SDK version 9.14.1.
+
+#### Version 9.14.0.0
+- Verified compatibility with Chartboost SDK version 9.14.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.4.0.
+- Chartboost SDK version 9.14.0.
 
 #### Version 9.13.0.0
 - Adapter now automatically forwards GDPR consent found inside `IABTCF_AddtlConsent` to the Chartboost SDK if GDPR applies.

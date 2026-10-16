@@ -1,5 +1,22 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Version 7.7.8.1
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.4.0.
+- Vungle SDK version 7.7.8.
+
+#### Version 7.7.8.0
+- Verified compatibility with Vungle SDK 7.7.8.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.4.0.
+- Vungle SDK version 7.7.8.
+
 #### Version 7.7.7.0
 - Removed the `canPlayAd()` check before showing app open ads so the Liftoff SDK handles the not-ready case and fires its own failure callback.
 - Made the app open and interstitial ad objects nullable and added null checks before `play()`.

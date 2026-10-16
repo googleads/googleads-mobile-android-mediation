@@ -16,6 +16,7 @@ package com.google.ads.mediation.applovin;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import com.applovin.mediation.BuildConfig;
 import com.applovin.sdk.AppLovinMediationProvider;
@@ -23,6 +24,8 @@ import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdk.SdkInitializationListener;
 import com.applovin.sdk.AppLovinSdkConfiguration;
 import com.applovin.sdk.AppLovinSdkInitializationConfiguration;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AppLovinInitializer {
 
@@ -30,6 +33,7 @@ public class AppLovinInitializer {
 
   private static AppLovinInitializer instance;
   private final AppLovinSdkWrapper appLovinSdkWrapper;
+  private List<String> testDeviceAdvertisingIds = new ArrayList<>();
 
   private AppLovinInitializer() {
     appLovinSdkWrapper = new AppLovinSdkWrapper();
@@ -47,14 +51,25 @@ public class AppLovinInitializer {
     return instance;
   }
 
+  /** Sets the list of test device advertising IDs (GAIDs) for AppLovin SDK test mode. */
+  public void setTestDeviceAdvertisingIds(@Nullable List<String> testDeviceAdvertisingIds) {
+    this.testDeviceAdvertisingIds =
+        testDeviceAdvertisingIds == null
+            ? new ArrayList<>()
+            : new ArrayList<>(testDeviceAdvertisingIds);
+  }
+
   public void initialize(@NonNull Context context, @NonNull final String sdkKey,
       @NonNull OnInitializeSuccessListener onInitializeSuccessListener) {
     AppLovinSdk sdk = appLovinSdkWrapper.getInstance(context);
-    AppLovinSdkInitializationConfiguration initConfig =
+    AppLovinSdkInitializationConfiguration.Builder initConfigBuilder =
         AppLovinSdkInitializationConfiguration.builder(sdkKey)
             .setMediationProvider(AppLovinMediationProvider.ADMOB)
-            .setPluginVersion(BuildConfig.ADAPTER_VERSION)
-            .build();
+            .setPluginVersion(BuildConfig.ADAPTER_VERSION);
+    if (!testDeviceAdvertisingIds.isEmpty()) {
+      initConfigBuilder.setTestDeviceAdvertisingIds(testDeviceAdvertisingIds);
+    }
+    AppLovinSdkInitializationConfiguration initConfig = initConfigBuilder.build();
     sdk.initialize(
         initConfig,
         new SdkInitializationListener() {

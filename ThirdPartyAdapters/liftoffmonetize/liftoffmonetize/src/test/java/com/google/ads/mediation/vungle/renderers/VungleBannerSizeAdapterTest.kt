@@ -14,8 +14,6 @@
 
 package com.google.ads.mediation.vungle.renderers
 
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.android.gms.ads.AdSize
 import com.google.common.truth.Truth.assertThat
@@ -27,14 +25,13 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class VungleBannerSizeAdapterTest {
 
-  private val context = ApplicationProvider.getApplicationContext<Context>()
-
   @Test
   fun getVungleBannerAdSize_forGoogleSize300By50_returnsLiftoffSizeBannerShort() {
     val liftoffBannerSize =
       VungleBannerAd.getVungleBannerAdSizeFromGoogleAdSize(AdSize(300, 50), PLACEMENT_ID)
 
-    assertThat(liftoffBannerSize).isEqualTo(VungleAdSize.BANNER_SHORT)
+    assertThat(liftoffBannerSize.width).isEqualTo(VungleAdSize.BANNER_SHORT.width)
+    assertThat(liftoffBannerSize.height).isEqualTo(VungleAdSize.BANNER_SHORT.height)
   }
 
   @Test
@@ -42,7 +39,8 @@ class VungleBannerSizeAdapterTest {
     val liftoffBannerSize =
       VungleBannerAd.getVungleBannerAdSizeFromGoogleAdSize(AdSize.BANNER, PLACEMENT_ID)
 
-    assertThat(liftoffBannerSize).isEqualTo(VungleAdSize.BANNER)
+    assertThat(liftoffBannerSize.width).isEqualTo(VungleAdSize.BANNER.width)
+    assertThat(liftoffBannerSize.height).isEqualTo(VungleAdSize.BANNER.height)
   }
 
   @Test
@@ -50,7 +48,8 @@ class VungleBannerSizeAdapterTest {
     val liftoffBannerSize =
       VungleBannerAd.getVungleBannerAdSizeFromGoogleAdSize(AdSize.LEADERBOARD, PLACEMENT_ID)
 
-    assertThat(liftoffBannerSize).isEqualTo(VungleAdSize.BANNER_LEADERBOARD)
+    assertThat(liftoffBannerSize.width).isEqualTo(VungleAdSize.BANNER_LEADERBOARD.width)
+    assertThat(liftoffBannerSize.height).isEqualTo(VungleAdSize.BANNER_LEADERBOARD.height)
   }
 
   @Test
@@ -58,7 +57,8 @@ class VungleBannerSizeAdapterTest {
     val liftoffBannerSize =
       VungleBannerAd.getVungleBannerAdSizeFromGoogleAdSize(AdSize.MEDIUM_RECTANGLE, PLACEMENT_ID)
 
-    assertThat(liftoffBannerSize).isEqualTo(VungleAdSize.MREC)
+    assertThat(liftoffBannerSize.width).isEqualTo(VungleAdSize.MREC.width)
+    assertThat(liftoffBannerSize.height).isEqualTo(VungleAdSize.MREC.height)
   }
 
   @Test

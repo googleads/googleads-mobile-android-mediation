@@ -27,12 +27,6 @@ import com.google.android.gms.ads.AdRequest
  */
 class AppLovinMediationSnippets {
 
-  private fun setUserConsent() {
-    // [START set_user_consent]
-    AppLovinPrivacySettings.setHasUserConsent(true)
-    // [END set_user_consent]
-  }
-
   private fun setDoNotSell() {
     // [START set_do_not_sell]
     AppLovinPrivacySettings.setDoNotSell(true)

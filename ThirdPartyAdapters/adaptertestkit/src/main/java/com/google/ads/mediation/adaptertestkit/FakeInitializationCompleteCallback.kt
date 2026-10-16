@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.adaptertestkit
 
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 
 /**
@@ -37,6 +38,9 @@ open class FakeInitializationCompleteCallback : InitializationCompleteCallback {
   var error: String? = null
     private set
 
+  var adError: AdError? = null
+    private set
+
   /** Returns true if [onInitializationSucceeded] was invoked. */
   val isInitializationSucceeded: Boolean
     get() = isInitializationSucceededInvoked
@@ -54,5 +58,11 @@ open class FakeInitializationCompleteCallback : InitializationCompleteCallback {
     isInitializationFailedInvoked = true
     initializationFailedInvokeCount++
     this.error = error
+  }
+
+  override fun onInitializationFailed(adError: AdError) {
+    isInitializationFailedInvoked = true
+    initializationFailedInvokeCount++
+    this.adError = adError
   }
 }

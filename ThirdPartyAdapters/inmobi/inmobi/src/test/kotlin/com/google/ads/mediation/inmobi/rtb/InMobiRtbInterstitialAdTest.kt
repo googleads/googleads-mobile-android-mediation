@@ -13,15 +13,18 @@ import com.google.ads.mediation.inmobi.InMobiAdapterUtils.KEY_PLACEMENT_ID
 import com.google.ads.mediation.inmobi.InMobiConstants
 import com.google.ads.mediation.inmobi.InMobiInitializer
 import com.google.ads.mediation.inmobi.InMobiInterstitialWrapper
+import com.google.ads.mediation.inmobi.InMobiNetworkKeys
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.google.common.truth.Truth.assertThat
 import com.inmobi.ads.AdMetaInfo
 import com.inmobi.ads.InMobiAdRequestStatus
+import com.inmobi.sdk.InMobiSdk
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
@@ -90,6 +93,23 @@ class InMobiRtbInterstitialAdTest {
     assertThat(mediationInterstitialAdCallback.isFailedToShow).isTrue()
     assertThat(mediationInterstitialAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
     verify(inMobiInterstitialWrapper, never()).show()
+  }
+
+  @Test
+  fun loadAd_withMuteAudioTrue_setsApplicationMutedTrueOnInMobiSdk() {
+    whenever(inMobiAdFactory.createInMobiInterstitialWrapper(any(), any(), any()))
+      .thenReturn(inMobiInterstitialWrapper)
+    whenever(interstitialAdConfiguration.bidResponse).thenReturn("BiddingToken")
+    whenever(interstitialAdConfiguration.serverParameters) doReturn
+      bundleOf(KEY_PLACEMENT_ID to "67890")
+    whenever(interstitialAdConfiguration.mediationExtras) doReturn
+      bundleOf(InMobiNetworkKeys.MUTE_AUDIO to true)
+
+    mockStatic(InMobiSdk::class.java).use { mockedInMobiSdk ->
+      rtbInterstitialAd.loadAd(interstitialAdConfiguration)
+
+      mockedInMobiSdk.verify { InMobiSdk.setApplicationMuted(true) }
+    }
   }
 
   @Test

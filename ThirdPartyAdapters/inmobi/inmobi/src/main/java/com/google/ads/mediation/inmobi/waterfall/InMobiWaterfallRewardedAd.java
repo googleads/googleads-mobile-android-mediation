@@ -77,6 +77,7 @@ public class InMobiWaterfallRewardedAd extends InMobiRewardedAd {
             InMobiAdapterUtils.PROTOCOL_WATERFALL);
     inMobiRewardedAdWrapper.setExtras(inMobiExtras.getParameterMap());
     inMobiRewardedAdWrapper.setKeywords(inMobiExtras.getKeywords());
+    InMobiAdapterUtils.setApplicationMuted(inMobiExtras);
 
     inMobiRewardedAdWrapper.load();
   }

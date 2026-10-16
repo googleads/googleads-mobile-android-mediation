@@ -1,10 +1,35 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
-#### Next version
+#### Next Version
+- Added `UnityMediationAdapter.setTestMode()` and `UnityMediationAdapter.isTestMode()` to allow enabling test mode on the Unity Ads SDK.
 
+#### Version 4.21.0.0
+- Verified compatibility with Unity Ads SDK 4.21.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.5.0.
+- Google Mobile Ads Next-Gen SDK version 1.5.0.
+- Unity Ads SDK version 4.21.0.
+
+#### Version 4.20.1.0
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
+- Verified compatibility with Unity Ads SDK 4.20.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.4.0.
+- Unity Ads SDK version 4.20.1.
+
+#### Version 4.20.0.1
 - Removed adapter requirement of an Activity context for loading banner ads.
 - Updated bidding signal collection to fail and report an error if an empty
   signal is received.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.4.0.
+- Unity Ads SDK version 4.20.0.
 
 #### Version 4.20.0.0
 - Verified compatibility with Unity Ads SDK 4.20.0.

@@ -1,5 +1,10 @@
 ## Common Mediation Library Changelog
 
+#### 1.2.0 (In progress)
+
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
+
 ### 1.1.0
 
 - Added support for child age restricted treatment.
