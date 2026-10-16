@@ -34,6 +34,7 @@ import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfigurat
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.APP_ID_KEY
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_CODE_MISSING_APP_ID
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_CODE_MISSING_SLOT_ID
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MISSING_APP_ID
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MISSING_SLOT_ID
@@ -166,7 +167,9 @@ class BigoMediationAdapterTest {
   fun initialize_withEmptyConfiguration_invokesOnInitializationFailed() {
     adapter.initialize(context, initializationCompleteCallback, mediationConfigurations = listOf())
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_MISSING_APP_ID)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_APP_ID, ERROR_MSG_MISSING_APP_ID, ADAPTER_ERROR_DOMAIN)
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -176,7 +179,9 @@ class BigoMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_MISSING_APP_ID)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_APP_ID, ERROR_MSG_MISSING_APP_ID, ADAPTER_ERROR_DOMAIN)
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -186,7 +191,9 @@ class BigoMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_MISSING_APP_ID)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_APP_ID, ERROR_MSG_MISSING_APP_ID, ADAPTER_ERROR_DOMAIN)
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
