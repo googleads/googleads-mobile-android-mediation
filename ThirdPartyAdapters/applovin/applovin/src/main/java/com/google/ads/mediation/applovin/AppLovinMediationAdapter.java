@@ -14,7 +14,6 @@
 
 package com.google.ads.mediation.applovin;
 
-import static com.applovin.mediation.AppLovinUtils.ERROR_MSG_CHILD_USER;
 import static com.applovin.mediation.AppLovinUtils.getChildUserError;
 import static com.applovin.mediation.AppLovinUtils.isChildUser;
 
@@ -207,7 +206,7 @@ public class AppLovinMediationAdapter extends RtbAdapter {
       @NonNull final InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> mediationConfigurations) {
     if (isChildUser()) {
-      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_CHILD_USER);
+      initializationCompleteCallback.onInitializationFailed(getChildUserError());
       return;
     }
 
@@ -222,7 +221,7 @@ public class AppLovinMediationAdapter extends RtbAdapter {
     if (sdkKeys.isEmpty()) {
       AdError error = new AdError(ERROR_MISSING_SDK_KEY, ERROR_MSG_MISSING_SDK, ERROR_DOMAIN);
       Log.w(TAG, error.getMessage());
-      initializationCompleteCallback.onInitializationFailed(error.getMessage());
+      initializationCompleteCallback.onInitializationFailed(error);
       return;
     }
 

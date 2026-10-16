@@ -1,5 +1,8 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+
 #### Version 13.6.4.2
 - Added `setTestDeviceAdvertisingIds` API to `AppLovinMediationAdapter` to support AppLovin SDK test mode registration.
 

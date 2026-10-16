@@ -154,7 +154,7 @@ class AppLovinMediationAdapterTest {
       /*mediationConfigurations=*/ emptyList(),
     )
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_CHILD_USER)
+    assertThat(initializationCompleteCallback).hasFailedWith(AppLovinUtils.getChildUserError())
   }
 
   @Test
@@ -171,7 +171,7 @@ class AppLovinMediationAdapterTest {
       /*mediationConfigurations=*/ emptyList(),
     )
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_CHILD_USER)
+    assertThat(initializationCompleteCallback).hasFailedWith(AppLovinUtils.getChildUserError())
   }
 
   @Test
@@ -186,7 +186,7 @@ class AppLovinMediationAdapterTest {
       /*mediationConfigurations=*/ emptyList(),
     )
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_CHILD_USER)
+    assertThat(initializationCompleteCallback).hasFailedWith(AppLovinUtils.getChildUserError())
   }
 
   @Test
@@ -197,7 +197,8 @@ class AppLovinMediationAdapterTest {
       /*mediationConfigurations=*/ emptyList(),
     )
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_MISSING_SDK)
+    assertThat(initializationCompleteCallback)
+      .hasFailedWith(AdError(ERROR_MISSING_SDK_KEY, ERROR_MSG_MISSING_SDK, ERROR_DOMAIN))
     verify(appLovinInitializer, never()).initialize(any(), any(), any())
   }
 
