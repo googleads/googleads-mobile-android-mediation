@@ -132,7 +132,7 @@ public class PangleMediationAdapter extends RtbAdapter {
       @NonNull final InitializationCompleteCallback initializationCompleteCallback,
       @NonNull List<MediationConfiguration> list) {
     if (isChildUser()) {
-      initializationCompleteCallback.onInitializationFailed(PangleConstants.ERROR_MSG_CHILD_USER);
+      initializationCompleteCallback.onInitializationFailed(PangleConstants.createChildUserError());
       return;
     }
     HashSet<String> appIds = new HashSet<>();
@@ -150,7 +150,7 @@ public class PangleMediationAdapter extends RtbAdapter {
           PangleConstants.createAdapterError(
               ERROR_INVALID_SERVER_PARAMETERS, ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID);
       Log.w(TAG, error.toString());
-      initializationCompleteCallback.onInitializationFailed(error.toString());
+      initializationCompleteCallback.onInitializationFailed(error);
       return;
     }
 
@@ -174,7 +174,7 @@ public class PangleMediationAdapter extends RtbAdapter {
           @Override
           public void onInitializeError(@NonNull AdError error) {
             Log.w(TAG, error.toString());
-            initializationCompleteCallback.onInitializationFailed(error.getMessage());
+            initializationCompleteCallback.onInitializationFailed(error);
           }
         });
   }
