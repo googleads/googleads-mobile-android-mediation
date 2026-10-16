@@ -184,7 +184,10 @@ class IMobileMediationAdapterTest {
       listOf(createMediationConfiguration(serverParameters = bundleOf())),
     )
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_USER_IS_AGE_RESTRICTED_MSG)
+    assertThat(initializationCompleteCallback)
+      .hasFailedWith(
+        AdError(ERROR_USER_IS_AGE_RESTRICTED, ERROR_USER_IS_AGE_RESTRICTED_MSG, ERROR_DOMAIN)
+      )
   }
 
   @Test
@@ -202,7 +205,10 @@ class IMobileMediationAdapterTest {
       listOf(createMediationConfiguration(serverParameters = bundleOf())),
     )
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_USER_IS_AGE_RESTRICTED_MSG)
+    assertThat(initializationCompleteCallback)
+      .hasFailedWith(
+        AdError(ERROR_USER_IS_AGE_RESTRICTED, ERROR_USER_IS_AGE_RESTRICTED_MSG, ERROR_DOMAIN)
+      )
   }
 
   @Test
@@ -221,7 +227,10 @@ class IMobileMediationAdapterTest {
       listOf(createMediationConfiguration(serverParameters = bundleOf())),
     )
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_USER_IS_AGE_RESTRICTED_MSG)
+    assertThat(initializationCompleteCallback)
+      .hasFailedWith(
+        AdError(ERROR_USER_IS_AGE_RESTRICTED, ERROR_USER_IS_AGE_RESTRICTED_MSG, ERROR_DOMAIN)
+      )
   }
 
   @Test
