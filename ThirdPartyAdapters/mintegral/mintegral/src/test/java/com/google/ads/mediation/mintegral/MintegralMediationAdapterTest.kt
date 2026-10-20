@@ -403,6 +403,55 @@ class MintegralMediationAdapterTest {
     }
   }
 
+  @Test
+  fun initialize_withMissingAppIdOrAppKey_invokesOnInitializationFailed() {
+    val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, bundleOf())
+
+    mintegralMediationAdapter.initialize(
+      context,
+      initializationCompleteCallback,
+      listOf(mediationConfiguration),
+    )
+
+    val expectedError =
+      MintegralConstants.createAdapterError(
+        MintegralConstants.ERROR_INVALID_SERVER_PARAMETERS,
+        "Missing or invalid App ID or App Key" +
+          " configured for this ad source instance in the AdMob or Ad Manager UI",
+      )
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedError)
+  }
+
+  @Test
+  fun initialize_whenSdkInitFails_invokesOnInitializationFailed() {
+    mockStatic(MBridgeSDKFactory::class.java).use {
+      val mockMBridgeSdk = mock<MBridgeSDKImpl>()
+      whenever(MBridgeSDKFactory.getMBridgeSDK()) doReturn mockMBridgeSdk
+      val serverParameters =
+        bundleOf(
+          MintegralConstants.APP_KEY to TEST_APP_KEY,
+          MintegralConstants.APP_ID to TEST_APP_ID,
+        )
+      val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
+
+      mintegralMediationAdapter.initialize(
+        context,
+        initializationCompleteCallback,
+        listOf(mediationConfiguration),
+      )
+
+      val initStatusCaptor = argumentCaptor<SDKInitStatusListener>()
+      verify(mockMBridgeSdk).init(any(), eq(context), initStatusCaptor.capture())
+      initStatusCaptor.firstValue.onInitFail("SDK init failed")
+      val expectedError =
+        MintegralConstants.createSdkError(
+          MintegralConstants.ERROR_CODE_SDK_INIT_FAILED,
+          "SDK init failed",
+        )
+      assertThat(initializationCompleteCallback).hasFailedWith(expectedError)
+    }
+  }
+
   // endregion
 
   // region Banner Ad Tests

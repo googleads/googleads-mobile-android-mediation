@@ -213,7 +213,7 @@ public class MintegralMediationAdapter extends RtbAdapter {
           "Missing or invalid App ID or App Key"
               + " configured for this ad source instance in the AdMob or Ad Manager UI");
       Log.e(TAG, error.toString());
-      initializationCompleteCallback.onInitializationFailed(error.toString());
+      initializationCompleteCallback.onInitializationFailed(error);
       return;
     }
 
@@ -266,7 +266,7 @@ public class MintegralMediationAdapter extends RtbAdapter {
                   public void onInitFail(String errorMessage) {
                     AdError initError =
                         createSdkError(MintegralConstants.ERROR_CODE_SDK_INIT_FAILED, errorMessage);
-                    initializationCompleteCallback.onInitializationFailed(initError.getMessage());
+                    initializationCompleteCallback.onInitializationFailed(initError);
                     Log.w(TAG, initError.toString());
                   }
                 }));
