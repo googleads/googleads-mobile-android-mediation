@@ -86,7 +86,9 @@ public class IronSourceMediationAdapter extends RtbAdapter {
         ERROR_REQUIRES_ACTIVITY_CONTEXT,
         ERROR_AD_ALREADY_LOADED,
         ERROR_BANNER_SIZE_MISMATCH,
-        ERROR_SDK_NOT_INITIALIZED
+        ERROR_SDK_NOT_INITIALIZED,
+        ERROR_CALL_SHOW_BEFORE_LOADED_SUCCESS,
+        ERROR_EMPTY_SIGNALS
       })
   public @interface AdapterError {}
 
@@ -107,6 +109,9 @@ public class IronSourceMediationAdapter extends RtbAdapter {
 
   /** Call show before loaded success. */
   public static final int ERROR_CALL_SHOW_BEFORE_LOADED_SUCCESS = 107;
+
+  /** IronSource SDK returned null or empty bidding signals. */
+  public static final int ERROR_EMPTY_SIGNALS = 108;
 
   // endregion
 
@@ -260,7 +265,18 @@ public class IronSourceMediationAdapter extends RtbAdapter {
   @Override
   public void collectSignals(
       @NonNull RtbSignalData rtbSignalData, @NonNull SignalCallbacks signalCallbacks) {
-    signalCallbacks.onSuccess(IronSource.getISDemandOnlyBiddingData(rtbSignalData.getContext()));
+    String ironSourceSignals = IronSource.getISDemandOnlyBiddingData(rtbSignalData.getContext());
+    if (TextUtils.isEmpty(ironSourceSignals)) {
+      var error =
+          new AdError(
+              ERROR_EMPTY_SIGNALS,
+              /* message= */ "IronSource SDK returned null or empty bidding signals.",
+              ADAPTER_ERROR_DOMAIN);
+      Log.w(TAG, error.toString());
+      signalCallbacks.onFailure(error);
+      return;
+    }
+    signalCallbacks.onSuccess(ironSourceSignals);
   }
 
   @Override
