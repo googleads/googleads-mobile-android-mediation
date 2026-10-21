@@ -108,7 +108,7 @@ class DTExchangeRtbBannerAd(
   ) {
     val adError = DTExchangeErrorCodes.getAdError(errorCode)
     mediationAdLoadCallback.onFailure(adError)
-    adSpot?.destroy()
+    destroyAdSpot()
   }
 
   override fun getView(): View = wrapperView
