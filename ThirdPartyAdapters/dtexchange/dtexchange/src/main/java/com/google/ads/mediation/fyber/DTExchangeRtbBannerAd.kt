@@ -82,7 +82,7 @@ class DTExchangeRtbBannerAd(
       return
     }
 
-    val spot = adSpot ?: return
+    val spot = adSpot ?: return reportNullAdSpot()
     val controller = spot.selectedUnitController as? InneractiveAdViewUnitController
     if (controller == null) {
       val message = "Unexpected controller type."
@@ -149,6 +149,17 @@ class DTExchangeRtbBannerAd(
 
   override fun onAdCollapsed(adSpot: InneractiveAdSpot?) {
     // No relevant events to be forwarded to the GMA SDK.
+  }
+
+  private fun reportNullAdSpot() {
+    val adError =
+      AdError(
+        DTExchangeErrorCodes.ERROR_AD_NOT_READY,
+        "DT Exchange's banner ad spot is null.",
+        DTExchangeErrorCodes.ERROR_DOMAIN,
+      )
+    Log.w(TAG, adError.message)
+    mediationAdLoadCallback.onFailure(adError)
   }
 
   fun destroyAdSpot() {

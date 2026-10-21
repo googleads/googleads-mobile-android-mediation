@@ -88,6 +88,21 @@ class DTExchangeRtbBannerAdTest {
   }
 
   @Test
+  fun onInneractiveSuccessfulAdRequest_withNullAdSpot_invokesOnFailure() {
+    // adSpot is null because loadAd() was never called
+    val expectedAdError =
+      AdError(
+        DTExchangeErrorCodes.ERROR_AD_NOT_READY,
+        "DT Exchange's banner ad spot is null.",
+        DTExchangeErrorCodes.ERROR_DOMAIN,
+      )
+
+    dtExchangeRtbBannerAd.onInneractiveSuccessfulAdRequest(mock())
+
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
+  }
+
+  @Test
   fun onInneractiveSuccessfulAdRequest_withInvalidUnitController_invokesOnFailure() {
     mockStatic(InneractiveAdSpotManager::class.java).use {
       val mockAdSpot =
