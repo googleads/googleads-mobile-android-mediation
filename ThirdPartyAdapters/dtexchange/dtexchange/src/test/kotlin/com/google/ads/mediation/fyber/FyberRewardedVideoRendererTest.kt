@@ -243,6 +243,23 @@ class FyberRewardedVideoRendererTest {
   }
 
   @Test
+  fun onAdDismissed_destroysAdSpot() {
+    loadAndRenderAdSuccessfully()
+    fyberRewardedAd.onAdDismissed(mockRewardedAdSpot)
+
+    verify(mockRewardedAdSpot).destroy()
+  }
+
+  @Test
+  fun onAdEnteredErrorState_destroysAdSpot() {
+    val mockAdDisplayError: AdDisplayError = mock()
+    loadAndRenderAdSuccessfully()
+    fyberRewardedAd.onAdEnteredErrorState(mockRewardedAdSpot, mockAdDisplayError)
+
+    verify(mockRewardedAdSpot).destroy()
+  }
+
+  @Test
   fun onAdRewarded_invokesOnUserEarnedRewardAndVideoCompleted() {
     loadAndRenderAdSuccessfully()
     fyberRewardedAd.onAdRewarded(mockRewardedAdSpot)

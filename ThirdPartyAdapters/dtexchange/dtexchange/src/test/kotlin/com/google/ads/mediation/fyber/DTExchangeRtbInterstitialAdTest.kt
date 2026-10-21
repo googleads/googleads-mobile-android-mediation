@@ -185,6 +185,7 @@ class DTExchangeRtbInterstitialAdTest {
 
       dtExchangeRtbInterstitialAd.onAdImpression(mock())
 
+      assertThat(interstitialAdCallback.isOpened).isTrue()
       assertThat(interstitialAdCallback.isImpressionReported).isTrue()
     }
   }
@@ -259,6 +260,23 @@ class DTExchangeRtbInterstitialAdTest {
       dtExchangeRtbInterstitialAd.onAdDismissed(mock())
 
       assertThat(interstitialAdCallback.isClosed).isTrue()
+    }
+  }
+
+  @Test
+  fun onAdDismissed_destroysAdSpot() {
+    mockStatic(InneractiveAdSpotManager::class.java).use {
+      val mockAdSpot = mock<InneractiveAdSpot> { on { isReady } doReturn true }
+      val mockInneractiveAdSpotManager =
+        mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
+      whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
+      dtExchangeRtbInterstitialAd.loadAd(adConfiguration)
+      dtExchangeRtbInterstitialAd.onInneractiveSuccessfulAdRequest(mock())
+
+      dtExchangeRtbInterstitialAd.onAdDismissed(mock())
+
+      verify(mockAdSpot).destroy()
+      assertThat(dtExchangeRtbInterstitialAd.adSpot).isNull()
     }
   }
 }
