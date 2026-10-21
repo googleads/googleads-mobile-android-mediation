@@ -103,12 +103,6 @@ class DTExchangeRtbInterstitialAdTest {
 
   @Test
   fun onInneractiveFailedAdRequest_invokesOnFailure() {
-    /* Previously, onInneractiveFailedAdRequest called iAdSpot?.destroy() using the spot
-     * passed as a parameter. After the bc9bd5f refactor, the class owns the adSpot internally
-     * — it is set once in loadAd() and cleaned up via destroyAdSpot() which calls
-     * adSpot?.destroy() then nulls the reference. The iAdSpot parameter is no longer used
-     * for cleanup.
-     */
     mockStatic(InneractiveAdSpotManager::class.java).use {
       val mockAdSpot = mock<InneractiveAdSpot> { on { isReady } doReturn true }
       val mockInneractiveAdSpotManager = mock<InneractiveAdSpotManager> {
