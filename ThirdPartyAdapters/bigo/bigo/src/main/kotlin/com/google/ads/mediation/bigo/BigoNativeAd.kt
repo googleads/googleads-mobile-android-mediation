@@ -150,6 +150,11 @@ private constructor(
     )
   }
 
+  override fun untrackView(view: View) {
+    super.untrackView(view)
+    nativeAd?.destroy()
+  }
+
   private fun mapNativeAd(nativeAd: NativeAd) {
     headline = nativeAd.title
     body = nativeAd.description

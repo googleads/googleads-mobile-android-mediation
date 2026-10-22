@@ -89,6 +89,7 @@ private constructor(
 
   override fun onAdClosed() {
     rewardedAdCallback?.onAdClosed()
+    rewardVideoAd?.destroy()
   }
 
   companion object {

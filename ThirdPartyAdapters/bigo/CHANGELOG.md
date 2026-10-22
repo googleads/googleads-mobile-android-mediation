@@ -1,5 +1,8 @@
 ## Bigo Android Mediation Adapter Changelog
 
+#### Next Version
+- Destroy Bigo ad objects when the ad is closed or untracked.
+
 #### Version 6.1.0.0
 - Verified compatibility with Bigo Ads SDK 6.1.0.
 
