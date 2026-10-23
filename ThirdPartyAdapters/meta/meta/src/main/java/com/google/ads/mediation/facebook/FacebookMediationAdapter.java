@@ -228,18 +228,21 @@ public class FacebookMediationAdapter extends RtbAdapter {
       }
     }
 
-    FacebookInitializer.getInstance().initialize(context, placements,
-        new FacebookInitializer.Listener() {
-          @Override
-          public void onInitializeSuccess() {
-            initializationCompleteCallback.onInitializationSucceeded();
-          }
+    FacebookInitializer.getInstance()
+        .initialize(
+            context,
+            placements,
+            new FacebookInitializer.Listener() {
+              @Override
+              public void onInitializeSuccess() {
+                initializationCompleteCallback.onInitializationSucceeded();
+              }
 
-          @Override
-          public void onInitializeError(AdError error) {
-            initializationCompleteCallback.onInitializationFailed(error.getMessage());
-          }
-        });
+              @Override
+              public void onInitializeError(AdError error) {
+                initializationCompleteCallback.onInitializationFailed(error);
+              }
+            });
   }
 
   @Override

@@ -384,7 +384,7 @@ class FacebookMediationAdapterTest {
         ),
       )
 
-      assertThat(initializationCompleteCallback).hasFailedWith(initializerError.message)
+      assertThat(initializationCompleteCallback).hasFailedWith(initializerError)
     }
   }
 

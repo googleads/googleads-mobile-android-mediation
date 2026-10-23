@@ -3,6 +3,8 @@
 #### Next Version
 - Clean up native ad assets on load and mapping failure paths.
 - Override `NativeAdMapper.destroy()` for native ad lifecycle cleanup.
+- Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+- Updated the minimum required Android API level to 24.
 
 #### Version 6.22.0.1
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
