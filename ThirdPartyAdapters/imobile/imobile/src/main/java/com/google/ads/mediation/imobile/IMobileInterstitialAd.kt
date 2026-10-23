@@ -64,10 +64,7 @@ class IMobileInterstitialAd(
       mediaId,
       interstitialSpotId,
     )
-    iMobileSdkWrapper.setImobileSdkAdListener(
-      interstitialSpotId,
-      object : ImobileSdkAdListener() {},
-    )
+    iMobileSdkWrapper.setImobileSdkAdListener(interstitialSpotId, this)
 
     // Start getting ads.
     if (iMobileSdkWrapper.isShowAd(interstitialSpotId)) {
