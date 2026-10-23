@@ -259,7 +259,7 @@ class FyberMediationAdapterTest {
 
     listener.firstValue.onFyberMarketplaceInitialized(FyberInitStatus.FAILED)
     assertThat(initializationCompleteCallback)
-      .hasFailedWith("DT Exchange failed to initialize with reason: ${FyberInitStatus.FAILED}")
+      .hasFailedWith(DTExchangeErrorCodes.getAdError(FyberInitStatus.FAILED))
   }
 
   @Test
@@ -280,7 +280,13 @@ class FyberMediationAdapterTest {
     adapter.initialize(activity, initializationCompleteCallback, listOf(initializationParameters))
 
     assertThat(initializationCompleteCallback)
-      .hasFailedWith("DT Exchange SDK requires an appId to be configured on the AdMob UI.")
+      .hasFailedWith(
+        AdError(
+          ERROR_INVALID_SERVER_PARAMETERS,
+          "DT Exchange SDK requires an appId to be configured on the AdMob UI.",
+          DTExchangeErrorCodes.ERROR_DOMAIN,
+        )
+      )
   }
 
   @Test

@@ -1,5 +1,9 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
+#### Next version
+
+- Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+
 #### Version 8.5.0.0
 - Fixed an issue where native ads invoked the `onAdOpened()` callback on impression.
 - Verified compatibility with DT Exchange SDK 8.5.0.
