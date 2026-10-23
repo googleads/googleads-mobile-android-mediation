@@ -1,5 +1,9 @@
 ## i-mobile Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+- Updated the minimum required Android API level to 24.
+
 #### Version 2.3.2.5
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
   by GMA NextGen SDK).
