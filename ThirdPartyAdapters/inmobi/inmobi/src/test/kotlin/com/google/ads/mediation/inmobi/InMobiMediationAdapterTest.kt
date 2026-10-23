@@ -205,7 +205,7 @@ class InMobiMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
+    assertThat(initializationCompleteCallback).hasFailedWith(adError)
   }
 
   @Test
@@ -249,7 +249,7 @@ class InMobiMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
+    assertThat(initializationCompleteCallback).hasFailedWith(adError)
   }
 
   @Test
