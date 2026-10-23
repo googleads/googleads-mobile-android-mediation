@@ -1,6 +1,12 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
-#### Version 7.7.9.0 (In progress)
+#### Version 7.7.9.0
+- Verified compatibility with Vungle SDK 7.7.9.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.5.0.
+- Google Mobile Ads Next-Gen SDK version 1.5.0.
+- Vungle SDK version 7.7.9.
 
 #### Version 7.7.8.1
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
