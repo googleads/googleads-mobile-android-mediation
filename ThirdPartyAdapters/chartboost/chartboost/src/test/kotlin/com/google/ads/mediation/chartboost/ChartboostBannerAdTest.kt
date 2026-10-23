@@ -31,6 +31,7 @@ import com.chartboost.sdk.events.ImpressionEvent
 import com.chartboost.sdk.events.ShowError
 import com.chartboost.sdk.events.ShowEvent
 import com.chartboost.sdk.events.StartError
+import com.chartboost.sdk.internal.caching.ExpirationReason
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.chartboost.ChartboostAdapterUtils.KEY_AD_LOCATION
@@ -271,6 +272,31 @@ class ChartboostBannerAdTest {
   }
 
   @Test
+  fun onAdLoaded_withoutCacheError_doesNotDetachBannerAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationBannerAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+        adSize = AdSize.BANNER,
+      )
+
+    mockConstruction(Banner::class.java).use { mockedBannerConstruction ->
+      bannerAd.loadAd(config)
+      val createdBanner = mockedBannerConstruction.constructed().first()
+
+      bannerAd.onAdLoaded(cacheEvent, null)
+
+      verify(createdBanner, never()).detach()
+    }
+  }
+
+  @Test
   fun onAdLoaded_withCacheError_invokesOnFailure() {
     whenever(cacheError.code) doReturn cacheErrorCode
     whenever(cacheErrorCode.errorCode) doReturn ERROR_CODE
@@ -284,12 +310,65 @@ class ChartboostBannerAdTest {
   }
 
   @Test
+  fun onAdLoaded_withCacheError_detachesBannerAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationBannerAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+        adSize = AdSize.BANNER,
+      )
+    whenever(cacheError.code) doReturn cacheErrorCode
+    whenever(cacheErrorCode.errorCode) doReturn ERROR_CODE
+    whenever(cacheError.toString()) doReturn ERROR_MESSAGE
+
+    mockConstruction(Banner::class.java).use { mockedBannerConstruction ->
+      bannerAd.loadAd(config)
+      val createdBanner = mockedBannerConstruction.constructed().first()
+
+      bannerAd.onAdLoaded(cacheEvent, cacheError)
+
+      verify(createdBanner).detach()
+    }
+  }
+
+  @Test
   fun onAdShown_success_invokesOnAdOpened() {
     bannerAd.onAdLoaded(cacheEvent, null)
 
     bannerAd.onAdShown(showEvent, null)
 
     verify(bannerAdCallback).onAdOpened()
+  }
+
+  @Test
+  fun onAdShown_withoutShowError_doesNotDetachBannerAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationBannerAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+        adSize = AdSize.BANNER,
+      )
+
+    mockConstruction(Banner::class.java).use { mockedBannerConstruction ->
+      bannerAd.loadAd(config)
+      val createdBanner = mockedBannerConstruction.constructed().first()
+
+      bannerAd.onAdShown(showEvent, null)
+
+      verify(createdBanner, never()).detach()
+    }
   }
 
   @Test
@@ -302,6 +381,34 @@ class ChartboostBannerAdTest {
     bannerAd.onAdShown(showEvent, showError)
 
     verify(bannerAdCallback, never()).onAdOpened()
+  }
+
+  @Test
+  fun onAdShown_withShowError_detachesBannerAd() {
+    val serverParameters =
+      bundleOf(
+        KEY_APP_ID to TEST_APP_ID,
+        KEY_APP_SIGNATURE to TEST_APP_SIGNATURE,
+        KEY_AD_LOCATION to TEST_LOCATION,
+      )
+    val config =
+      createMediationBannerAdConfiguration(
+        context = context,
+        serverParameters = serverParameters,
+        adSize = AdSize.BANNER,
+      )
+    whenever(showError.code) doReturn showErrorCode
+    whenever(showErrorCode.errorCode) doReturn ERROR_CODE
+    whenever(showError.toString()) doReturn ERROR_MESSAGE
+
+    mockConstruction(Banner::class.java).use { mockedBannerConstruction ->
+      bannerAd.loadAd(config)
+      val createdBanner = mockedBannerConstruction.constructed().first()
+
+      bannerAd.onAdShown(showEvent, showError)
+
+      verify(createdBanner).detach()
+    }
   }
 
   @Test
@@ -341,6 +448,8 @@ class ChartboostBannerAdTest {
 
   @Test
   fun onAdExpired_doesNotThrow() {
+    whenever(expirationEvent.reason) doReturn ExpirationReason.TTL_EXPIRED
+
     bannerAd.onAdExpired(expirationEvent)
   }
 

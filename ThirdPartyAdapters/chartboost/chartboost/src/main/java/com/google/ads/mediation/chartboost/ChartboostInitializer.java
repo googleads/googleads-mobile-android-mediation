@@ -25,6 +25,8 @@ import androidx.annotation.VisibleForTesting;
 import com.chartboost.sdk.Chartboost;
 import com.chartboost.sdk.callbacks.StartCallback;
 import com.chartboost.sdk.events.StartError;
+import com.chartboost.sdk.privacy.model.CCPA;
+import com.chartboost.sdk.privacy.model.CCPA.CCPA_CONSENT;
 import com.chartboost.sdk.privacy.model.DataUseConsent;
 import com.chartboost.sdk.privacy.model.GDPR;
 import com.chartboost.sdk.privacy.model.GDPR.GDPR_CONSENT;
@@ -53,6 +55,9 @@ public class ChartboostInitializer {
 
   public void initialize(@NonNull final Context context,
       @NonNull ChartboostParams chartboostParams, @NonNull final Listener listener) {
+    applyGdprConsent(context);
+    applyUsPrivacyConsent(context);
+
     if (isInitializing) {
       initListeners.add(listener);
       return;
@@ -65,16 +70,6 @@ public class ChartboostInitializer {
 
     isInitializing = true;
     initListeners.add(listener);
-
-    ConsentResult consentResult =
-        ChartboostAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID);
-    if (consentResult == ChartboostAdapterUtils.ConsentResult.TRUE) {
-      DataUseConsent dataUseConsent = new GDPR(GDPR_CONSENT.BEHAVIORAL);
-      Chartboost.addDataUseConsent(context, dataUseConsent);
-    } else if (consentResult == ChartboostAdapterUtils.ConsentResult.FALSE) {
-      DataUseConsent dataUseConsent = new GDPR(GDPR_CONSENT.NON_BEHAVIORAL);
-      Chartboost.addDataUseConsent(context, dataUseConsent);
-    }
 
     ChartboostAdapterUtils.updateCoppaStatus(context, MobileAds.getRequestConfiguration());
     Chartboost.startWithAppId(context, chartboostParams.getAppId(),
@@ -99,6 +94,30 @@ public class ChartboostInitializer {
             initListeners.clear();
           }
         });
+  }
+
+  // Runs on every initialize call, not just the first, so a consent change made mid session is
+  // not dropped by the early returns.
+  private void applyGdprConsent(@NonNull Context context) {
+    ConsentResult consentResult =
+        ChartboostAdapterUtils.hasACConsent(context, AD_TECHNOLOGY_PROVIDER_ID);
+    if (consentResult == ChartboostAdapterUtils.ConsentResult.TRUE) {
+      DataUseConsent dataUseConsent = new GDPR(GDPR_CONSENT.BEHAVIORAL);
+      Chartboost.addDataUseConsent(context, dataUseConsent);
+    } else if (consentResult == ChartboostAdapterUtils.ConsentResult.FALSE) {
+      DataUseConsent dataUseConsent = new GDPR(GDPR_CONSENT.NON_BEHAVIORAL);
+      Chartboost.addDataUseConsent(context, dataUseConsent);
+    }
+  }
+
+  // Runs on every initialize call, not just the first, so a consent change made mid session is
+  // not dropped by the early returns.
+  private void applyUsPrivacyConsent(@NonNull Context context) {
+    CCPA_CONSENT consent = ChartboostAdapterUtils.readUsPrivacyConsent(context);
+    if (consent != null) {
+      DataUseConsent dataUseConsent = new CCPA(consent);
+      Chartboost.addDataUseConsent(context, dataUseConsent);
+    }
   }
 
   interface Listener {

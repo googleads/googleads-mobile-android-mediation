@@ -20,6 +20,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.chartboost.sdk.Chartboost
 import com.chartboost.sdk.callbacks.StartCallback
 import com.chartboost.sdk.events.StartError
+import com.chartboost.sdk.privacy.model.CCPA
 import com.chartboost.sdk.privacy.model.COPPA
 import com.chartboost.sdk.privacy.model.GDPR
 import com.google.ads.mediation.adaptertestkit.AdErrorMatcher
@@ -207,6 +208,65 @@ class ChartboostInitializerTest {
   }
 
   @Test
+  fun initialize_calledWhileAlreadyInitialized_appliesGdprConsentAgain() {
+    mockStatic(ChartboostAdapterUtils::class.java).use { mockAdapterUtils ->
+      mockAdapterUtils
+        .`when`<ChartboostAdapterUtils.ConsentResult> {
+          ChartboostAdapterUtils.hasACConsent(any(), eq(AD_TECHNOLOGY_PROVIDER_ID))
+        }
+        .thenReturn(
+          ChartboostAdapterUtils.ConsentResult.TRUE,
+          ChartboostAdapterUtils.ConsentResult.FALSE,
+        )
+
+      // First initialization succeeds, leaving the initializer in the isInitialized state.
+      val callbackCaptor = argumentCaptor<StartCallback>()
+      ChartboostInitializer.getInstance().initialize(context, chartboostParams, listener)
+      mockChartboost.verify {
+        Chartboost.startWithAppId(any(), any(), any(), callbackCaptor.capture())
+      }
+      callbackCaptor.firstValue.onStartCompleted(null)
+
+      // Second call hits the isInitialized early return, but consent must still be applied.
+      val gdprCaptor = argumentCaptor<GDPR>()
+      ChartboostInitializer.getInstance().initialize(context, chartboostParams, listener2)
+
+      mockChartboost.verify(
+        { Chartboost.addDataUseConsent(eq(context), gdprCaptor.capture()) },
+        times(2),
+      )
+      assertThat(gdprCaptor.secondValue.consent).isEqualTo(GDPR.GDPR_CONSENT.NON_BEHAVIORAL.value)
+    }
+  }
+
+  @Test
+  fun initialize_calledWhileAlreadyInitializing_appliesGdprConsentAgain() {
+    mockStatic(ChartboostAdapterUtils::class.java).use { mockAdapterUtils ->
+      mockAdapterUtils
+        .`when`<ChartboostAdapterUtils.ConsentResult> {
+          ChartboostAdapterUtils.hasACConsent(any(), eq(AD_TECHNOLOGY_PROVIDER_ID))
+        }
+        .thenReturn(
+          ChartboostAdapterUtils.ConsentResult.TRUE,
+          ChartboostAdapterUtils.ConsentResult.FALSE,
+        )
+
+      // Start first initialization and leave it in progress (isInitializing stays true).
+      ChartboostInitializer.getInstance().initialize(context, chartboostParams, listener)
+
+      // Second call hits the isInitializing early return, but consent must still be applied.
+      val gdprCaptor = argumentCaptor<GDPR>()
+      ChartboostInitializer.getInstance().initialize(context, chartboostParams, listener2)
+
+      mockChartboost.verify(
+        { Chartboost.addDataUseConsent(eq(context), gdprCaptor.capture()) },
+        times(2),
+      )
+      assertThat(gdprCaptor.secondValue.consent).isEqualTo(GDPR.GDPR_CONSENT.NON_BEHAVIORAL.value)
+    }
+  }
+
+  @Test
   fun initialize_withACConsentTrue_addsBehavioralConsent() {
     mockStatic(ChartboostAdapterUtils::class.java).use { mockAdapterUtils ->
       mockAdapterUtils
@@ -252,6 +312,96 @@ class ChartboostInitializerTest {
       ChartboostInitializer.getInstance().initialize(context, chartboostParams, listener)
 
       mockChartboost.verify({ Chartboost.addDataUseConsent(any(), any<GDPR>()) }, never())
+    }
+  }
+
+  @Test
+  fun initialize_calledWhileAlreadyInitialized_appliesUsPrivacyConsentAgain() {
+    mockStatic(ChartboostAdapterUtils::class.java).use { mockAdapterUtils ->
+      mockAdapterUtils
+        .`when`<CCPA.CCPA_CONSENT> { ChartboostAdapterUtils.readUsPrivacyConsent(any()) }
+        .thenReturn(CCPA.CCPA_CONSENT.OPT_OUT_SALE, CCPA.CCPA_CONSENT.OPT_IN_SALE)
+
+      // First initialization succeeds, leaving the initializer in the isInitialized state.
+      val callbackCaptor = argumentCaptor<StartCallback>()
+      ChartboostInitializer.getInstance().initialize(context, chartboostParams, listener)
+      mockChartboost.verify {
+        Chartboost.startWithAppId(any(), any(), any(), callbackCaptor.capture())
+      }
+      callbackCaptor.firstValue.onStartCompleted(null)
+
+      // Second call hits the isInitialized early return, but consent must still be applied.
+      val ccpaCaptor = argumentCaptor<CCPA>()
+      ChartboostInitializer.getInstance().initialize(context, chartboostParams, listener2)
+
+      mockChartboost.verify(
+        { Chartboost.addDataUseConsent(eq(context), ccpaCaptor.capture()) },
+        times(2),
+      )
+      assertThat(ccpaCaptor.secondValue.consent).isEqualTo(CCPA.CCPA_CONSENT.OPT_IN_SALE.value)
+    }
+  }
+
+  @Test
+  fun initialize_calledWhileAlreadyInitializing_appliesUsPrivacyConsentAgain() {
+    mockStatic(ChartboostAdapterUtils::class.java).use { mockAdapterUtils ->
+      mockAdapterUtils
+        .`when`<CCPA.CCPA_CONSENT> { ChartboostAdapterUtils.readUsPrivacyConsent(any()) }
+        .thenReturn(CCPA.CCPA_CONSENT.OPT_OUT_SALE, CCPA.CCPA_CONSENT.OPT_IN_SALE)
+
+      // Start first initialization and leave it in progress (isInitializing stays true).
+      ChartboostInitializer.getInstance().initialize(context, chartboostParams, listener)
+
+      // Second call hits the isInitializing early return, but consent must still be applied.
+      val ccpaCaptor = argumentCaptor<CCPA>()
+      ChartboostInitializer.getInstance().initialize(context, chartboostParams, listener2)
+
+      mockChartboost.verify(
+        { Chartboost.addDataUseConsent(eq(context), ccpaCaptor.capture()) },
+        times(2),
+      )
+      assertThat(ccpaCaptor.secondValue.consent).isEqualTo(CCPA.CCPA_CONSENT.OPT_IN_SALE.value)
+    }
+  }
+
+  @Test
+  fun initialize_withUsPrivacyOptOutSale_addsOptOutSaleConsent() {
+    mockStatic(ChartboostAdapterUtils::class.java).use { mockAdapterUtils ->
+      mockAdapterUtils
+        .`when`<CCPA.CCPA_CONSENT> { ChartboostAdapterUtils.readUsPrivacyConsent(any()) }
+        .thenReturn(CCPA.CCPA_CONSENT.OPT_OUT_SALE)
+
+      val ccpaCaptor = argumentCaptor<CCPA>()
+      ChartboostInitializer.getInstance().initialize(context, chartboostParams, listener)
+
+      mockChartboost.verify { Chartboost.addDataUseConsent(eq(context), ccpaCaptor.capture()) }
+      assertThat(ccpaCaptor.firstValue.consent).isEqualTo(CCPA.CCPA_CONSENT.OPT_OUT_SALE.value)
+    }
+  }
+
+  @Test
+  fun initialize_withUsPrivacyOptInSale_addsOptInSaleConsent() {
+    mockStatic(ChartboostAdapterUtils::class.java).use { mockAdapterUtils ->
+      mockAdapterUtils
+        .`when`<CCPA.CCPA_CONSENT> { ChartboostAdapterUtils.readUsPrivacyConsent(any()) }
+        .thenReturn(CCPA.CCPA_CONSENT.OPT_IN_SALE)
+
+      val ccpaCaptor = argumentCaptor<CCPA>()
+      ChartboostInitializer.getInstance().initialize(context, chartboostParams, listener)
+
+      mockChartboost.verify { Chartboost.addDataUseConsent(eq(context), ccpaCaptor.capture()) }
+      assertThat(ccpaCaptor.firstValue.consent).isEqualTo(CCPA.CCPA_CONSENT.OPT_IN_SALE.value)
+    }
+  }
+
+  @Test
+  fun initialize_withNoUsPrivacyConsent_doesNotAddCcpaConsent() {
+    // readUsPrivacyConsent() is left unstubbed on the fully mocked ChartboostAdapterUtils, so it
+    // returns null, same as when the CMP has not written a US Privacy String.
+    mockStatic(ChartboostAdapterUtils::class.java).use {
+      ChartboostInitializer.getInstance().initialize(context, chartboostParams, listener)
+
+      mockChartboost.verify({ Chartboost.addDataUseConsent(any(), any<CCPA>()) }, never())
     }
   }
 
