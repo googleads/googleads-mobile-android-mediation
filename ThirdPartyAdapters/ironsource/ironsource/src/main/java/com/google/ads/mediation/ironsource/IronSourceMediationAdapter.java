@@ -201,7 +201,7 @@ public class IronSourceMediationAdapter extends RtbAdapter {
       AdError initializationError =
           new AdError(
               ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid app key.", ADAPTER_ERROR_DOMAIN);
-      initializationCompleteCallback.onInitializationFailed(initializationError.getMessage());
+      initializationCompleteCallback.onInitializationFailed(initializationError);
       return;
     }
 
@@ -211,7 +211,7 @@ public class IronSourceMediationAdapter extends RtbAdapter {
       AdError initializationError =
           new AdError(
               ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid app key.", ADAPTER_ERROR_DOMAIN);
-      initializationCompleteCallback.onInitializationFailed(initializationError.getMessage());
+      initializationCompleteCallback.onInitializationFailed(initializationError);
       return;
     }
 
@@ -252,7 +252,10 @@ public class IronSourceMediationAdapter extends RtbAdapter {
           @Override
           public void onInitFailed(@NonNull final IronSourceError ironSourceError) {
             initializationCompleteCallback.onInitializationFailed(
-                ironSourceError.getErrorMessage());
+                new AdError(
+                    ironSourceError.getErrorCode(),
+                    ironSourceError.getErrorMessage(),
+                    IRONSOURCE_SDK_ERROR_DOMAIN));
           }
         });
 

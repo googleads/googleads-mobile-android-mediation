@@ -3,6 +3,7 @@
 #### Next Version
 - Updated `collectSignals()` to invoke `onFailure()` with error code 108 when
   the ironSource SDK returns null or empty bidding signals.
+- Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
 
 #### Version 9.6.1.0
 - Verified compatibility with ironSource SDK version 9.6.1.
