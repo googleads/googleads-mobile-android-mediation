@@ -54,7 +54,7 @@ class DTExchangeWaterfallBannerAd(
   private lateinit var requestedAdSize: AdSize
 
   /** DT Exchange's Spot object for the banner. */
-  private lateinit var bannerSpot: InneractiveAdSpot
+  private var bannerSpot: InneractiveAdSpot? = null
 
   /** A wrapper view for the DT Exchange banner view. */
   private lateinit var bannerWrapperView: ViewGroup
@@ -103,22 +103,23 @@ class DTExchangeWaterfallBannerAd(
             return
           }
 
-          bannerSpot = InneractiveAdSpotManager.get().createSpot()
+          val spot = InneractiveAdSpotManager.get().createSpot()
+          bannerSpot = spot
 
           val controller = InneractiveAdViewUnitController()
-          bannerSpot.addUnitController(controller)
+          spot.addUnitController(controller)
 
           // Prepare wrapper view before making request.
           bannerWrapperView = RelativeLayout(adConfiguration.context)
 
           val requestListener: RequestListener = this@DTExchangeWaterfallBannerAd
-          bannerSpot.setRequestListener(requestListener)
+          spot.setRequestListener(requestListener)
 
           requestedAdSize = adConfiguration.adSize
 
           FyberAdapterUtils.updateFyberExtraParams(adConfiguration.mediationExtras)
           val request = InneractiveAdRequest(spotId)
-          bannerSpot.requestAd(request)
+          spot.requestAd(request)
         }
       },
     )
@@ -132,12 +133,12 @@ class DTExchangeWaterfallBannerAd(
   // region RequestListener implementation
   override fun onInneractiveSuccessfulAdRequest(adSpot: InneractiveAdSpot?) {
     // Just a double check that we have the right type of selected controller.
-    if (bannerSpot.selectedUnitController !is InneractiveAdViewUnitController) {
+    if (bannerSpot?.selectedUnitController !is InneractiveAdViewUnitController) {
       val message =
         String.format(
           "Unexpected controller type. Expected: %s. Actual: %s",
-          InneractiveAdViewUnitController::class.java.getName(),
-          bannerSpot.selectedUnitController.javaClass.getName(),
+          InneractiveAdViewUnitController::class.java.name,
+          bannerSpot?.selectedUnitController?.javaClass?.name,
         )
       val controllerMismatchError =
         AdError(
@@ -147,11 +148,11 @@ class DTExchangeWaterfallBannerAd(
         )
       Log.w(TAG, controllerMismatchError.toString())
       adLoadCallback.onFailure(controllerMismatchError)
-      bannerSpot.destroy()
+      destroyAdSpot()
       return
     }
 
-    val controller = bannerSpot.selectedUnitController as InneractiveAdViewUnitController
+    val controller = bannerSpot!!.selectedUnitController as InneractiveAdViewUnitController
     val listener: InneractiveAdViewEventsListener = this@DTExchangeWaterfallBannerAd
     controller.eventsListener = listener
     controller.bindView(bannerWrapperView)
@@ -159,8 +160,8 @@ class DTExchangeWaterfallBannerAd(
     // Validate the ad size returned by Fyber Marketplace with the requested ad size.
     val context = bannerWrapperView.context
     val density = context.resources.displayMetrics.density
-    val fyberAdWidth = (controller.getAdContentWidth() / density).roundToInt()
-    val fyberAdHeight = (controller.getAdContentHeight() / density).roundToInt()
+    val fyberAdWidth = (controller.adContentWidth / density).roundToInt()
+    val fyberAdHeight = (controller.adContentHeight / density).roundToInt()
 
     val potentials = ArrayList<AdSize>()
     potentials.add(AdSize(fyberAdWidth, fyberAdHeight))
@@ -185,7 +186,7 @@ class DTExchangeWaterfallBannerAd(
         )
       Log.w(TAG, adSizeError.toString())
       adLoadCallback.onFailure(adSizeError)
-      bannerSpot.destroy()
+      destroyAdSpot()
       return
     }
 
@@ -199,7 +200,7 @@ class DTExchangeWaterfallBannerAd(
     val error = DTExchangeErrorCodes.getAdError(inneractiveErrorCode)
     Log.w(TAG, error.toString())
     adLoadCallback.onFailure(error)
-    bannerSpot.destroy()
+    destroyAdSpot()
   }
 
   // endregion
@@ -226,7 +227,7 @@ class DTExchangeWaterfallBannerAd(
     adSpot: InneractiveAdSpot?,
     adDisplayError: InneractiveUnitController.AdDisplayError?,
   ) {
-    bannerSpot.destroy()
+    destroyAdSpot()
     // No relevant events to be forwarded to the GMA SDK.
   }
 
@@ -240,6 +241,11 @@ class DTExchangeWaterfallBannerAd(
 
   override fun onAdCollapsed(adSpot: InneractiveAdSpot?) {
     // No relevant events to be forwarded to the GMA SDK.
+  }
+
+  fun destroyAdSpot() {
+    bannerSpot?.destroy()
+    bannerSpot = null
   }
 
   // endregion

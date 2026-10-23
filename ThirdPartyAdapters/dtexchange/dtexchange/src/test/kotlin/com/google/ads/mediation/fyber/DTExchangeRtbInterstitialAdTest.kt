@@ -103,19 +103,26 @@ class DTExchangeRtbInterstitialAdTest {
 
   @Test
   fun onInneractiveFailedAdRequest_invokesOnFailure() {
-    val mockAdSpot = mock<InneractiveAdSpot>()
-    val iErrorCode = InneractiveErrorCode.LOAD_TIMEOUT
-    val expectedAdError =
-      AdError(
+    mockStatic(InneractiveAdSpotManager::class.java).use {
+      val mockAdSpot = mock<InneractiveAdSpot> { on { isReady } doReturn true }
+      val mockInneractiveAdSpotManager = mock<InneractiveAdSpotManager> {
+        on { createSpot() } doReturn mockAdSpot
+      }
+      whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
+      val iErrorCode = InneractiveErrorCode.LOAD_TIMEOUT
+      val expectedAdError = AdError(
         307,
         "DT Exchange failed to request ad with reason: Failed Due To load timeout",
         DTExchangeErrorCodes.ERROR_DOMAIN,
       )
+      dtExchangeRtbInterstitialAd.loadAd(adConfiguration)
+      assertThat(mockAdSpot).isEqualTo(dtExchangeRtbInterstitialAd.adSpot)
 
-    dtExchangeRtbInterstitialAd.onInneractiveFailedAdRequest(mockAdSpot, iErrorCode)
+      dtExchangeRtbInterstitialAd.onInneractiveFailedAdRequest(mock(), iErrorCode)
+      assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
+      verify(mockAdSpot).destroy()
 
-    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
-    verify(mockAdSpot).destroy()
+    }
   }
 
   @Test
@@ -178,6 +185,7 @@ class DTExchangeRtbInterstitialAdTest {
 
       dtExchangeRtbInterstitialAd.onAdImpression(mock())
 
+      assertThat(interstitialAdCallback.isOpened).isTrue()
       assertThat(interstitialAdCallback.isImpressionReported).isTrue()
     }
   }
@@ -252,6 +260,23 @@ class DTExchangeRtbInterstitialAdTest {
       dtExchangeRtbInterstitialAd.onAdDismissed(mock())
 
       assertThat(interstitialAdCallback.isClosed).isTrue()
+    }
+  }
+
+  @Test
+  fun onAdDismissed_destroysAdSpot() {
+    mockStatic(InneractiveAdSpotManager::class.java).use {
+      val mockAdSpot = mock<InneractiveAdSpot> { on { isReady } doReturn true }
+      val mockInneractiveAdSpotManager =
+        mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
+      whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
+      dtExchangeRtbInterstitialAd.loadAd(adConfiguration)
+      dtExchangeRtbInterstitialAd.onInneractiveSuccessfulAdRequest(mock())
+
+      dtExchangeRtbInterstitialAd.onAdDismissed(mock())
+
+      verify(mockAdSpot).destroy()
+      assertThat(dtExchangeRtbInterstitialAd.adSpot).isNull()
     }
   }
 }

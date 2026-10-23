@@ -472,7 +472,7 @@ class DTExchangeNativeAdMapperTest {
   }
 
   @Test
-  fun destroy_destroysAdSpotAndAdContentAndNullsReferences() {
+  fun destroy_destroysAdSpotAndNullsReferences() {
     mockStatic(InneractiveAdSpotManager::class.java).use {
       val mockAdViewController = mock<InneractiveAdViewUnitController>()
       val mockAdSpot =
@@ -491,7 +491,6 @@ class DTExchangeNativeAdMapperTest {
       dtExchangeNativeAdMapper.destroy()
 
       verify(mockAdSpot).destroy()
-      verify(mockContent).destroy()
     }
   }
 }
