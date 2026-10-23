@@ -347,7 +347,7 @@ public class UnityMediationAdapter extends RtbAdapter {
     if (TextUtils.isEmpty(gameID)) {
       AdError initializationError = new AdError(ERROR_INVALID_SERVER_PARAMETERS,
           "Missing or invalid Game ID.", ADAPTER_ERROR_DOMAIN);
-      initializationCompleteCallback.onInitializationFailed(initializationError.toString());
+      initializationCompleteCallback.onInitializationFailed(initializationError);
       return;
     }
 
@@ -373,7 +373,7 @@ public class UnityMediationAdapter extends RtbAdapter {
                         unityAdsInitializationError,
                         errorMessage));
             Log.d(TAG, adError.toString());
-            initializationCompleteCallback.onInitializationFailed(adError.toString());
+            initializationCompleteCallback.onInitializationFailed(adError);
           }
         });
   }
