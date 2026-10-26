@@ -284,7 +284,7 @@ class FyberRewardedVideoRendererTest {
   }
 
   @Test
-  fun onAdEnteredErrorState_doesNotInvokeAnyAdEvents() {
+  fun onAdEnteredErrorState_invokeIsFailedToShowEvent() {
     val mockAdDisplayError: AdDisplayError = mock()
 
     loadAndRenderAdSuccessfully()
