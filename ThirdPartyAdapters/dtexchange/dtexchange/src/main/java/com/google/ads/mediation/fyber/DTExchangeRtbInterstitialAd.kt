@@ -76,11 +76,15 @@ class DTExchangeRtbInterstitialAd(
   }
 
   override fun onInneractiveSuccessfulAdRequest(iAdSpot: InneractiveAdSpot?) {
-    if (adSpot?.isReady == false) {
+    if (adSpot?.isReady != true) {
       val adError =
         AdError(
           DTExchangeErrorCodes.ERROR_AD_NOT_READY,
-          "DT Exchange's interstitial ad spot is not ready.",
+          if (adSpot == null) {
+            "DT Exchange's interstitial ad spot is null."
+          } else {
+            "DT Exchange's interstitial ad spot is not ready."
+          },
           DTExchangeErrorCodes.ERROR_DOMAIN,
         )
       Log.w(TAG, adError.message)
