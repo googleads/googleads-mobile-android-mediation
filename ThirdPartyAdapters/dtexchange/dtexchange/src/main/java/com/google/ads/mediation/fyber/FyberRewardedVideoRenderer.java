@@ -181,6 +181,7 @@ public class FyberRewardedVideoRenderer
     AdError error = DTExchangeErrorCodes.getAdError(errorCode);
     Log.w(TAG, error.getMessage());
     adLoadCallback.onFailure(error);
+    destroyAdSpot();
   }
 
   // endregion
