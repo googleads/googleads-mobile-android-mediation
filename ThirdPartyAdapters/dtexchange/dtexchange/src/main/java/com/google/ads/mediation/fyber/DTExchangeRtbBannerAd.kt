@@ -136,6 +136,9 @@ class DTExchangeRtbBannerAd(
     adSpot: InneractiveAdSpot?,
     displayError: InneractiveUnitController.AdDisplayError?,
   ) {
+    Log.w(TAG, "error ad failed to display: ${displayError?.message ?: "unknown"}, " +
+            "error domain: ${DTExchangeErrorCodes.ERROR_DOMAIN}")
+    destroyAdSpot()
     // No relevant events to be forwarded to the GMA SDK.
   }
 

@@ -217,7 +217,12 @@ public class FyberRewardedVideoRenderer
   @Override
   public void onAdEnteredErrorState(
       @NonNull InneractiveAdSpot inneractiveAdSpot, @NonNull AdDisplayError adDisplayError) {
-    // No relevant events to be forwarded to the GMA SDK.
+    String msg = (adDisplayError.getMessage() != null) ? adDisplayError.getMessage().trim() : "unknown error";
+    AdError err = new AdError(DTExchangeErrorCodes.ERROR_AD_FAILED_TO_DISPLAY, msg,
+                              DTExchangeErrorCodes.ERROR_DOMAIN);
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onAdFailedToShow(err);
+    }
     destroyAdSpot();
   }
 

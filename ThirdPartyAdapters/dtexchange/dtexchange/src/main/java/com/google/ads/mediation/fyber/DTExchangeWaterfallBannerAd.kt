@@ -30,6 +30,7 @@ import com.fyber.inneractive.sdk.external.InneractiveErrorCode
 import com.fyber.inneractive.sdk.external.InneractiveUnitController
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener
 import com.fyber.inneractive.sdk.external.OnFyberMarketplaceInitializedListener.FyberInitStatus
+import com.google.ads.mediation.fyber.DTExchangeErrorCodes.ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.MediationUtils
@@ -227,6 +228,8 @@ class DTExchangeWaterfallBannerAd(
     adSpot: InneractiveAdSpot?,
     adDisplayError: InneractiveUnitController.AdDisplayError?,
   ) {
+    Log.w(TAG, "error ad failed to display: ${adDisplayError?.message ?: "unknown"}, " +
+            "error domain: $ERROR_DOMAIN")
     destroyAdSpot()
     // No relevant events to be forwarded to the GMA SDK.
   }

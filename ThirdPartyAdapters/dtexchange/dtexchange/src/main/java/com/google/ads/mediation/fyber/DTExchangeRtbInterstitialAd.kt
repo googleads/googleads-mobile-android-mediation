@@ -25,6 +25,8 @@ import com.fyber.inneractive.sdk.external.InneractiveErrorCode
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListener
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController
 import com.fyber.inneractive.sdk.external.InneractiveUnitController
+import com.google.ads.mediation.fyber.DTExchangeErrorCodes.ERROR_AD_FAILED_TO_DISPLAY
+import com.google.ads.mediation.fyber.DTExchangeErrorCodes.ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -125,7 +127,9 @@ class DTExchangeRtbInterstitialAd(
     iAdSpot: InneractiveAdSpot?,
     displayError: InneractiveUnitController.AdDisplayError?,
   ) {
-    // No relevant events to be forwarded to the GMA SDK.
+    val error = AdError(ERROR_AD_FAILED_TO_DISPLAY, displayError?.message ?: "", ERROR_DOMAIN)
+    interstitialAdCallback?.onAdFailedToShow(error)
+    destroyAdSpot()
   }
 
   override fun onAdDismissed(iAdSpot: InneractiveAdSpot?) {
