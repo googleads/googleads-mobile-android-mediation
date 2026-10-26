@@ -297,7 +297,7 @@ class FyberRewardedVideoRendererTest {
     assertThat(rewardedAdCallback.isUserEarnedReward).isFalse()
     assertThat(rewardedAdCallback.isVideoStarted).isFalse()
     assertThat(rewardedAdCallback.isVideoCompleted).isFalse()
-    assertThat(rewardedAdCallback.isFailedToShow).isFalse()
+    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
   }
 
   @Test
