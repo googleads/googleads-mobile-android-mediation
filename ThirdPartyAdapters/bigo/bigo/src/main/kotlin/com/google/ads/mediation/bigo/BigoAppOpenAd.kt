@@ -85,6 +85,7 @@ private constructor(
 
   override fun onAdClosed() {
     appOpenAdCallback?.onAdClosed()
+    splashAd?.destroy()
   }
 
   override fun onAdSkipped() {

@@ -87,6 +87,7 @@ private constructor(
 
   override fun onAdClosed() {
     interstitialAdCallback?.onAdClosed()
+    interstitialAd?.destroy()
   }
 
   companion object {
