@@ -36,7 +36,6 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
@@ -198,105 +197,95 @@ class LineInterstitialAdTest {
   // region RTB loadRtbAd Tests
   @Test
   fun loadRtbAd_success_invokesOnSuccess() {
-    mockStatic(AdLoader::class.java).use {
-      val mockAdLoader = mock<AdLoader>()
-      whenever(AdLoader.forConfig(eq(activity), any())) doReturn mockAdLoader
-      val config = createMediationInterstitialAdConfiguration(bidResponse = TEST_BID_RESPONSE)
-      var rtbAd: LineInterstitialAd? = null
-      LineInterstitialAd.newInstance(config, mediationAdLoadCallback).onSuccess { rtbAd = it }
+    val mockAdLoader = mock<AdLoader>()
+    whenever(sdkFactory.createAdLoader(eq(activity), any())) doReturn mockAdLoader
+    val config = createMediationInterstitialAdConfiguration(bidResponse = TEST_BID_RESPONSE)
+    var rtbAd: LineInterstitialAd? = null
+    LineInterstitialAd.newInstance(config, mediationAdLoadCallback).onSuccess { rtbAd = it }
 
-      rtbAd?.loadRtbAd(activity)
+    rtbAd?.loadRtbAd(activity)
 
-      val callbackCaptor = argumentCaptor<AdLoader.LoadInterstitialAdCallback>()
-      verify(mockAdLoader).loadInterstitialAd(any<BidData>(), callbackCaptor.capture())
-      callbackCaptor.firstValue.onLoad(mockFiveAdInterstitial)
-      verify(mockFiveAdInterstitial).setEventListener(rtbAd!!)
-      assertThat(mediationAdLoadCallback).hasSucceededWith(rtbAd!!)
-    }
+    val callbackCaptor = argumentCaptor<AdLoader.LoadInterstitialAdCallback>()
+    verify(mockAdLoader).loadInterstitialAd(any<BidData>(), callbackCaptor.capture())
+    callbackCaptor.firstValue.onLoad(mockFiveAdInterstitial)
+    verify(mockFiveAdInterstitial).setEventListener(rtbAd!!)
+    assertThat(mediationAdLoadCallback).hasSucceededWith(rtbAd!!)
   }
 
   @Test
   fun loadRtbAd_error_invokesOnFailure() {
-    mockStatic(AdLoader::class.java).use {
-      val mockAdLoader = mock<AdLoader>()
-      whenever(AdLoader.forConfig(eq(activity), any())) doReturn mockAdLoader
-      val config = createMediationInterstitialAdConfiguration(bidResponse = TEST_BID_RESPONSE)
-      var rtbAd: LineInterstitialAd? = null
-      LineInterstitialAd.newInstance(config, mediationAdLoadCallback).onSuccess { rtbAd = it }
+    val mockAdLoader = mock<AdLoader>()
+    whenever(sdkFactory.createAdLoader(eq(activity), any())) doReturn mockAdLoader
+    val config = createMediationInterstitialAdConfiguration(bidResponse = TEST_BID_RESPONSE)
+    var rtbAd: LineInterstitialAd? = null
+    LineInterstitialAd.newInstance(config, mediationAdLoadCallback).onSuccess { rtbAd = it }
 
-      rtbAd?.loadRtbAd(activity)
+    rtbAd?.loadRtbAd(activity)
 
-      val callbackCaptor = argumentCaptor<AdLoader.LoadInterstitialAdCallback>()
-      verify(mockAdLoader).loadInterstitialAd(any<BidData>(), callbackCaptor.capture())
-      callbackCaptor.firstValue.onError(FiveAdErrorCode.INTERNAL_ERROR)
-      val expectedError =
-        AdError(
-          FiveAdErrorCode.INTERNAL_ERROR.value,
-          FiveAdErrorCode.INTERNAL_ERROR.name,
-          LineMediationAdapter.SDK_ERROR_DOMAIN,
-        )
-      assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
-    }
+    val callbackCaptor = argumentCaptor<AdLoader.LoadInterstitialAdCallback>()
+    verify(mockAdLoader).loadInterstitialAd(any<BidData>(), callbackCaptor.capture())
+    callbackCaptor.firstValue.onError(FiveAdErrorCode.INTERNAL_ERROR)
+    val expectedError =
+      AdError(
+        FiveAdErrorCode.INTERNAL_ERROR.value,
+        FiveAdErrorCode.INTERNAL_ERROR.name,
+        LineMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
   fun loadRtbAd_whenNullAdLoader_returnsEarlySafely() {
-    mockStatic(AdLoader::class.java).use {
-      whenever(AdLoader.forConfig(eq(activity), any())) doReturn null
-      val config = createMediationInterstitialAdConfiguration(bidResponse = TEST_BID_RESPONSE)
-      var rtbAd: LineInterstitialAd? = null
-      LineInterstitialAd.newInstance(config, mediationAdLoadCallback).onSuccess { rtbAd = it }
+    whenever(sdkFactory.createAdLoader(eq(activity), any())) doReturn null
+    val config = createMediationInterstitialAdConfiguration(bidResponse = TEST_BID_RESPONSE)
+    var rtbAd: LineInterstitialAd? = null
+    LineInterstitialAd.newInstance(config, mediationAdLoadCallback).onSuccess { rtbAd = it }
 
-      rtbAd?.loadRtbAd(activity)
+    rtbAd?.loadRtbAd(activity)
 
-      verify(mockFiveAdInterstitial, never()).loadAdAsync()
-    }
+    verify(mockFiveAdInterstitial, never()).loadAdAsync()
   }
 
   @Test
   fun loadRtbAd_withSoundExtrasFalse_disablesSound() {
-    mockStatic(AdLoader::class.java).use {
-      val mockAdLoader = mock<AdLoader>()
-      whenever(AdLoader.forConfig(eq(activity), any())) doReturn mockAdLoader
-      val mediationExtras = bundleOf(LineExtras.KEY_ENABLE_AD_SOUND to false)
-      val config =
-        createMediationInterstitialAdConfiguration(
-          mediationExtras = mediationExtras,
-          bidResponse = TEST_BID_RESPONSE,
-        )
-      var rtbAd: LineInterstitialAd? = null
-      LineInterstitialAd.newInstance(config, mediationAdLoadCallback).onSuccess { rtbAd = it }
+    val mockAdLoader = mock<AdLoader>()
+    whenever(sdkFactory.createAdLoader(eq(activity), any())) doReturn mockAdLoader
+    val mediationExtras = bundleOf(LineExtras.KEY_ENABLE_AD_SOUND to false)
+    val config =
+      createMediationInterstitialAdConfiguration(
+        mediationExtras = mediationExtras,
+        bidResponse = TEST_BID_RESPONSE,
+      )
+    var rtbAd: LineInterstitialAd? = null
+    LineInterstitialAd.newInstance(config, mediationAdLoadCallback).onSuccess { rtbAd = it }
 
-      rtbAd?.loadRtbAd(activity)
+    rtbAd?.loadRtbAd(activity)
 
-      val callbackCaptor = argumentCaptor<AdLoader.LoadInterstitialAdCallback>()
-      verify(mockAdLoader).loadInterstitialAd(any<BidData>(), callbackCaptor.capture())
-      callbackCaptor.firstValue.onLoad(mockFiveAdInterstitial)
-      verify(mockFiveAdInterstitial).enableSound(false)
-    }
+    val callbackCaptor = argumentCaptor<AdLoader.LoadInterstitialAdCallback>()
+    verify(mockAdLoader).loadInterstitialAd(any<BidData>(), callbackCaptor.capture())
+    callbackCaptor.firstValue.onLoad(mockFiveAdInterstitial)
+    verify(mockFiveAdInterstitial).enableSound(false)
   }
 
   @Test
   fun loadRtbAd_withSoundExtrasTrue_enablesSound() {
-    mockStatic(AdLoader::class.java).use {
-      val mockAdLoader = mock<AdLoader>()
-      whenever(AdLoader.forConfig(eq(activity), any())) doReturn mockAdLoader
-      val mediationExtras = bundleOf(LineExtras.KEY_ENABLE_AD_SOUND to true)
-      val config =
-        createMediationInterstitialAdConfiguration(
-          mediationExtras = mediationExtras,
-          bidResponse = TEST_BID_RESPONSE,
-        )
-      var rtbAd: LineInterstitialAd? = null
-      LineInterstitialAd.newInstance(config, mediationAdLoadCallback).onSuccess { rtbAd = it }
+    val mockAdLoader = mock<AdLoader>()
+    whenever(sdkFactory.createAdLoader(eq(activity), any())) doReturn mockAdLoader
+    val mediationExtras = bundleOf(LineExtras.KEY_ENABLE_AD_SOUND to true)
+    val config =
+      createMediationInterstitialAdConfiguration(
+        mediationExtras = mediationExtras,
+        bidResponse = TEST_BID_RESPONSE,
+      )
+    var rtbAd: LineInterstitialAd? = null
+    LineInterstitialAd.newInstance(config, mediationAdLoadCallback).onSuccess { rtbAd = it }
 
-      rtbAd?.loadRtbAd(activity)
+    rtbAd?.loadRtbAd(activity)
 
-      val callbackCaptor = argumentCaptor<AdLoader.LoadInterstitialAdCallback>()
-      verify(mockAdLoader).loadInterstitialAd(any<BidData>(), callbackCaptor.capture())
-      callbackCaptor.firstValue.onLoad(mockFiveAdInterstitial)
-      verify(mockFiveAdInterstitial).enableSound(true)
-    }
+    val callbackCaptor = argumentCaptor<AdLoader.LoadInterstitialAdCallback>()
+    verify(mockAdLoader).loadInterstitialAd(any<BidData>(), callbackCaptor.capture())
+    callbackCaptor.firstValue.onLoad(mockFiveAdInterstitial)
+    verify(mockFiveAdInterstitial).enableSound(true)
   }
 
   // endregion

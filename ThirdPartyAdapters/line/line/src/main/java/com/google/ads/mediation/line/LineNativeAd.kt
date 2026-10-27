@@ -98,7 +98,7 @@ private constructor(
       return
     }
     val fiveAdConfig = LineInitializer.getFiveAdConfig(appId)
-    val adLoader = AdLoader.forConfig(context, fiveAdConfig) ?: return
+    val adLoader = LineSdkFactory.delegate.createAdLoader(context, fiveAdConfig) ?: return
     val bidData = BidData(bidResponse, watermark)
     adLoader.loadNativeAd(
       bidData,
