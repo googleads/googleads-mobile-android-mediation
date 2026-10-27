@@ -19,7 +19,7 @@ package com.google.ads.mediation.snippets.kotlin
 import com.applovin.mediation.AppLovinExtras
 import com.applovin.mediation.ApplovinAdapter
 import com.applovin.sdk.AppLovinPrivacySettings
-import com.google.android.gms.ads.AdRequest
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
 
 /**
  * Kotlin code snippets for https://developers.google.com/admob/android/mediation/applovin and
@@ -37,7 +37,9 @@ class AppLovinMediationSnippets {
     // [START set_mute_audio]
     val extras = AppLovinExtras.Builder().setMuteAudio(true).build()
     val request =
-      AdRequest.Builder().addNetworkExtrasBundle(ApplovinAdapter::class.java, extras).build()
+      AdRequest.Builder("AD_UNIT_ID")
+        .putAdSourceExtrasBundle(ApplovinAdapter::class.java, extras)
+        .build()
     // [END set_mute_audio]
   }
 }

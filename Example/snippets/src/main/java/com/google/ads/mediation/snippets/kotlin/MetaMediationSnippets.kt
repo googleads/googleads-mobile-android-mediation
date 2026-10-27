@@ -17,7 +17,7 @@
 package com.google.ads.mediation.snippets.kotlin
 
 import com.google.ads.mediation.facebook.FacebookMediationAdapter
-import com.google.android.gms.ads.nativead.NativeAd
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
 
 /**
  * Kotlin code snippets for https://developers.google.com/admob/android/mediation/meta and
@@ -27,7 +27,7 @@ private class MetaMediationSnippets {
 
   private fun extractNativeAssets(nativeAd: NativeAd) {
     // [START extract_native_assets]
-    val extras = nativeAd.getExtras()
+    val extras = nativeAd.extras
     if (extras.containsKey(FacebookMediationAdapter.KEY_SOCIAL_CONTEXT_ASSET)) {
       val socialContext = extras.getString(FacebookMediationAdapter.KEY_SOCIAL_CONTEXT_ASSET)
       // ...

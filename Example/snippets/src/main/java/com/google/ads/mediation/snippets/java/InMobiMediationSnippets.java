@@ -17,16 +17,10 @@
 package com.google.ads.mediation.snippets.java;
 
 import android.os.Bundle;
-import android.util.Log;
 import com.google.ads.mediation.inmobi.InMobiAdapter;
-import com.google.ads.mediation.inmobi.InMobiConsent;
 import com.google.ads.mediation.inmobi.InMobiNetworkKeys;
 import com.google.ads.mediation.inmobi.InMobiNetworkValues;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.admanager.AdManagerAdRequest;
-import com.inmobi.sdk.InMobiSdk;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest;
 
 /**
  * Java code snippets for https://developers.google.com/admob/android/mediation/inmobi and
@@ -35,7 +29,6 @@ import org.json.JSONObject;
 public final class InMobiMediationSnippets {
 
   private static final String AREA_CODE_VALUE = "12345";
-  private static final String TAG = "InMobiMediationSnippets";
 
   private AdRequest setAdRequestWithParameters() {
     // [START set_ad_request_parameters]
@@ -44,20 +37,22 @@ public final class InMobiMediationSnippets {
     extras.putString(InMobiNetworkKeys.AREA_CODE, AREA_CODE_VALUE);
 
     AdRequest request =
-        new AdRequest.Builder().addNetworkExtrasBundle(InMobiAdapter.class, extras).build();
+        new AdRequest.Builder("AD_UNIT_ID")
+            .putAdSourceExtrasBundle(InMobiAdapter.class, extras)
+            .build();
     // [END set_ad_request_parameters]
     return request;
   }
 
-  private AdManagerAdRequest setAdManagerRequestWithParameters() {
+  private AdRequest setAdManagerRequestWithParameters() {
     // [START set_ad_manager_ad_request_parameters]
     Bundle extras = new Bundle();
     extras.putString(InMobiNetworkKeys.AGE_GROUP, InMobiNetworkValues.BETWEEN_35_AND_44);
     extras.putString(InMobiNetworkKeys.AREA_CODE, AREA_CODE_VALUE);
 
-    AdManagerAdRequest request =
-        new AdManagerAdRequest.Builder()
-            .addNetworkExtrasBundle(InMobiAdapter.class, extras)
+    AdRequest request =
+        new AdRequest.Builder("AD_UNIT_ID")
+            .putAdSourceExtrasBundle(InMobiAdapter.class, extras)
             .build();
     // [END set_ad_manager_ad_request_parameters]
     return request;

@@ -20,7 +20,7 @@ import android.os.Bundle;
 import com.fyber.inneractive.sdk.external.InneractiveAdManager;
 import com.fyber.inneractive.sdk.external.InneractiveMediationDefs;
 import com.google.ads.mediation.fyber.FyberMediationAdapter;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest;
 
 /**
  * Java code snippets for https://developers.google.com/admob/android/mediation/dt-exchange and
@@ -44,7 +44,9 @@ public class DTExchangeMediationSnippets {
     extras.putBoolean(FyberMediationAdapter.KEY_MUTE_VIDEO, false);
 
     AdRequest request =
-        new AdRequest.Builder().addNetworkExtrasBundle(FyberMediationAdapter.class, extras).build();
+        new AdRequest.Builder("AD_UNIT_ID")
+            .putAdSourceExtrasBundle(FyberMediationAdapter.class, extras)
+            .build();
     // [END set_network_specific_params]
   }
 }

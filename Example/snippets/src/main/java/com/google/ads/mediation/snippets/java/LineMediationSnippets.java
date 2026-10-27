@@ -19,7 +19,7 @@ package com.google.ads.mediation.snippets.java;
 import android.os.Bundle;
 import com.google.ads.mediation.line.LineExtras;
 import com.google.ads.mediation.line.LineMediationAdapter;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest;
 
 /**
  * Java code snippets for https://developers.google.com/admob/android/mediation/line and
@@ -39,7 +39,9 @@ public class LineMediationSnippets {
     Bundle extras = lineExtras.build();
 
     AdRequest request =
-        new AdRequest.Builder().addNetworkExtrasBundle(LineMediationAdapter.class, extras).build();
+        new AdRequest.Builder("AD_UNIT_ID")
+            .putAdSourceExtrasBundle(LineMediationAdapter.class, extras)
+            .build();
     // [END set_network_specific_params]
   }
 }
