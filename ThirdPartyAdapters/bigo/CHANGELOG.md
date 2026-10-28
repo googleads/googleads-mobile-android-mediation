@@ -2,6 +2,7 @@
 
 #### Next Version
 - Destroy Bigo ad objects when the ad is closed or untracked.
+- Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
 
 #### Version 6.1.0.0
 - Verified compatibility with Bigo Ads SDK 6.1.0.
