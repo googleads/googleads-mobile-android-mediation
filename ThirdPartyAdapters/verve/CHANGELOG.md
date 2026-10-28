@@ -1,5 +1,8 @@
 ## Verve Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+
 #### Version 3.9.3.0
 - Verified compatibility with Verve HyBid SDK version 3.9.3.
 

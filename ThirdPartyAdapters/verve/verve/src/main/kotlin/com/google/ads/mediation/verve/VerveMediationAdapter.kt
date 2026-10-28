@@ -104,7 +104,7 @@ class VerveMediationAdapter : RtbAdapter() {
     mediationConfigurations: List<MediationConfiguration>,
   ) {
     if (isChildUser()) {
-      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_CHILD_USER)
+      initializationCompleteCallback.onInitializationFailed(createChildUserError())
       return
     }
     val appTokens = mediationConfigurations.mapNotNull {
@@ -116,13 +116,17 @@ class VerveMediationAdapter : RtbAdapter() {
       }
     }
     if (appTokens.isEmpty()) {
-      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_APP_TOKEN)
+      val adError =
+        AdError(ERROR_CODE_MISSING_APP_TOKEN, ERROR_MSG_MISSING_APP_TOKEN, ADAPTER_ERROR_DOMAIN)
+      initializationCompleteCallback.onInitializationFailed(adError)
       return
     }
 
     val appTokenForInit = appTokens[0]
     if (appTokenForInit.isEmpty()) {
-      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_APP_TOKEN)
+      val adError =
+        AdError(ERROR_CODE_MISSING_APP_TOKEN, ERROR_MSG_MISSING_APP_TOKEN, ADAPTER_ERROR_DOMAIN)
+      initializationCompleteCallback.onInitializationFailed(adError)
       return
     }
     if (appTokens.size > 1) {
@@ -135,7 +139,13 @@ class VerveMediationAdapter : RtbAdapter() {
       if (success) {
         initializationCompleteCallback.onInitializationSucceeded()
       } else {
-        initializationCompleteCallback.onInitializationFailed(ERROR_MSG_ERROR_INITIALIZE_VERVE_SDK)
+        val adError =
+          AdError(
+            ERROR_CODE_INITIALIZE_VERVE_SDK,
+            ERROR_MSG_ERROR_INITIALIZE_VERVE_SDK,
+            ADAPTER_ERROR_DOMAIN,
+          )
+        initializationCompleteCallback.onInitializationFailed(adError)
       }
     }
   }
@@ -249,6 +259,8 @@ class VerveMediationAdapter : RtbAdapter() {
     const val ERROR_MSG_CHILD_USER =
       "MobileAds.getRequestConfiguration() indicates the user is a child. Verve will be dropped"
     const val ERROR_CODE_CHILD_USER = 104
+    const val ERROR_CODE_MISSING_APP_TOKEN = 105
+    const val ERROR_CODE_INITIALIZE_VERVE_SDK = 106
 
     private fun createChildUserError(): AdError =
       AdError(ERROR_CODE_CHILD_USER, ERROR_MSG_CHILD_USER, ADAPTER_ERROR_DOMAIN)
