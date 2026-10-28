@@ -14,9 +14,12 @@
 
 package com.google.ads.mediation.adsurge
 
-import android.content.Context
 import android.view.View
-import com.google.android.gms.ads.AdSize
+import androidx.annotation.VisibleForTesting
+import com.adsurge.adn.ads.AdConfig
+import com.adsurge.adn.ads.AdSurgeAd
+import com.adsurge.adn.ads.AdSurgeAdError
+import com.adsurge.adn.ads.banner.BannerAdListener
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
@@ -27,23 +30,48 @@ import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
  * SDK.
  */
 class AdSurgeBannerAd
-private constructor(
-  private val context: Context,
+@VisibleForTesting
+internal constructor(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
-  private val adSize: AdSize,
-  // TODO: Add other parameters or remove unnecessary ones.
-) : MediationBannerAd {
-  // TODO: Replace with 3p View. Ideally avoid lateinit and initialize in constructor.
-  private lateinit var adView: View
+  private val adUnitId: String,
+  private val bidResponse: String,
+  private val adViewWrapper: AdSurgeBannerAdWrapper,
+) : MediationBannerAd, BannerAdListener {
+
+  @VisibleForTesting internal var bannerAdCallback: MediationBannerAdCallback? = null
 
   fun loadAd() {
-    // TODO: Implement this method.
+    val adConfig = AdConfig.Builder().payload(bidResponse).build()
+
+    adViewWrapper.setListener(this)
+    adViewWrapper.loadAd(adConfig)
   }
 
-  override fun getView(): View {
-    // TODO: Implement this method.
-    return adView
+  override fun getView(): View = adViewWrapper.getView()
+
+  override fun onAdLoaded(adSurgeAd: AdSurgeAd) {
+    bannerAdCallback = mediationAdLoadCallback.onSuccess(this)
+  }
+
+  override fun onAdFailed(adSurgeAdError: AdSurgeAdError) {
+    mediationAdLoadCallback.onFailure(AdSurgeUtils.createSdkError(adSurgeAdError))
+  }
+
+  override fun onAdImpression(adSurgeAd: AdSurgeAd) {
+    bannerAdCallback?.reportAdImpression()
+  }
+
+  override fun onAdClicked(adSurgeAd: AdSurgeAd) {
+    bannerAdCallback?.reportAdClicked()
+  }
+
+  override fun onAdDismissed(adSurgeAd: AdSurgeAd) {
+    bannerAdCallback?.onAdClosed()
+  }
+
+  override fun onAdShowFailed(adSurgeAd: AdSurgeAd, adSurgeAdError: AdSurgeAdError) {
+    // Banner ads do not have a separate show failure in GMA SDK.
   }
 
   companion object {
@@ -53,11 +81,39 @@ private constructor(
     ): Result<AdSurgeBannerAd> {
       val context = mediationBannerAdConfiguration.context
       val serverParameters = mediationBannerAdConfiguration.serverParameters
-      val adSize = mediationBannerAdConfiguration.adSize
+      val adUnitId = serverParameters.getString(AdSurgeUtils.KEY_AD_UNIT_ID)
 
-      // TODO: Implement necessary initialization steps.
+      if (adUnitId.isNullOrEmpty()) {
+        val error =
+          AdSurgeUtils.createAdapterError(
+            AdSurgeUtils.ERROR_INVALID_SERVER_PARAMETERS,
+            "Missing or invalid ad_unit_id.",
+          )
+        mediationAdLoadCallback.onFailure(error)
+        return Result.failure(IllegalArgumentException(error.message))
+      }
 
-      return Result.success(AdSurgeBannerAd(context, mediationAdLoadCallback, adSize))
+      val bidResponse = mediationBannerAdConfiguration.bidResponse
+      if (bidResponse.isNullOrEmpty()) {
+        val error =
+          AdSurgeUtils.createAdapterError(
+            AdSurgeUtils.ERROR_INVALID_SERVER_PARAMETERS,
+            "Missing or invalid bid response.",
+          )
+        mediationAdLoadCallback.onFailure(error)
+        return Result.failure(IllegalArgumentException(error.message))
+      }
+
+      AdSurgeUtils.applyPrivacyConfiguration(mediationBannerAdConfiguration)
+      val adViewWrapper = AdSurgeFactory.createAdView(context, adUnitId)
+      return Result.success(
+        AdSurgeBannerAd(
+          mediationAdLoadCallback = mediationAdLoadCallback,
+          adUnitId = adUnitId,
+          bidResponse = bidResponse,
+          adViewWrapper = adViewWrapper,
+        )
+      )
     }
   }
 }
