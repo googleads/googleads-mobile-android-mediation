@@ -15,6 +15,12 @@
 package com.google.ads.mediation.adsurge
 
 import android.content.Context
+import android.util.Log
+import androidx.annotation.VisibleForTesting
+import com.adsurge.adn.ads.AdSurgeAdError
+import com.adsurge.adn.managers.AdSurgeAdSdk
+import com.adsurge.adn.managers.OnStartListener
+import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.VersionInfo
 import com.google.android.gms.ads.mediation.InitializationCompleteCallback
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
@@ -43,12 +49,38 @@ class AdSurgeMediationAdapter : RtbAdapter() {
   private lateinit var rewardedAd: AdSurgeRewardedAd
 
   override fun getSDKVersionInfo(): VersionInfo {
-    // TODO: Update the version number returned.
+    val versionString = sdkVersionDelegate ?: AdSurgeFactory.getSdkVersion()
+    val splits = versionString.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }
+    if (splits.size >= 3) {
+      val major = splits[0].toIntOrNull()
+      val minor = splits[1].toIntOrNull()
+      val micro = splits[2].toIntOrNull()
+      if (major != null && minor != null && micro != null) {
+        return VersionInfo(major, minor, micro)
+      }
+    }
+
+    Log.w(TAG, "Unexpected SDK version format: $versionString. Returning 0.0.0 for SDK version.")
     return VersionInfo(0, 0, 0)
   }
 
   override fun getVersionInfo(): VersionInfo {
-    // TODO: Update the version number returned.
+    val versionString = adapterVersionDelegate ?: BuildConfig.ADAPTER_VERSION
+    val splits = versionString.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }
+    if (splits.size >= 4) {
+      val major = splits[0].toIntOrNull()
+      val minor = splits[1].toIntOrNull()
+      val micro = splits[2].toIntOrNull()
+      val patch = splits[3].toIntOrNull()
+      if (major != null && minor != null && micro != null && patch != null) {
+        return VersionInfo(major, minor, micro * 100 + patch)
+      }
+    }
+
+    Log.w(
+      TAG,
+      "Unexpected adapter version format: $versionString. Returning 0.0.0 for adapter version.",
+    )
     return VersionInfo(0, 0, 0)
   }
 
@@ -57,13 +89,66 @@ class AdSurgeMediationAdapter : RtbAdapter() {
     initializationCompleteCallback: InitializationCompleteCallback,
     mediationConfigurations: List<MediationConfiguration>,
   ) {
-    // TODO: Implement this method.
-    initializationCompleteCallback.onInitializationSucceeded()
+    val applicationIds =
+      mediationConfigurations
+        .mapNotNull {
+          val appId = it.serverParameters.getString(AdSurgeUtils.KEY_APPLICATION_ID)
+          if (appId.isNullOrEmpty()) null else appId
+        }
+        .toSet()
+    if (applicationIds.isEmpty()) {
+      initializationCompleteCallback.onInitializationFailed(
+        AdSurgeUtils.createAdapterError(
+          AdSurgeUtils.ERROR_INVALID_SERVER_PARAMETERS,
+          "Missing or invalid application_id.",
+        )
+      )
+      return
+    }
+
+    val appId = applicationIds.iterator().next()
+    if (applicationIds.size > 1) {
+      Log.w(
+        TAG,
+        "Multiple ${AdSurgeUtils.KEY_APPLICATION_ID} entries found: $applicationIds. " +
+          "Using '$appId' to initialize the AdSurge SDK.",
+      )
+    }
+
+    val requestConfiguration = MobileAds.getRequestConfiguration()
+    AdSurgeUtils.applyPrivacyConfiguration(
+      childDirected = requestConfiguration.tagForChildDirectedTreatment,
+      underAgeOfConsent = requestConfiguration.tagForUnderAgeOfConsent,
+      factory = AdSurgeFactory,
+    )
+
+    AdSurgeFactory.init(
+      context,
+      appId,
+      object : OnStartListener {
+        override fun onStartComplete() {
+          initializationCompleteCallback.onInitializationSucceeded()
+        }
+
+        override fun onStartFailed(error: AdSurgeAdError) {
+          initializationCompleteCallback.onInitializationFailed(AdSurgeUtils.createSdkError(error))
+        }
+      },
+    )
   }
 
   override fun collectSignals(signalData: RtbSignalData, callback: SignalCallbacks) {
-    // TODO: Implement this method.
-    callback.onSuccess("")
+    AdSurgeFactory.getBidderToken(
+      object : AdSurgeAdSdk.BidderTokenCallback {
+        override fun onSuccess(token: String) {
+          callback.onSuccess(token)
+        }
+
+        override fun onFailure(error: AdSurgeAdError) {
+          callback.onFailure(AdSurgeUtils.createSdkError(error))
+        }
+      }
+    )
   }
 
   override fun loadRtbBannerAd(
@@ -100,5 +185,8 @@ class AdSurgeMediationAdapter : RtbAdapter() {
     private val TAG = AdSurgeMediationAdapter::class.simpleName
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.adsurge"
     const val SDK_ERROR_DOMAIN = "com.adsurge.adn"
+
+    @VisibleForTesting internal var adapterVersionDelegate: String? = null
+    @VisibleForTesting internal var sdkVersionDelegate: String? = null
   }
 }
