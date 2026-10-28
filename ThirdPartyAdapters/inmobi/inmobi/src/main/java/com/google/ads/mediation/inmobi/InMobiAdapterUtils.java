@@ -166,6 +166,16 @@ public class InMobiAdapterUtils {
   }
 
   @VisibleForTesting
+  static void setApplicationMuted(
+      @NonNull InMobiExtras inMobiExtras, @NonNull InMobiSdkWrapper inMobiSdkWrapper) {
+    inMobiSdkWrapper.setApplicationMuted(inMobiExtras.getIsMuted());
+  }
+
+  public static void setApplicationMuted(@NonNull InMobiExtras inMobiExtras) {
+    setApplicationMuted(inMobiExtras, new InMobiSdkWrapper());
+  }
+
+  @VisibleForTesting
   static AgeGroup getAgeGroup(String value) {
     switch (value) {
       case InMobiNetworkValues.ABOVE_65:

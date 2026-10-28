@@ -21,6 +21,7 @@ import com.google.ads.mediation.ironsource.IronSourceConstants.KEY_APP_KEY
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_AD_ALREADY_LOADED
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_BANNER_SIZE_MISMATCH
+import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_EMPTY_SIGNALS
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_REQUIRES_ACTIVITY_CONTEXT
 import com.google.ads.mediation.ironsource.IronSourceMediationAdapter.ERROR_SDK_NOT_INITIALIZED
@@ -154,7 +155,14 @@ class IronSourceMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    assertThat(initializationCompleteCallback).hasFailedWith(MISSING_OR_INVALID_APP_KEY_MESSAGE)
+    assertThat(initializationCompleteCallback)
+      .hasFailedWith(
+        AdError(
+          ERROR_INVALID_SERVER_PARAMETERS,
+          MISSING_OR_INVALID_APP_KEY_MESSAGE,
+          ADAPTER_ERROR_DOMAIN,
+        )
+      )
   }
 
   @Test
@@ -164,7 +172,14 @@ class IronSourceMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    assertThat(initializationCompleteCallback).hasFailedWith(MISSING_OR_INVALID_APP_KEY_MESSAGE)
+    assertThat(initializationCompleteCallback)
+      .hasFailedWith(
+        AdError(
+          ERROR_INVALID_SERVER_PARAMETERS,
+          MISSING_OR_INVALID_APP_KEY_MESSAGE,
+          ADAPTER_ERROR_DOMAIN,
+        )
+      )
   }
 
   @Test
@@ -394,6 +409,38 @@ class IronSourceMediationAdapterTest {
       adapter.collectSignals(rtbSignalData, signalCallbacks)
 
       assertThat(signalCallbacks).hasSucceededWith(TEST_BID_RESPONSE)
+    }
+  }
+
+  @Test
+  fun collectSignals_nullSignals_invokesOnFailure() {
+    mockStatic(IronSource::class.java).use {
+      whenever(IronSource.getISDemandOnlyBiddingData(context)) doReturn null
+
+      adapter.collectSignals(rtbSignalData, signalCallbacks)
+
+      assertThat(signalCallbacks)
+        .hasFailedWith(
+          ERROR_EMPTY_SIGNALS,
+          "IronSource SDK returned null or empty bidding signals.",
+          ADAPTER_ERROR_DOMAIN,
+        )
+    }
+  }
+
+  @Test
+  fun collectSignals_emptySignals_invokesOnFailure() {
+    mockStatic(IronSource::class.java).use {
+      whenever(IronSource.getISDemandOnlyBiddingData(context)) doReturn ""
+
+      adapter.collectSignals(rtbSignalData, signalCallbacks)
+
+      assertThat(signalCallbacks)
+        .hasFailedWith(
+          ERROR_EMPTY_SIGNALS,
+          "IronSource SDK returned null or empty bidding signals.",
+          ADAPTER_ERROR_DOMAIN,
+        )
     }
   }
 

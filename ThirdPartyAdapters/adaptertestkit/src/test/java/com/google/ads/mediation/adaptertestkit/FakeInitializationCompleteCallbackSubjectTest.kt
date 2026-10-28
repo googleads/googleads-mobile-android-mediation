@@ -14,6 +14,7 @@
 
 package com.google.ads.mediation.adaptertestkit
 
+import com.google.android.gms.ads.AdError
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -21,6 +22,8 @@ import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class FakeInitializationCompleteCallbackSubjectTest {
+
+  private val expectedAdError = AdError(101, "Init failed", "com.google.ads.mediation")
 
   @Test
   fun hasSucceeded_whenSuccessInvoked_succeeds() {
@@ -57,6 +60,41 @@ class FakeInitializationCompleteCallbackSubjectTest {
 
     assertThrows(AssertionError::class.java) {
       assertThat(callback).hasFailedWith("Different error")
+    }
+  }
+
+  @Test
+  fun hasFailedWith_matchingAdError_succeeds() {
+    val callback = FakeInitializationCompleteCallback()
+    val actualError = AdError(101, "Init failed", "com.google.ads.mediation")
+    callback.onInitializationFailed(actualError)
+
+    assertThat(callback).hasFailedWith(expectedAdError)
+  }
+
+  @Test
+  fun hasFailedWith_matchingAdErrorProperties_succeeds() {
+    val callback = FakeInitializationCompleteCallback()
+    callback.onInitializationFailed(expectedAdError)
+
+    assertThat(callback).hasFailedWith(101, "com.google.ads.mediation")
+    assertThat(callback).hasFailedWith(101, "Init failed", "com.google.ads.mediation")
+  }
+
+  @Test
+  fun hasFailedWith_mismatchingAdError_fails() {
+    val callback = FakeInitializationCompleteCallback()
+    val differentError =
+      AdError(
+        /* code = */ 102,
+        /* message = */ "Different error",
+        /* domain = */ "com.google.ads.mediation",
+      )
+    callback.onInitializationFailed(differentError)
+
+    assertThrows(AssertionError::class.java) { assertThat(callback).hasFailedWith(expectedAdError) }
+    assertThrows(AssertionError::class.java) {
+      assertThat(callback).hasFailedWith(101, "com.google.ads.mediation")
     }
   }
 

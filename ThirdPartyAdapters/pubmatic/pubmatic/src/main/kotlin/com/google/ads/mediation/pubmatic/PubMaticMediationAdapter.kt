@@ -137,7 +137,7 @@ constructor(
     if (publisherId == null) {
       val adError =
         AdError(ERROR_MISSING_PUBLISHER_ID, "Publisher ID is missing.", ADAPTER_ERROR_DOMAIN)
-      initializationCompleteCallback.onInitializationFailed(adError.toString())
+      initializationCompleteCallback.onInitializationFailed(adError)
       return
     }
 
@@ -151,7 +151,7 @@ constructor(
       object : OpenWrapSDKInitializer.Listener {
         override fun onFailure(error: POBError) {
           val adError = AdError(error.errorCode, error.errorMessage, SDK_ERROR_DOMAIN)
-          initializationCompleteCallback.onInitializationFailed(adError.toString())
+          initializationCompleteCallback.onInitializationFailed(adError)
         }
 
         override fun onSuccess() {

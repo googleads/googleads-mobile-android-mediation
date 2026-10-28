@@ -38,7 +38,6 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
@@ -205,135 +204,125 @@ class LineBannerAdTest {
   // region RTB loadRtbAd Tests
   @Test
   fun loadRtbAd_success_invokesOnSuccess() {
-    mockStatic(AdLoader::class.java).use {
-      val mockAdLoader = mock<AdLoader>()
-      whenever(AdLoader.forConfig(eq(context), any())) doReturn mockAdLoader
-      val config = createMediationBannerAdConfiguration(bidResponse = TEST_BID_RESPONSE)
-      var rtbBannerAd: LineBannerAd? = null
-      LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess {
-        rtbBannerAd = it
-      }
-
-      rtbBannerAd?.loadRtbAd(context)
-
-      val callbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
-      verify(mockAdLoader)
-        .loadBannerAd(
-          any<BidData>(),
-          eq(AdSize.BANNER.getWidthInPixels(context)),
-          callbackCaptor.capture(),
-        )
-      callbackCaptor.firstValue.onLoad(mockFiveAdCustomLayout)
-      verify(mockFiveAdCustomLayout).setEventListener(rtbBannerAd!!)
-      assertThat(mediationAdLoadCallback).hasSucceededWith(rtbBannerAd!!)
+    val mockAdLoader = mock<AdLoader>()
+    whenever(sdkFactory.createAdLoader(eq(context), any())) doReturn mockAdLoader
+    val config = createMediationBannerAdConfiguration(bidResponse = TEST_BID_RESPONSE)
+    var rtbBannerAd: LineBannerAd? = null
+    LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess {
+      rtbBannerAd = it
     }
+
+    rtbBannerAd?.loadRtbAd(context)
+
+    val callbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
+    verify(mockAdLoader)
+      .loadBannerAd(
+        any<BidData>(),
+        eq(AdSize.BANNER.getWidthInPixels(context)),
+        callbackCaptor.capture(),
+      )
+    callbackCaptor.firstValue.onLoad(mockFiveAdCustomLayout)
+    verify(mockFiveAdCustomLayout).setEventListener(rtbBannerAd!!)
+    assertThat(mediationAdLoadCallback).hasSucceededWith(rtbBannerAd!!)
   }
 
   @Test
   fun loadRtbAd_error_invokesOnFailure() {
-    mockStatic(AdLoader::class.java).use {
-      val mockAdLoader = mock<AdLoader>()
-      whenever(AdLoader.forConfig(eq(context), any())) doReturn mockAdLoader
-      val config = createMediationBannerAdConfiguration(bidResponse = TEST_BID_RESPONSE)
-      var rtbBannerAd: LineBannerAd? = null
-      LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess {
-        rtbBannerAd = it
-      }
-
-      rtbBannerAd?.loadRtbAd(context)
-
-      val callbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
-      verify(mockAdLoader)
-        .loadBannerAd(
-          any<BidData>(),
-          eq(AdSize.BANNER.getWidthInPixels(context)),
-          callbackCaptor.capture(),
-        )
-      callbackCaptor.firstValue.onError(FiveAdErrorCode.INTERNAL_ERROR)
-      val expectedError =
-        AdError(
-          FiveAdErrorCode.INTERNAL_ERROR.value,
-          FiveAdErrorCode.INTERNAL_ERROR.name,
-          LineMediationAdapter.SDK_ERROR_DOMAIN,
-        )
-      assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
+    val mockAdLoader = mock<AdLoader>()
+    whenever(sdkFactory.createAdLoader(eq(context), any())) doReturn mockAdLoader
+    val config = createMediationBannerAdConfiguration(bidResponse = TEST_BID_RESPONSE)
+    var rtbBannerAd: LineBannerAd? = null
+    LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess {
+      rtbBannerAd = it
     }
+
+    rtbBannerAd?.loadRtbAd(context)
+
+    val callbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
+    verify(mockAdLoader)
+      .loadBannerAd(
+        any<BidData>(),
+        eq(AdSize.BANNER.getWidthInPixels(context)),
+        callbackCaptor.capture(),
+      )
+    callbackCaptor.firstValue.onError(FiveAdErrorCode.INTERNAL_ERROR)
+    val expectedError =
+      AdError(
+        FiveAdErrorCode.INTERNAL_ERROR.value,
+        FiveAdErrorCode.INTERNAL_ERROR.name,
+        LineMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
   fun loadRtbAd_whenNullAdLoader_returnsEarlySafely() {
-    mockStatic(AdLoader::class.java).use {
-      whenever(AdLoader.forConfig(eq(context), any())) doReturn null
-      val config = createMediationBannerAdConfiguration(bidResponse = TEST_BID_RESPONSE)
-      var rtbBannerAd: LineBannerAd? = null
-      LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess {
-        rtbBannerAd = it
-      }
-
-      rtbBannerAd?.loadRtbAd(context)
-
-      verify(mockFiveAdCustomLayout, never()).loadAdAsync()
+    whenever(sdkFactory.createAdLoader(eq(context), any())) doReturn null
+    val config = createMediationBannerAdConfiguration(bidResponse = TEST_BID_RESPONSE)
+    var rtbBannerAd: LineBannerAd? = null
+    LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess {
+      rtbBannerAd = it
     }
+
+    rtbBannerAd?.loadRtbAd(context)
+
+    verify(mockFiveAdCustomLayout, never()).loadAdAsync()
   }
 
   @Test
   fun loadRtbAd_withSoundExtrasTrue_enablesSound() {
-    mockStatic(AdLoader::class.java).use {
-      val mockAdLoader = mock<AdLoader>()
-      whenever(AdLoader.forConfig(eq(context), any())) doReturn mockAdLoader
-      val mediationExtras = bundleOf(LineExtras.KEY_ENABLE_AD_SOUND to true)
-      val config =
-        createMediationBannerAdConfiguration(
-          mediationExtras = mediationExtras,
-          bidResponse = TEST_BID_RESPONSE,
-        )
-      var rtbBannerAd: LineBannerAd? = null
-      LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess {
-        rtbBannerAd = it
-      }
-
-      rtbBannerAd?.loadRtbAd(context)
-
-      val callbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
-      verify(mockAdLoader)
-        .loadBannerAd(
-          any<BidData>(),
-          eq(AdSize.BANNER.getWidthInPixels(context)),
-          callbackCaptor.capture(),
-        )
-      callbackCaptor.firstValue.onLoad(mockFiveAdCustomLayout)
-      verify(mockFiveAdCustomLayout).enableSound(true)
+    val mockAdLoader = mock<AdLoader>()
+    whenever(sdkFactory.createAdLoader(eq(context), any())) doReturn mockAdLoader
+    val mediationExtras = bundleOf(LineExtras.KEY_ENABLE_AD_SOUND to true)
+    val config =
+      createMediationBannerAdConfiguration(
+        mediationExtras = mediationExtras,
+        bidResponse = TEST_BID_RESPONSE,
+      )
+    var rtbBannerAd: LineBannerAd? = null
+    LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess {
+      rtbBannerAd = it
     }
+
+    rtbBannerAd?.loadRtbAd(context)
+
+    val callbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
+    verify(mockAdLoader)
+      .loadBannerAd(
+        any<BidData>(),
+        eq(AdSize.BANNER.getWidthInPixels(context)),
+        callbackCaptor.capture(),
+      )
+    callbackCaptor.firstValue.onLoad(mockFiveAdCustomLayout)
+    verify(mockFiveAdCustomLayout).enableSound(true)
   }
 
   @Test
   fun loadRtbAd_withSoundExtrasFalse_disablesSound() {
-    mockStatic(AdLoader::class.java).use {
-      val mockAdLoader = mock<AdLoader>()
-      whenever(AdLoader.forConfig(eq(context), any())) doReturn mockAdLoader
-      val mediationExtras = bundleOf(LineExtras.KEY_ENABLE_AD_SOUND to false)
-      val config =
-        createMediationBannerAdConfiguration(
-          mediationExtras = mediationExtras,
-          bidResponse = TEST_BID_RESPONSE,
-        )
-      var rtbBannerAd: LineBannerAd? = null
-      LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess {
-        rtbBannerAd = it
-      }
-
-      rtbBannerAd?.loadRtbAd(context)
-
-      val callbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
-      verify(mockAdLoader)
-        .loadBannerAd(
-          any<BidData>(),
-          eq(AdSize.BANNER.getWidthInPixels(context)),
-          callbackCaptor.capture(),
-        )
-      callbackCaptor.firstValue.onLoad(mockFiveAdCustomLayout)
-      verify(mockFiveAdCustomLayout).enableSound(false)
+    val mockAdLoader = mock<AdLoader>()
+    whenever(sdkFactory.createAdLoader(eq(context), any())) doReturn mockAdLoader
+    val mediationExtras = bundleOf(LineExtras.KEY_ENABLE_AD_SOUND to false)
+    val config =
+      createMediationBannerAdConfiguration(
+        mediationExtras = mediationExtras,
+        bidResponse = TEST_BID_RESPONSE,
+      )
+    var rtbBannerAd: LineBannerAd? = null
+    LineBannerAd.newInstance(config, mediationAdLoadCallback, mediationUtils).onSuccess {
+      rtbBannerAd = it
     }
+
+    rtbBannerAd?.loadRtbAd(context)
+
+    val callbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
+    verify(mockAdLoader)
+      .loadBannerAd(
+        any<BidData>(),
+        eq(AdSize.BANNER.getWidthInPixels(context)),
+        callbackCaptor.capture(),
+      )
+    callbackCaptor.firstValue.onLoad(mockFiveAdCustomLayout)
+    verify(mockFiveAdCustomLayout).enableSound(false)
   }
 
   // endregion

@@ -50,6 +50,7 @@ import com.unity3d.ads.UnityAdsLoadOptions
 import com.unity3d.ads.metadata.MediationMetaData
 import com.unity3d.ads.metadata.MetaData
 import com.unity3d.services.banners.UnityBannerSize
+import com.unity3d.services.core.properties.SdkProperties
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -126,6 +127,40 @@ class UnityMediationAdapterTest {
       unityBannerViewWrapper
     whenever(unityAdsWrapper.getMetaData(any())) doReturn unityMetaData
     whenever(unityAdsWrapper.getMediationMetaData(any())) doReturn mediationMetadata
+    UnityMediationAdapter.setTestMode(false)
+  }
+
+  @Test
+  fun setTestMode_updatesTestModeAndSdkProperties() {
+    mockStatic(SdkProperties::class.java).use { mockedSdkProperties ->
+      UnityMediationAdapter.setTestMode(true)
+
+      assertThat(UnityMediationAdapter.isTestMode()).isTrue()
+      mockedSdkProperties.verify { SdkProperties.setTestMode(true) }
+
+      UnityMediationAdapter.setTestMode(false)
+
+      assertThat(UnityMediationAdapter.isTestMode()).isFalse()
+      mockedSdkProperties.verify { SdkProperties.setTestMode(false) }
+    }
+  }
+
+  @Test
+  fun unityAdsWrapperInitialize_passesTestModeToUnityAds() {
+    val realWrapper = UnityAdsWrapper()
+    val initListener: IUnityAdsInitializationListener = mock()
+
+    mockStatic(UnityAds::class.java).use { mockedUnityAds ->
+      UnityMediationAdapter.setTestMode(true)
+      realWrapper.initialize(activity, TEST_GAME_ID, initListener)
+
+      mockedUnityAds.verify { UnityAds.initialize(activity, TEST_GAME_ID, true, initListener) }
+
+      UnityMediationAdapter.setTestMode(false)
+      realWrapper.initialize(activity, TEST_GAME_ID, initListener)
+
+      mockedUnityAds.verify { UnityAds.initialize(activity, TEST_GAME_ID, false, initListener) }
+    }
   }
 
   // region Version tests
@@ -159,7 +194,7 @@ class UnityMediationAdapterTest {
 
     val adError =
       AdError(ERROR_INVALID_SERVER_PARAMETERS, "Missing or invalid Game ID.", ADAPTER_ERROR_DOMAIN)
-    assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
+    assertThat(initializationCompleteCallback).hasFailedWith(adError)
   }
 
   @Test
@@ -210,7 +245,7 @@ class UnityMediationAdapterTest {
       mediationConfigurations,
     )
 
-    assertThat(initializationCompleteCallback).hasFailedWith(adError.toString())
+    assertThat(initializationCompleteCallback).hasFailedWith(adError)
   }
 
   @Test

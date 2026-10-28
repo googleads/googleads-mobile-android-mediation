@@ -416,7 +416,7 @@ class PubMaticMediationAdapterTest {
 
     val expectedError =
       AdError(ERROR_MISSING_PUBLISHER_ID, "Publisher ID is missing.", ADAPTER_ERROR_DOMAIN)
-    assertThat(initializationCompleteCallback).hasFailedWith(expectedError.toString())
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedError)
   }
 
   @Test
@@ -542,7 +542,7 @@ class PubMaticMediationAdapterTest {
           "INVALID_REQUEST: $OPENWRAP_INIT_ERROR_MSG",
           SDK_ERROR_DOMAIN,
         )
-      assertThat(initializationCompleteCallback).hasFailedWith(expectedError.toString())
+      assertThat(initializationCompleteCallback).hasFailedWith(expectedError)
     }
   }
 

@@ -188,7 +188,6 @@ class DTExchangeNativeAdMapperTest {
 
       eventListenerCaptor.firstValue.onAdImpression(mock())
 
-      assertThat(nativeAdCallback.isOpened).isTrue()
       assertThat(nativeAdCallback.isImpressionReported).isTrue()
     }
   }

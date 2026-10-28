@@ -297,6 +297,9 @@ class VungleMediationAdapterTest {
         on { getAdViewSize() } doReturn VungleAdSize.BANNER
       }
     whenever(vungleFactory.createBannerAd(any(), any(), any())) doReturn vungleBannerAd
+    // We use a captor to verify the VungleAdSize values since the VungleAdSize comparison doesn't
+    // work as expected.
+    val vungleAdSizeCaptor = argumentCaptor<VungleAdSize>()
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
 
@@ -312,7 +315,10 @@ class VungleMediationAdapterTest {
     }
 
     verify(mockVungleInitializer).initialize(eq(TEST_APP_ID_1), eq(context), any())
-    verify(vungleFactory).createBannerAd(context, TEST_PLACEMENT_ID, VungleAdSize.BANNER)
+    verify(vungleFactory)
+      .createBannerAd(eq(context), eq(TEST_PLACEMENT_ID), vungleAdSizeCaptor.capture())
+    assertThat(vungleAdSizeCaptor.firstValue.width).isEqualTo(VungleAdSize.BANNER.width)
+    assertThat(vungleAdSizeCaptor.firstValue.height).isEqualTo(VungleAdSize.BANNER.height)
     verify(vungleBannerAd).load(null)
     val bannerAdCaptor = argumentCaptor<VungleBannerAd>()
     verify(vungleBannerAd).adListener = bannerAdCaptor.capture()
@@ -1283,6 +1289,9 @@ class VungleMediationAdapterTest {
         on { getAdViewSize() } doReturn VungleAdSize.BANNER
       }
     whenever(vungleFactory.createBannerAd(any(), any(), any())) doReturn vungleBannerAd
+    // We use a captor to verify the VungleAdSize values since the VungleAdSize comparison doesn't
+    // work as expected.
+    val vungleAdSizeCaptor = argumentCaptor<VungleAdSize>()
     mockStatic(VungleInitializer::class.java).use {
       whenever(getInstance()) doReturn mockVungleInitializer
 
@@ -1300,7 +1309,10 @@ class VungleMediationAdapterTest {
     }
 
     verify(mockVungleInitializer).initialize(eq(TEST_APP_ID_1), eq(context), any())
-    verify(vungleFactory).createBannerAd(context, TEST_PLACEMENT_ID, VungleAdSize.BANNER)
+    verify(vungleFactory)
+      .createBannerAd(eq(context), eq(TEST_PLACEMENT_ID), vungleAdSizeCaptor.capture())
+    assertThat(vungleAdSizeCaptor.firstValue.width).isEqualTo(VungleAdSize.BANNER.width)
+    assertThat(vungleAdSizeCaptor.firstValue.height).isEqualTo(VungleAdSize.BANNER.height)
     verify(vungleBannerAd).load(TEST_BID_RESPONSE)
     val bannerAdCaptor = argumentCaptor<VungleRtbBannerAd>()
     verify(vungleBannerAd).adListener = bannerAdCaptor.capture()

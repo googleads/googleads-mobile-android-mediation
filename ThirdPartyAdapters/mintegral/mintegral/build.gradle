@@ -10,7 +10,7 @@ ext {
     // String property to store the proper name of the mediation network adapter.
     adapterName = "Mintegral"
     // String property to store version name.
-    stringVersion = "17.1.81.0"
+    stringVersion = "17.1.91.0"
     // String property to store group id.
     stringGroupId = "com.google.ads.mediation"
     // Jacoco version to generate code coverage data
@@ -21,13 +21,9 @@ android {
     namespace 'com.google.ads.mediation.mintegral'
     compileSdk 34
     defaultConfig {
-        if (project.hasProperty('useNextGenGma')) {
-            minSdk 24
-        } else {
-            minSdk 23
-        }
+        minSdk 24
         targetSdk 33
-        versionCode 17018100
+        versionCode 17019100
         versionName stringVersion
         buildConfigField('String', 'ADAPTER_VERSION', "\"${stringVersion}\"")
         multiDexEnabled true
@@ -122,22 +118,26 @@ task jacocoTestReport(type: JacocoReport,
 }
 
 dependencies {
+    // Explicitly pin Kotlin stdlib to 1.9.0. This matches the min Kotlin
+    // version supported by the GMA NextGen SDK. Don't upgrade this version
+    // unless GMA NextGen SDK upgrades its min Kotlin version.
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.0'
+
     implementation 'com.google.ads.mediation:common:1.1.0'
     // Check for a 'useNextGenGma' flag to use the next generation GMA SDK.
     if (project.hasProperty('useNextGenGma')) {
-        implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.4.0'
+        implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.6.0'
     } else {
-        implementation 'com.google.android.gms:play-services-ads:25.4.0'
+        implementation 'com.google.android.gms:play-services-ads:25.5.0'
     }
     implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.mbridge.msdk.oversea:mbridge_android_sdk:17.1.81'
+    implementation 'com.mbridge.msdk.oversea:mbridge_android_sdk:17.1.91'
 
     // Jacoco
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
 
     // Unit tests
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.jetbrains.kotlin:kotlin-stdlib:2.3.0'
     testImplementation 'org.jetbrains.kotlin:kotlin-test:2.3.0'
     testImplementation 'com.google.truth:truth:1.1.5'
     testImplementation 'androidx.test:core:1.5.0'

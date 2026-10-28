@@ -23,6 +23,7 @@ import com.google.ads.mediation.pangle.renderer.PangleInterstitialAd
 import com.google.ads.mediation.pangle.renderer.PangleNativeAd
 import com.google.ads.mediation.pangle.renderer.PangleRewardedAd
 import com.google.ads.mediation.pangle.utils.TestConstants.APP_ID_VALUE
+import com.google.ads.mediation.pangle.utils.TestConstants.PANGLE_INIT_FAILURE_CODE
 import com.google.ads.mediation.pangle.utils.TestConstants.PANGLE_INIT_FAILURE_MESSAGE
 import com.google.ads.mediation.pangle.utils.mockPangleSdkInitializationFailure
 import com.google.ads.mediation.pangle.utils.mockPangleSdkInitializationSuccess
@@ -194,12 +195,11 @@ class PangleMediationAdapterTest {
   @Test
   fun initialize_withoutAppId_callsFailureCallback() {
     val fakeCallback = FakeInitializationCompleteCallback()
-    val expectedAdErrorString =
+    val expectedAdError =
       PangleConstants.createAdapterError(
-          ERROR_INVALID_SERVER_PARAMETERS,
-          ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID,
-        )
-        .toString()
+        ERROR_INVALID_SERVER_PARAMETERS,
+        ERROR_MESSAGE_MISSING_OR_INVALID_APP_ID,
+      )
 
     pangleMediationAdapter.initialize(
       context,
@@ -207,7 +207,7 @@ class PangleMediationAdapterTest {
       listOf(MediationConfiguration(AdFormat.BANNER, bundleOf())),
     )
 
-    assertThat(fakeCallback).hasFailedWith(expectedAdErrorString)
+    assertThat(fakeCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -236,7 +236,10 @@ class PangleMediationAdapterTest {
 
     pangleMediationAdapter.initialize(context, fakeCallback, listOf(buildProperMediationConfig()))
 
-    assertThat(fakeCallback).hasFailedWith(PANGLE_INIT_FAILURE_MESSAGE)
+    assertThat(fakeCallback)
+      .hasFailedWith(
+        PangleConstants.createSdkError(PANGLE_INIT_FAILURE_CODE, PANGLE_INIT_FAILURE_MESSAGE)
+      )
   }
 
   @Test
@@ -254,7 +257,7 @@ class PangleMediationAdapterTest {
 
     pangleMediationAdapter.initialize(context, fakeCallback, listOf(buildProperMediationConfig()))
 
-    assertThat(fakeCallback).hasFailedWith(PangleConstants.ERROR_MSG_CHILD_USER)
+    assertThat(fakeCallback).hasFailedWith(PangleConstants.createChildUserError())
   }
 
   @Test

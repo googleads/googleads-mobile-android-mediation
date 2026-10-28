@@ -1,5 +1,27 @@
 ## IronSource Android Mediation Adapter Changelog
 
+#### Version 9.7.0.0 (In progress)
+- Updated `collectSignals()` to invoke `onFailure()` with error code 108 when
+  the ironSource SDK returns null or empty bidding signals.
+- Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+
+#### Version 9.6.1.0
+- Verified compatibility with ironSource SDK version 9.6.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.5.0.
+- Google Mobile Ads Next-Gen SDK version 1.5.0.
+- IronSource SDK version 9.6.1.
+
+#### Version 9.6.0.1
+- Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
+  by GMA NextGen SDK).
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.4.0.
+- Google Mobile Ads Next-Gen SDK version 1.4.0.
+- IronSource SDK version 9.6.0.
+
 #### Version 9.6.0.0
 - Verified compatibility with ironSource SDK version 9.6.0.
 

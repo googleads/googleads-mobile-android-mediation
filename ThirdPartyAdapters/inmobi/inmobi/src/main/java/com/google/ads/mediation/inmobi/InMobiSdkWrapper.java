@@ -29,6 +29,10 @@ public class InMobiSdkWrapper {
     InMobiSdk.setIsAgeRestricted(isAgeRestricted);
   }
 
+  public void setApplicationMuted(boolean isMuted) {
+    InMobiSdk.setApplicationMuted(isMuted);
+  }
+
   public void init(
       final Context context,
       final String accountId,

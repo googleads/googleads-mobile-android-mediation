@@ -17,7 +17,6 @@ package com.google.ads.mediation.line
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
-import com.five_corp.ad.AdLoader
 import com.five_corp.ad.AdLoader.CollectSignalCallback
 import com.five_corp.ad.AdSlotConfig
 import com.five_corp.ad.FiveAdErrorCode
@@ -159,7 +158,7 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
       return
     }
     val adConfig = LineInitializer.getFiveAdConfig(initAppId)
-    val adLoader = AdLoader.forConfig(signalData.context, adConfig)
+    val adLoader = LineSdkFactory.delegate.createAdLoader(signalData.context, adConfig)
     if (adLoader == null) {
       val adError =
         AdError(ERROR_CODE_NULL_AD_LOADER, ERROR_MSG_NULL_AD_LOADER, ADAPTER_ERROR_DOMAIN)

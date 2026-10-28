@@ -244,122 +244,112 @@ class LineNativeAdTest {
   // region RTB loadRtbAd Tests
   @Test
   fun loadRtbAd_success_invokesOnSuccess() {
-    mockStatic(AdLoader::class.java).use {
-      val mockAdLoader = mock<AdLoader>()
-      whenever(AdLoader.forConfig(eq(context), any())) doReturn mockAdLoader
-      val config = createMediationNativeAdConfiguration(bidResponse = TEST_BID_RESPONSE)
-      var rtbNativeAd: LineNativeAd? = null
-      LineNativeAd.newInstance(config, mediationAdLoadCallback, Dispatchers.Unconfined).onSuccess {
-        rtbNativeAd = it
-      }
-      initiateImageLoadCallbacks()
-
-      rtbNativeAd?.loadRtbAd()
-
-      val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
-      verify(mockAdLoader).loadNativeAd(any<BidData>(), loadCallbackCaptor.capture())
-      val capturedCallback = loadCallbackCaptor.firstValue
-      testCoroutineScope.runTest { capturedCallback.onLoad(mockFiveAdNative) }
-      verify(mockFiveAdNative).setEventListener(rtbNativeAd!!)
-      assertThat(mediationAdLoadCallback).hasSucceededWith(rtbNativeAd!!)
+    val mockAdLoader = mock<AdLoader>()
+    whenever(sdkFactory.createAdLoader(eq(context), any())) doReturn mockAdLoader
+    val config = createMediationNativeAdConfiguration(bidResponse = TEST_BID_RESPONSE)
+    var rtbNativeAd: LineNativeAd? = null
+    LineNativeAd.newInstance(config, mediationAdLoadCallback, Dispatchers.Unconfined).onSuccess {
+      rtbNativeAd = it
     }
+    initiateImageLoadCallbacks()
+
+    rtbNativeAd?.loadRtbAd()
+
+    val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
+    verify(mockAdLoader).loadNativeAd(any<BidData>(), loadCallbackCaptor.capture())
+    val capturedCallback = loadCallbackCaptor.firstValue
+    testCoroutineScope.runTest { capturedCallback.onLoad(mockFiveAdNative) }
+    verify(mockFiveAdNative).setEventListener(rtbNativeAd!!)
+    assertThat(mediationAdLoadCallback).hasSucceededWith(rtbNativeAd!!)
   }
 
   @Test
   fun loadRtbAd_error_invokesOnFailure() {
-    mockStatic(AdLoader::class.java).use {
-      val mockAdLoader = mock<AdLoader>()
-      whenever(AdLoader.forConfig(eq(context), any())) doReturn mockAdLoader
-      val config = createMediationNativeAdConfiguration(bidResponse = TEST_BID_RESPONSE)
-      var rtbNativeAd: LineNativeAd? = null
-      LineNativeAd.newInstance(config, mediationAdLoadCallback, Dispatchers.Unconfined).onSuccess {
-        rtbNativeAd = it
-      }
-
-      rtbNativeAd?.loadRtbAd()
-
-      val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
-      verify(mockAdLoader).loadNativeAd(any<BidData>(), loadCallbackCaptor.capture())
-      loadCallbackCaptor.firstValue.onError(FiveAdErrorCode.INTERNAL_ERROR)
-
-      val expectedError =
-        AdError(
-          FiveAdErrorCode.INTERNAL_ERROR.value,
-          FiveAdErrorCode.INTERNAL_ERROR.name,
-          LineMediationAdapter.SDK_ERROR_DOMAIN,
-        )
-      assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
+    val mockAdLoader = mock<AdLoader>()
+    whenever(sdkFactory.createAdLoader(eq(context), any())) doReturn mockAdLoader
+    val config = createMediationNativeAdConfiguration(bidResponse = TEST_BID_RESPONSE)
+    var rtbNativeAd: LineNativeAd? = null
+    LineNativeAd.newInstance(config, mediationAdLoadCallback, Dispatchers.Unconfined).onSuccess {
+      rtbNativeAd = it
     }
+
+    rtbNativeAd?.loadRtbAd()
+
+    val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
+    verify(mockAdLoader).loadNativeAd(any<BidData>(), loadCallbackCaptor.capture())
+    loadCallbackCaptor.firstValue.onError(FiveAdErrorCode.INTERNAL_ERROR)
+
+    val expectedError =
+      AdError(
+        FiveAdErrorCode.INTERNAL_ERROR.value,
+        FiveAdErrorCode.INTERNAL_ERROR.name,
+        LineMediationAdapter.SDK_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   @Test
   fun loadRtbAd_whenNullAdLoader_returnsEarlySafely() {
-    mockStatic(AdLoader::class.java).use {
-      whenever(AdLoader.forConfig(eq(context), any())) doReturn null
-      val config = createMediationNativeAdConfiguration(bidResponse = TEST_BID_RESPONSE)
-      var rtbNativeAd: LineNativeAd? = null
-      LineNativeAd.newInstance(config, mediationAdLoadCallback, Dispatchers.Unconfined).onSuccess {
-        rtbNativeAd = it
-      }
-
-      rtbNativeAd?.loadRtbAd()
-
-      verify(mockFiveAdNative, never()).loadAdAsync()
+    whenever(sdkFactory.createAdLoader(eq(context), any())) doReturn null
+    val config = createMediationNativeAdConfiguration(bidResponse = TEST_BID_RESPONSE)
+    var rtbNativeAd: LineNativeAd? = null
+    LineNativeAd.newInstance(config, mediationAdLoadCallback, Dispatchers.Unconfined).onSuccess {
+      rtbNativeAd = it
     }
+
+    rtbNativeAd?.loadRtbAd()
+
+    verify(mockFiveAdNative, never()).loadAdAsync()
   }
 
   @Test
   fun loadRtbAd_withStartMutedTrue_disablesSound() {
-    mockStatic(AdLoader::class.java).use {
-      val mockAdLoader = mock<AdLoader>()
-      whenever(AdLoader.forConfig(eq(context), any())) doReturn mockAdLoader
-      val videoOptions = VideoOptions.Builder().setStartMuted(true).build()
-      val nativeAdOptions = NativeAdOptions.Builder().setVideoOptions(videoOptions).build()
-      val config =
-        createMediationNativeAdConfiguration(
-          bidResponse = TEST_BID_RESPONSE,
-          nativeAdOptions = nativeAdOptions,
-        )
-      var ad: LineNativeAd? = null
-      LineNativeAd.newInstance(config, mediationAdLoadCallback, Dispatchers.Unconfined).onSuccess {
-        ad = it
-      }
-
-      ad?.loadRtbAd()
-
-      val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
-      verify(mockAdLoader).loadNativeAd(any<BidData>(), loadCallbackCaptor.capture())
-      loadCallbackCaptor.firstValue.onLoad(mockFiveAdNative)
-
-      verify(mockFiveAdNative).enableSound(false)
+    val mockAdLoader = mock<AdLoader>()
+    whenever(sdkFactory.createAdLoader(eq(context), any())) doReturn mockAdLoader
+    val videoOptions = VideoOptions.Builder().setStartMuted(true).build()
+    val nativeAdOptions = NativeAdOptions.Builder().setVideoOptions(videoOptions).build()
+    val config =
+      createMediationNativeAdConfiguration(
+        bidResponse = TEST_BID_RESPONSE,
+        nativeAdOptions = nativeAdOptions,
+      )
+    var ad: LineNativeAd? = null
+    LineNativeAd.newInstance(config, mediationAdLoadCallback, Dispatchers.Unconfined).onSuccess {
+      ad = it
     }
+
+    ad?.loadRtbAd()
+
+    val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
+    verify(mockAdLoader).loadNativeAd(any<BidData>(), loadCallbackCaptor.capture())
+    loadCallbackCaptor.firstValue.onLoad(mockFiveAdNative)
+
+    verify(mockFiveAdNative).enableSound(false)
   }
 
   @Test
   fun loadRtbAd_withStartMutedFalse_enablesSound() {
-    mockStatic(AdLoader::class.java).use {
-      val mockAdLoader = mock<AdLoader>()
-      whenever(AdLoader.forConfig(eq(context), any())) doReturn mockAdLoader
-      val videoOptions = VideoOptions.Builder().setStartMuted(false).build()
-      val nativeAdOptions = NativeAdOptions.Builder().setVideoOptions(videoOptions).build()
-      val config =
-        createMediationNativeAdConfiguration(
-          bidResponse = TEST_BID_RESPONSE,
-          nativeAdOptions = nativeAdOptions,
-        )
-      var ad: LineNativeAd? = null
-      LineNativeAd.newInstance(config, mediationAdLoadCallback, Dispatchers.Unconfined).onSuccess {
-        ad = it
-      }
-
-      ad?.loadRtbAd()
-
-      val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
-      verify(mockAdLoader).loadNativeAd(any<BidData>(), loadCallbackCaptor.capture())
-      loadCallbackCaptor.firstValue.onLoad(mockFiveAdNative)
-
-      verify(mockFiveAdNative).enableSound(true)
+    val mockAdLoader = mock<AdLoader>()
+    whenever(sdkFactory.createAdLoader(eq(context), any())) doReturn mockAdLoader
+    val videoOptions = VideoOptions.Builder().setStartMuted(false).build()
+    val nativeAdOptions = NativeAdOptions.Builder().setVideoOptions(videoOptions).build()
+    val config =
+      createMediationNativeAdConfiguration(
+        bidResponse = TEST_BID_RESPONSE,
+        nativeAdOptions = nativeAdOptions,
+      )
+    var ad: LineNativeAd? = null
+    LineNativeAd.newInstance(config, mediationAdLoadCallback, Dispatchers.Unconfined).onSuccess {
+      ad = it
     }
+
+    ad?.loadRtbAd()
+
+    val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
+    verify(mockAdLoader).loadNativeAd(any<BidData>(), loadCallbackCaptor.capture())
+    loadCallbackCaptor.firstValue.onLoad(mockFiveAdNative)
+
+    verify(mockFiveAdNative).enableSound(true)
   }
 
   // endregion

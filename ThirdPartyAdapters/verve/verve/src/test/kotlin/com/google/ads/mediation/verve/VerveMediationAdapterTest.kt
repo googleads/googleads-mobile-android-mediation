@@ -36,6 +36,8 @@ import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfigur
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.APP_TOKEN_KEY
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_CODE_CHILD_USER
+import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_CODE_INITIALIZE_VERVE_SDK
+import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_CODE_MISSING_APP_TOKEN
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_CHILD_USER
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_ERROR_INITIALIZE_VERVE_SDK
 import com.google.ads.mediation.verve.VerveMediationAdapter.Companion.ERROR_MSG_MISSING_APP_TOKEN
@@ -177,7 +179,8 @@ class VerveMediationAdapterTest {
     )
     adapter.initialize(context, initializationCompleteCallback, mediationConfigurations = listOf())
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_CHILD_USER)
+    val expectedAdError = AdError(ERROR_CODE_CHILD_USER, ERROR_MSG_CHILD_USER, ADAPTER_ERROR_DOMAIN)
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -189,7 +192,8 @@ class VerveMediationAdapterTest {
     )
     adapter.initialize(context, initializationCompleteCallback, mediationConfigurations = listOf())
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_CHILD_USER)
+    val expectedAdError = AdError(ERROR_CODE_CHILD_USER, ERROR_MSG_CHILD_USER, ADAPTER_ERROR_DOMAIN)
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -199,14 +203,17 @@ class VerveMediationAdapterTest {
     )
     adapter.initialize(context, initializationCompleteCallback, mediationConfigurations = listOf())
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_CHILD_USER)
+    val expectedAdError = AdError(ERROR_CODE_CHILD_USER, ERROR_MSG_CHILD_USER, ADAPTER_ERROR_DOMAIN)
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
   fun initialize_withEmptyConfiguration_invokesOnInitializationFailed() {
     adapter.initialize(context, initializationCompleteCallback, mediationConfigurations = listOf())
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_MISSING_APP_TOKEN)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_APP_TOKEN, ERROR_MSG_MISSING_APP_TOKEN, ADAPTER_ERROR_DOMAIN)
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -216,7 +223,9 @@ class VerveMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_MISSING_APP_TOKEN)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_APP_TOKEN, ERROR_MSG_MISSING_APP_TOKEN, ADAPTER_ERROR_DOMAIN)
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -226,7 +235,9 @@ class VerveMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_MISSING_APP_TOKEN)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_APP_TOKEN, ERROR_MSG_MISSING_APP_TOKEN, ADAPTER_ERROR_DOMAIN)
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -267,7 +278,13 @@ class VerveMediationAdapterTest {
       // Default testMode value = false
       mockedHyBid.verify { HyBid.setTestMode(eq(false)) }
       listenerCaptor.firstValue.onInitialisationFinished(/* success= */ false)
-      assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_ERROR_INITIALIZE_VERVE_SDK)
+      val expectedAdError =
+        AdError(
+          ERROR_CODE_INITIALIZE_VERVE_SDK,
+          ERROR_MSG_ERROR_INITIALIZE_VERVE_SDK,
+          ADAPTER_ERROR_DOMAIN,
+        )
+      assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
     }
   }
 

@@ -15,6 +15,7 @@
 package com.google.ads.mediation.line
 
 import android.content.Context
+import com.five_corp.ad.AdLoader
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdCustomLayout
 import com.five_corp.ad.FiveAdInterstitial
@@ -58,6 +59,9 @@ object LineSdkFactory {
 
       override fun createFiveAdNative(context: Context, slotId: String) =
         FiveAdNative(context, slotId)
+
+      override fun createAdLoader(context: Context, fiveAdConfig: FiveAdConfig): AdLoader? =
+        AdLoader.forConfig(context, fiveAdConfig)
     }
 
   private fun newThreadFactory(poolName: String) =
@@ -91,4 +95,6 @@ interface SdkFactory {
   fun createFiveVideoRewarded(context: Context, slotId: String): FiveAdVideoReward
 
   fun createFiveAdNative(context: Context, slotId: String): FiveAdNative
+
+  fun createAdLoader(context: Context, fiveAdConfig: FiveAdConfig): AdLoader?
 }
