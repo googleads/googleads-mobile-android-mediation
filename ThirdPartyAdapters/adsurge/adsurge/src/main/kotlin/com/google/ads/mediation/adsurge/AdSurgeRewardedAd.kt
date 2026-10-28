@@ -14,7 +14,15 @@
 
 package com.google.ads.mediation.adsurge
 
+import android.app.Activity
 import android.content.Context
+import androidx.annotation.VisibleForTesting
+import com.adsurge.adn.ads.AdConfig
+import com.adsurge.adn.ads.AdSurgeAd
+import com.adsurge.adn.ads.AdSurgeAdError
+import com.adsurge.adn.ads.rewarded.IRewardedAd
+import com.adsurge.adn.ads.rewarded.RewardItem as AdSurgeRewardItem
+import com.adsurge.adn.ads.rewarded.RewardedAdListener
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
@@ -25,19 +33,63 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
  * SDK.
  */
 class AdSurgeRewardedAd
-private constructor(
-  private val context: Context,
+@VisibleForTesting
+internal constructor(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
-  // TODO: Add other parameters or remove unnecessary ones.
-) : MediationRewardedAd {
+  private val adUnitId: String,
+  private val bidResponse: String,
+  private val rewardedAd: IRewardedAd,
+) : MediationRewardedAd, RewardedAdListener {
+
+  @VisibleForTesting internal var rewardedAdCallback: MediationRewardedAdCallback? = null
 
   fun loadAd() {
-    // TODO: Implement this method.
+    val adConfig = AdConfig.Builder().payload(bidResponse).build()
+
+    rewardedAd.loadAd(adConfig, this)
   }
 
   override fun showAd(context: Context) {
-    // TODO: Implement this method.
+    if (!rewardedAd.isValid) {
+      val error =
+        AdSurgeUtils.createAdapterError(
+          AdSurgeUtils.ERROR_AD_NOT_READY,
+          "AdSurge rewarded ad is not ready to be presented.",
+        )
+      rewardedAdCallback?.onAdFailedToShow(error)
+      return
+    }
+
+    rewardedAd.showAd(context as Activity)
+  }
+
+  override fun onAdLoaded(adSurgeAd: AdSurgeAd) {
+    rewardedAdCallback = mediationAdLoadCallback.onSuccess(this)
+  }
+
+  override fun onAdFailed(adSurgeAdError: AdSurgeAdError) {
+    mediationAdLoadCallback.onFailure(AdSurgeUtils.createSdkError(adSurgeAdError))
+  }
+
+  override fun onAdImpression(adSurgeAd: AdSurgeAd) {
+    rewardedAdCallback?.reportAdImpression()
+  }
+
+  override fun onAdClicked(adSurgeAd: AdSurgeAd) {
+    rewardedAdCallback?.reportAdClicked()
+  }
+
+  override fun onAdDismissed(adSurgeAd: AdSurgeAd) {
+    rewardedAdCallback?.onAdClosed()
+  }
+
+  override fun onAdShowFailed(adSurgeAd: AdSurgeAd, adSurgeAdError: AdSurgeAdError) {
+    rewardedAdCallback?.onAdFailedToShow(AdSurgeUtils.createSdkError(adSurgeAdError))
+  }
+
+  override fun onUserEarnedReward(adSurgeAd: AdSurgeAd, rewardItem: AdSurgeRewardItem?) {
+    rewardedAdCallback?.onUserEarnedReward()
   }
 
   companion object {
@@ -48,10 +100,39 @@ private constructor(
     ): Result<AdSurgeRewardedAd> {
       val context = mediationRewardedAdConfiguration.context
       val serverParameters = mediationRewardedAdConfiguration.serverParameters
+      val adUnitId = serverParameters.getString(AdSurgeUtils.KEY_AD_UNIT_ID)
 
-      // TODO: Implement necessary initialization steps.
+      if (adUnitId.isNullOrEmpty()) {
+        val error =
+          AdSurgeUtils.createAdapterError(
+            AdSurgeUtils.ERROR_INVALID_SERVER_PARAMETERS,
+            "Missing or invalid ad_unit_id.",
+          )
+        mediationAdLoadCallback.onFailure(error)
+        return Result.failure(IllegalArgumentException(error.message))
+      }
 
-      return Result.success(AdSurgeRewardedAd(context, mediationAdLoadCallback))
+      val bidResponse = mediationRewardedAdConfiguration.bidResponse
+      if (bidResponse.isNullOrEmpty()) {
+        val error =
+          AdSurgeUtils.createAdapterError(
+            AdSurgeUtils.ERROR_INVALID_SERVER_PARAMETERS,
+            "Missing or invalid bid response.",
+          )
+        mediationAdLoadCallback.onFailure(error)
+        return Result.failure(IllegalArgumentException(error.message))
+      }
+
+      AdSurgeUtils.applyPrivacyConfiguration(mediationRewardedAdConfiguration)
+      val rewardedAd = AdSurgeFactory.createRewardedAd(context, adUnitId)
+      return Result.success(
+        AdSurgeRewardedAd(
+          mediationAdLoadCallback = mediationAdLoadCallback,
+          adUnitId = adUnitId,
+          bidResponse = bidResponse,
+          rewardedAd = rewardedAd,
+        )
+      )
     }
   }
 }
