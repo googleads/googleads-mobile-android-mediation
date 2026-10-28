@@ -99,6 +99,6 @@ class AdSurgeMediationAdapter : RtbAdapter() {
   companion object {
     private val TAG = AdSurgeMediationAdapter::class.simpleName
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.adsurge"
-    const val SDK_ERROR_DOMAIN = "" // TODO: Update the third party SDK error domain.
+    const val SDK_ERROR_DOMAIN = "com.adsurge.adn"
   }
 }
