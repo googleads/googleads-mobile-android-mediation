@@ -18,7 +18,7 @@ package com.google.ads.mediation.snippets.java;
 
 import android.os.Bundle;
 import com.google.ads.mediation.facebook.FacebookMediationAdapter;
-import com.google.android.gms.ads.nativead.NativeAd;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd;
 
 /**
  * Java code snippets for https://developers.google.com/admob/android/mediation/meta and

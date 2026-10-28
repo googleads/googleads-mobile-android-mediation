@@ -18,7 +18,7 @@ package com.google.ads.mediation.snippets.kotlin
 
 import com.google.ads.mediation.line.LineExtras
 import com.google.ads.mediation.line.LineMediationAdapter
-import com.google.android.gms.ads.AdRequest
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
 
 /**
  * Kotlin code snippets for https://developers.google.com/admob/android/mediation/line and
@@ -38,7 +38,9 @@ class LineMediationSnippets {
     val extras = lineExtras.build()
 
     val request =
-      AdRequest.Builder().addNetworkExtrasBundle(LineMediationAdapter::class.java, extras).build()
+      AdRequest.Builder("AD_UNIT_ID")
+        .putAdSourceExtrasBundle(LineMediationAdapter::class.java, extras)
+        .build()
     // [END set_network_specific_params]
   }
 }

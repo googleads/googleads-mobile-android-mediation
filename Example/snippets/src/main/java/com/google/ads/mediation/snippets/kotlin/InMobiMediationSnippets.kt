@@ -17,16 +17,10 @@
 package com.google.ads.mediation.snippets.kotlin
 
 import android.os.Bundle
-import android.util.Log
 import com.google.ads.mediation.inmobi.InMobiAdapter
-import com.google.ads.mediation.inmobi.InMobiConsent
 import com.google.ads.mediation.inmobi.InMobiNetworkKeys
 import com.google.ads.mediation.inmobi.InMobiNetworkValues
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.admanager.AdManagerAdRequest
-import com.inmobi.sdk.InMobiSdk
-import org.json.JSONException
-import org.json.JSONObject
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
 
 /**
  * Kotlin code snippets for https://developers.google.com/admob/android/mediation/inmobi and
@@ -41,25 +35,28 @@ class InMobiMediationSnippets {
     extras.putString(InMobiNetworkKeys.AREA_CODE, AREA_CODE_VALUE)
 
     val request =
-      AdRequest.Builder().addNetworkExtrasBundle(InMobiAdapter::class.java, extras).build()
+      AdRequest.Builder("AD_UNIT_ID")
+        .putAdSourceExtrasBundle(InMobiAdapter::class.java, extras)
+        .build()
     // [END set_ad_request_parameters]
     return request
   }
 
-  private fun setAdManagerRequestWithParameters(): AdManagerAdRequest {
+  private fun setAdManagerRequestWithParameters(): AdRequest {
     // [START set_ad_manager_ad_request_parameters]
     val extras = Bundle()
     extras.putString(InMobiNetworkKeys.AGE_GROUP, InMobiNetworkValues.BETWEEN_35_AND_44)
     extras.putString(InMobiNetworkKeys.AREA_CODE, AREA_CODE_VALUE)
 
     val request =
-      AdManagerAdRequest.Builder().addNetworkExtrasBundle(InMobiAdapter::class.java, extras).build()
+      AdRequest.Builder("AD_UNIT_ID")
+        .putAdSourceExtrasBundle(InMobiAdapter::class.java, extras)
+        .build()
     // [END set_ad_manager_ad_request_parameters]
     return request
   }
 
   private companion object {
     const val AREA_CODE_VALUE = "12345"
-    const val TAG = "InMobiMediationSnippets"
   }
 }

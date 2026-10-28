@@ -18,7 +18,7 @@ import android.os.Bundle;
 import com.applovin.mediation.AppLovinExtras;
 import com.applovin.mediation.ApplovinAdapter;
 import com.applovin.sdk.AppLovinPrivacySettings;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest;
 
 /**
  * Java code snippets for
@@ -37,7 +37,9 @@ public class AppLovinMediationSnippets {
     // [START set_mute_audio]
     Bundle extras = new AppLovinExtras.Builder().setMuteAudio(true).build();
     AdRequest request =
-        new AdRequest.Builder().addNetworkExtrasBundle(ApplovinAdapter.class, extras).build();
+        new AdRequest.Builder("AD_UNIT_ID")
+            .putAdSourceExtrasBundle(ApplovinAdapter.class, extras)
+            .build();
     // [END set_mute_audio]
   }
 }

@@ -43,6 +43,5 @@ ext {
 
     appcompat = "androidx.appcompat:appcompat:1.6.1"
 
-    play = '25.5.0'
-    playServicesAds = "com.google.android.gms:play-services-ads:$play"
+    adsMobileSdk = "com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.6.0"
 }
