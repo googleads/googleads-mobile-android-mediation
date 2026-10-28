@@ -14,7 +14,14 @@
 
 package com.google.ads.mediation.adsurge
 
+import android.app.Activity
 import android.content.Context
+import androidx.annotation.VisibleForTesting
+import com.adsurge.adn.ads.AdConfig
+import com.adsurge.adn.ads.AdSurgeAd
+import com.adsurge.adn.ads.AdSurgeAdError
+import com.adsurge.adn.ads.interstitial.IInterstitialAd
+import com.adsurge.adn.ads.interstitial.InterstitialAdListener
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
@@ -25,19 +32,59 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
  * AdSurge SDK.
  */
 class AdSurgeInterstitialAd
-private constructor(
-  private val context: Context,
+@VisibleForTesting
+internal constructor(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
-  // TODO: Add other parameters or remove unnecessary ones.
-) : MediationInterstitialAd {
+  private val adUnitId: String,
+  private val bidResponse: String,
+  private val interstitialAd: IInterstitialAd,
+) : MediationInterstitialAd, InterstitialAdListener {
+
+  @VisibleForTesting internal var interstitialAdCallback: MediationInterstitialAdCallback? = null
 
   fun loadAd() {
-    // TODO: Implement this method.
+    val adConfig = AdConfig.Builder().payload(bidResponse).build()
+
+    interstitialAd.loadAd(adConfig, this)
   }
 
   override fun showAd(context: Context) {
-    // TODO: Implement this method.
+    if (!interstitialAd.isValid) {
+      val error =
+        AdSurgeUtils.createAdapterError(
+          AdSurgeUtils.ERROR_AD_NOT_READY,
+          "AdSurge interstitial ad is not ready to be presented.",
+        )
+      interstitialAdCallback?.onAdFailedToShow(error)
+      return
+    }
+
+    interstitialAd.showAd(context as Activity)
+  }
+
+  override fun onAdLoaded(adSurgeAd: AdSurgeAd) {
+    interstitialAdCallback = mediationAdLoadCallback.onSuccess(this)
+  }
+
+  override fun onAdFailed(adSurgeAdError: AdSurgeAdError) {
+    mediationAdLoadCallback.onFailure(AdSurgeUtils.createSdkError(adSurgeAdError))
+  }
+
+  override fun onAdImpression(adSurgeAd: AdSurgeAd) {
+    interstitialAdCallback?.reportAdImpression()
+  }
+
+  override fun onAdClicked(adSurgeAd: AdSurgeAd) {
+    interstitialAdCallback?.reportAdClicked()
+  }
+
+  override fun onAdDismissed(adSurgeAd: AdSurgeAd) {
+    interstitialAdCallback?.onAdClosed()
+  }
+
+  override fun onAdShowFailed(adSurgeAd: AdSurgeAd, adSurgeAdError: AdSurgeAdError) {
+    interstitialAdCallback?.onAdFailedToShow(AdSurgeUtils.createSdkError(adSurgeAdError))
   }
 
   companion object {
@@ -48,10 +95,39 @@ private constructor(
     ): Result<AdSurgeInterstitialAd> {
       val context = mediationInterstitialAdConfiguration.context
       val serverParameters = mediationInterstitialAdConfiguration.serverParameters
+      val adUnitId = serverParameters.getString(AdSurgeUtils.KEY_AD_UNIT_ID)
 
-      // TODO: Implement necessary initialization steps.
+      if (adUnitId.isNullOrEmpty()) {
+        val error =
+          AdSurgeUtils.createAdapterError(
+            AdSurgeUtils.ERROR_INVALID_SERVER_PARAMETERS,
+            "Missing or invalid ad_unit_id.",
+          )
+        mediationAdLoadCallback.onFailure(error)
+        return Result.failure(IllegalArgumentException(error.message))
+      }
 
-      return Result.success(AdSurgeInterstitialAd(context, mediationAdLoadCallback))
+      val bidResponse = mediationInterstitialAdConfiguration.bidResponse
+      if (bidResponse.isNullOrEmpty()) {
+        val error =
+          AdSurgeUtils.createAdapterError(
+            AdSurgeUtils.ERROR_INVALID_SERVER_PARAMETERS,
+            "Missing or invalid bid response.",
+          )
+        mediationAdLoadCallback.onFailure(error)
+        return Result.failure(IllegalArgumentException(error.message))
+      }
+
+      AdSurgeUtils.applyPrivacyConfiguration(mediationInterstitialAdConfiguration)
+      val interstitialAd = AdSurgeFactory.createInterstitialAd(context, adUnitId)
+      return Result.success(
+        AdSurgeInterstitialAd(
+          mediationAdLoadCallback = mediationAdLoadCallback,
+          adUnitId = adUnitId,
+          bidResponse = bidResponse,
+          interstitialAd = interstitialAd,
+        )
+      )
     }
   }
 }
