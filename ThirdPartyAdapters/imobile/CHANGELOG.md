@@ -3,6 +3,7 @@
 #### Next Version
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
 - Updated the minimum required Android API level to 24.
+- Fixed an issue where interstitial ad load and presentation callbacks were not forwarded because an empty listener was registered with the i-mobile SDK.
 
 #### Version 2.3.2.5
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
