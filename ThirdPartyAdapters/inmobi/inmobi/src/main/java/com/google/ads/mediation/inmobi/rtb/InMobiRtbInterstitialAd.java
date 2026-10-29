@@ -8,6 +8,7 @@ import com.google.ads.mediation.inmobi.InMobiExtras;
 import com.google.ads.mediation.inmobi.InMobiExtrasBuilder;
 import com.google.ads.mediation.inmobi.InMobiInitializer;
 import com.google.ads.mediation.inmobi.InMobiInterstitialWrapper;
+import com.google.ads.mediation.inmobi.InMobiSdkWrapper;
 import com.google.ads.mediation.inmobi.renderers.InMobiInterstitialAd;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
@@ -21,11 +22,13 @@ public class InMobiRtbInterstitialAd extends InMobiInterstitialAd {
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               mediationAdLoadCallback,
       @NonNull InMobiInitializer inMobiInitializer,
-      @NonNull InMobiAdFactory inMobiAdFactory) {
+      @NonNull InMobiAdFactory inMobiAdFactory,
+      @NonNull InMobiSdkWrapper inMobiSdkWrapper) {
     super(
         mediationAdLoadCallback,
         inMobiInitializer,
-        inMobiAdFactory);
+        inMobiAdFactory,
+        inMobiSdkWrapper);
   }
 
   @Override
@@ -46,7 +49,7 @@ public class InMobiRtbInterstitialAd extends InMobiInterstitialAd {
             InMobiAdapterUtils.PROTOCOL_RTB);
     inMobiInterstitialWrapper.setExtras(inMobiExtras.getParameterMap());
     inMobiInterstitialWrapper.setKeywords(inMobiExtras.getKeywords());
-    InMobiAdapterUtils.setApplicationMuted(inMobiExtras);
+    InMobiAdapterUtils.setApplicationMuted(inMobiExtras, inMobiSdkWrapper);
 
     String bidToken = mediationInterstitialAdConfiguration.getBidResponse();
     inMobiInterstitialWrapper.load(bidToken.getBytes());

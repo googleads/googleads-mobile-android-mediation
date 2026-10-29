@@ -13,6 +13,7 @@ import com.google.ads.mediation.inmobi.InMobiExtrasBuilder;
 import com.google.ads.mediation.inmobi.InMobiInitializer;
 import com.google.ads.mediation.inmobi.InMobiInitializer.Listener;
 import com.google.ads.mediation.inmobi.InMobiInterstitialWrapper;
+import com.google.ads.mediation.inmobi.InMobiSdkWrapper;
 import com.google.ads.mediation.inmobi.renderers.InMobiRewardedAd;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
@@ -27,11 +28,13 @@ public class InMobiWaterfallRewardedAd extends InMobiRewardedAd {
           MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
               mediationAdLoadCallback,
       @NonNull InMobiInitializer inMobiInitializer,
-      @NonNull InMobiAdFactory inMobiAdFactory) {
+      @NonNull InMobiAdFactory inMobiAdFactory,
+      @NonNull InMobiSdkWrapper inMobiSdkWrapper) {
     super(
         mediationAdLoadCallback,
         inMobiInitializer,
-        inMobiAdFactory);
+        inMobiAdFactory,
+        inMobiSdkWrapper);
   }
 
   @Override
@@ -77,7 +80,7 @@ public class InMobiWaterfallRewardedAd extends InMobiRewardedAd {
             InMobiAdapterUtils.PROTOCOL_WATERFALL);
     inMobiRewardedAdWrapper.setExtras(inMobiExtras.getParameterMap());
     inMobiRewardedAdWrapper.setKeywords(inMobiExtras.getKeywords());
-    InMobiAdapterUtils.setApplicationMuted(inMobiExtras);
+    InMobiAdapterUtils.setApplicationMuted(inMobiExtras, inMobiSdkWrapper);
 
     inMobiRewardedAdWrapper.load();
   }

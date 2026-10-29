@@ -29,6 +29,7 @@ import com.google.ads.mediation.inmobi.InMobiAdapterUtils;
 import com.google.ads.mediation.inmobi.InMobiConstants;
 import com.google.ads.mediation.inmobi.InMobiInitializer;
 import com.google.ads.mediation.inmobi.InMobiInterstitialWrapper;
+import com.google.ads.mediation.inmobi.InMobiSdkWrapper;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationInterstitialAd;
@@ -51,15 +52,18 @@ public abstract class InMobiInterstitialAd extends InterstitialAdEventListener
   private MediationInterstitialAdCallback interstitialAdCallback;
 
   private InMobiAdFactory inMobiAdFactory;
+  protected InMobiSdkWrapper inMobiSdkWrapper;
 
   public InMobiInterstitialAd(
       @NonNull MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
           mediationAdLoadCallback,
       @NonNull InMobiInitializer inMobiInitializer,
-      @NonNull InMobiAdFactory inMobiAdFactory) {
+      @NonNull InMobiAdFactory inMobiAdFactory,
+      @NonNull InMobiSdkWrapper inMobiSdkWrapper) {
     this.mediationAdLoadCallback = mediationAdLoadCallback;
     this.inMobiInitializer = inMobiInitializer;
     this.inMobiAdFactory = inMobiAdFactory;
+    this.inMobiSdkWrapper = inMobiSdkWrapper;
   }
 
   /** Invokes the third-party method for loading the ad. */
