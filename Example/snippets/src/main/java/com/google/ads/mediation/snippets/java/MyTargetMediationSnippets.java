@@ -22,18 +22,6 @@ import com.my.target.common.MyTargetPrivacy;
  */
 public class MyTargetMediationSnippets {
 
-  private void setUserConsent() {
-    // [START set_user_consent]
-    MyTargetPrivacy.setUserConsent(true);
-    // [END set_user_consent]
-  }
-
-  private void setUserAgeRestricted() {
-    // [START set_user_age_restricted]
-    MyTargetPrivacy.setUserAgeRestricted(true);
-    // [END set_user_age_restricted]
-  }
-
   private void setCcpaUserConsent() {
     // [START set_ccpa_user_consent]
     MyTargetPrivacy.setCcpaUserConsent(true);

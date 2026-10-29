@@ -22,18 +22,6 @@ import com.my.target.common.MyTargetPrivacy
  */
 class MyTargetMediationSnippets {
 
-  private fun setUserConsent() {
-    // [START set_user_consent]
-    MyTargetPrivacy.setUserConsent(true)
-    // [END set_user_consent]
-  }
-
-  private fun setUserAgeRestricted() {
-    // [START set_user_age_restricted]
-    MyTargetPrivacy.setUserAgeRestricted(true)
-    // [END set_user_age_restricted]
-  }
-
   private fun setCcpaUserConsent() {
     // [START set_ccpa_user_consent]
     MyTargetPrivacy.setCcpaUserConsent(true)
