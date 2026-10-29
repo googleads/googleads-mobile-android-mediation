@@ -30,6 +30,8 @@ import com.fyber.inneractive.sdk.external.InneractiveFullscreenAdEventsListener;
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenUnitController;
 import com.fyber.inneractive.sdk.external.InneractiveFullscreenVideoContentController;
 import com.fyber.inneractive.sdk.external.InneractiveUnitController.AdDisplayError;
+
+import androidx.annotation.Nullable;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
@@ -50,7 +52,8 @@ public class FyberRewardedVideoRenderer
   private MediationRewardedAdCallback rewardedAdCallback;
 
   /** The Spot object for the rewarded ad. */
-  private InneractiveAdSpot rewardedSpot;
+  @Nullable
+  private InneractiveAdSpot rewardedSpot = null;
 
   private InneractiveFullscreenUnitController unitController;
 
@@ -84,7 +87,9 @@ public class FyberRewardedVideoRenderer
     initializeFyberClasses(adConfiguration);
 
     InneractiveAdRequest request = new InneractiveAdRequest(spotId);
-    rewardedSpot.requestAd(request);
+    if (rewardedSpot != null) {
+      rewardedSpot.requestAd(request);
+    }
   }
 
   /** Requests bidding interstitial ad from DTExchange SDK */
@@ -92,7 +97,9 @@ public class FyberRewardedVideoRenderer
     String bidResponse = adConfiguration.getBidResponse();
     initializeFyberClasses(adConfiguration);
     String watermark = adConfiguration.getWatermark();
-    rewardedSpot.loadAd(bidResponse, watermark);
+    if (rewardedSpot != null) {
+      rewardedSpot.loadAd(bidResponse, watermark);
+    }
   }
 
   private void initializeFyberClasses(MediationRewardedAdConfiguration adConfiguration) {
@@ -174,6 +181,7 @@ public class FyberRewardedVideoRenderer
     AdError error = DTExchangeErrorCodes.getAdError(errorCode);
     Log.w(TAG, error.getMessage());
     adLoadCallback.onFailure(error);
+    destroyAdSpot();
   }
 
   // endregion
@@ -199,6 +207,7 @@ public class FyberRewardedVideoRenderer
   @Override
   public void onAdDismissed(@NonNull InneractiveAdSpot inneractiveAdSpot) {
     rewardedAdCallback.onAdClosed();
+    destroyAdSpot();
   }
 
   @Override
@@ -209,7 +218,13 @@ public class FyberRewardedVideoRenderer
   @Override
   public void onAdEnteredErrorState(
       @NonNull InneractiveAdSpot inneractiveAdSpot, @NonNull AdDisplayError adDisplayError) {
-    // No relevant events to be forwarded to the GMA SDK.
+    String msg = (adDisplayError.getMessage() != null) ? adDisplayError.getMessage().trim() : "unknown error";
+    AdError err = new AdError(DTExchangeErrorCodes.ERROR_AD_FAILED_TO_DISPLAY, msg,
+                              DTExchangeErrorCodes.ERROR_DOMAIN);
+    if (rewardedAdCallback != null) {
+      rewardedAdCallback.onAdFailedToShow(err);
+    }
+    destroyAdSpot();
   }
 
   @Override
@@ -224,6 +239,13 @@ public class FyberRewardedVideoRenderer
   public void onAdRewarded(@NonNull InneractiveAdSpot inneractiveAdSpot) {
     rewardedAdCallback.onUserEarnedReward();
     rewardedAdCallback.onVideoComplete();
+  }
+
+  public void destroyAdSpot() {
+    if (rewardedSpot != null) {
+      rewardedSpot.destroy();
+      rewardedSpot = null;
+    }
   }
   // endregion
 }

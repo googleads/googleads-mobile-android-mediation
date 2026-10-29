@@ -3,6 +3,7 @@
 #### Next version
 
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+- Fixed spot destroy flows
 
 #### Version 8.5.0.0
 - Fixed an issue where native ads invoked the `onAdOpened()` callback on impression.
