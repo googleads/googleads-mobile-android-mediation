@@ -27,10 +27,15 @@ information on using pull requests.
 There are several coding practices that are applied to all adapters, for code readability, code consistency, and bug avoidance purposes.
 Please keep these in mind when making adapter modifications:
 
-1. All adapters should be formatted using [Google Style](https://github.com/google/styleguide/blob/gh-pages/intellij-java-google-style.xml).
-   Download the `intellij-java-google-style.xml` file and import it to Android Studio by going to **Settings > Editor > Code Style** and select **Scheme > Import Scheme**.
-   Once this is imported, you can reformat your code by going to **Code > Show Reformat File Dialog** and click **Run**.
-   Make sure that **Rearrange code** is not selected to avoid large diffs.
+1. All adapters should be formatted using
+   [Google Style](https://google.github.io/styleguide/javaguide.html).
+   Install the official
+   [google-java-format plugin](https://plugins.jetbrains.com/plugin/8527) in
+   Android Studio by going to **Settings > Plugins > Marketplace** and searching
+   for `google-java-format`.
+   Once installed, enable it in **Settings > google-java-format Settings** by
+   checking **Enable google-java-format**.
+   When enabled, you can reformat your code using **Code > Reformat Code**.
 
 ## Troubleshooting
 
