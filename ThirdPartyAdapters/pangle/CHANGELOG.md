@@ -1,7 +1,13 @@
 ## Pangle Android Mediation Adapter Changelog
 
-#### Version 8.4.0.5.0 (In progress)
+#### Version 8.4.0.5.0
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+- Verified compatibility with Pangle SDK version 8.4.0.5.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.5.0.
+- Google Mobile Ads Next-Gen SDK version 1.6.0.
+- Pangle SDK version 8.4.0.5.
 
 #### Version 8.3.0.4.0
 - Verified compatibility with Pangle SDK version 8.3.0.4.
