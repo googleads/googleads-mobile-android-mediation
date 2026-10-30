@@ -19,10 +19,6 @@ class UnityAdsWrapper {
     return UnityAds.isInitialized();
   }
 
-  public String getVersion() {
-    return UnityAds.getVersion();
-  }
-
   public MetaData getMetaData(@NonNull Context context) {
     return new MetaData(context);
   }

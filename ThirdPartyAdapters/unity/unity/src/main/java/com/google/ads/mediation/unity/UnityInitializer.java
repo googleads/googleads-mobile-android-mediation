@@ -19,6 +19,7 @@ import static com.google.ads.mediation.unity.UnityMediationAdapter.AD_TECHNOLOGY
 import android.content.Context;
 import androidx.annotation.VisibleForTesting;
 import com.google.ads.mediation.unity.UnityAdsAdapterUtils.ConsentResult;
+import com.google.android.gms.ads.MobileAds;
 import com.unity3d.ads.IUnityAdsInitializationListener;
 import com.unity3d.ads.UnityAds;
 import com.unity3d.ads.metadata.MediationMetaData;
@@ -92,12 +93,16 @@ public class UnityInitializer {
     }
 
     // Set mediation meta data before initializing.
-    MediationMetaData mediationMetaData = unityAdsWrapper.getMediationMetaData(context);
-    mediationMetaData.setName(ADMOB);
-    mediationMetaData.setVersion(unityAdsWrapper.getVersion());
-    mediationMetaData.set(KEY_ADAPTER_VERSION, BuildConfig.ADAPTER_VERSION);
-    mediationMetaData.commit();
+    setMediationMetaData(context);
 
     unityAdsWrapper.initialize(context, gameId, initializationListener);
+  }
+
+  void setMediationMetaData(Context context) {
+    MediationMetaData mediationMetaData = unityAdsWrapper.getMediationMetaData(context);
+    mediationMetaData.setName(ADMOB);
+    mediationMetaData.setVersion(MobileAds.getVersion().toString());
+    mediationMetaData.set(KEY_ADAPTER_VERSION, BuildConfig.ADAPTER_VERSION);
+    mediationMetaData.commit();
   }
 }
