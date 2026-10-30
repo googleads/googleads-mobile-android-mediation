@@ -1,8 +1,14 @@
 ## Mintegral Android Mediation Adapter Changelog
 
-#### Version 17.1.91.0 (In progress)
+#### Version 17.1.91.0
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
 - Updated the minimum required Android API level to 24.
+- Verified compatibility with Mintegral SDK 17.1.91.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.5.0.
+- Google Mobile Ads Next-Gen SDK version 1.6.0.
+- Mintegral SDK version 17.1.91.
 
 #### Version 17.1.81.1
 - Pin the adapter's Kotlin dependency to 1.9.0 (the min Kotlin version supported
