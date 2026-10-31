@@ -115,6 +115,7 @@ abstract class VungleInterstitialAd(
             val interstitialAd = vungleFactory.createInterstitialAd(context, placement, adConfig)
             this@VungleInterstitialAd.interstitialAd = interstitialAd
             interstitialAd.adListener = this@VungleInterstitialAd
+            interstitialAd.mediationPartnerName = VungleConstants.MEDIATION_PARTNER_NAME
             interstitialAd.adapterAdFormat = "VungleInterstitialAd"
             val adMarkup = getAdMarkup(mediationInterstitialAdConfiguration)
             if (adMarkup != null) {

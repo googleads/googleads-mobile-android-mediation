@@ -16,6 +16,7 @@ package com.google.ads.mediation.vungle.renderers;
 
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID;
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID;
+import static com.google.ads.mediation.vungle.VungleConstants.MEDIATION_PARTNER_NAME;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
@@ -128,6 +129,7 @@ public abstract class VungleBannerAd implements MediationBannerAd, BannerAdListe
       MediationBannerAdConfiguration mediationBannerAdConfiguration) {
     bannerAdView = vungleFactory.createBannerAd(context, placementId, bannerAdSize);
     bannerAdView.setAdListener(this);
+    bannerAdView.setMediationPartnerName(MEDIATION_PARTNER_NAME);
     bannerAdView.setAdapterAdFormat("VungleBannerAd");
     AdSize adSize = mediationBannerAdConfiguration.getAdSize();
     VungleSdkWrapper.logCustomSizeForBannerPlacement(
