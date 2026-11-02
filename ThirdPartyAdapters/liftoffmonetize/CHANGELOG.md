@@ -1,5 +1,8 @@
 ## Liftoff Monetize Android Mediation Adapter Changelog
 
+#### Version 7.7.9.1 (In progress)
+- Dummy version bump to test CI failure check.
+
 #### Version 7.7.9.0
 - Verified compatibility with Vungle SDK 7.7.9.
 
