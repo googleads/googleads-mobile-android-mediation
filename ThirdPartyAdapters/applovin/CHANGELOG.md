@@ -1,6 +1,6 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 13.7.0.0 (In progress)
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
 
 #### Version 13.6.4.2
