@@ -1,5 +1,7 @@
 ## Mintegral Android Mediation Adapter Changelog
 
+#### Version 17.2.21.0 (In progress)
+
 #### Version 17.1.91.0
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
 - Updated the minimum required Android API level to 24.
