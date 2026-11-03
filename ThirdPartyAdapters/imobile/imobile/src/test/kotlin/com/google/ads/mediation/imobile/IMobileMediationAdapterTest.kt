@@ -54,6 +54,7 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.isA
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.whenever
@@ -390,7 +391,7 @@ class IMobileMediationAdapterTest {
     adapter.loadInterstitialAd(mockInterstitialAdConfiguration, interstitialAdLoadCallback)
 
     verify(iMobileSdkWrapper).registerSpotFullScreen(activity, PUBLISHER_ID, MEDIA_ID, SPOT_ID)
-    verify(iMobileSdkWrapper).setImobileSdkAdListener(eq(SPOT_ID), any())
+    verify(iMobileSdkWrapper).setImobileSdkAdListener(eq(SPOT_ID), isA<IMobileInterstitialAd>())
     verify(iMobileSdkWrapper).start(SPOT_ID)
   }
 
@@ -405,7 +406,7 @@ class IMobileMediationAdapterTest {
     adapter.loadInterstitialAd(mockInterstitialAdConfiguration, interstitialAdLoadCallback)
 
     verify(iMobileSdkWrapper).registerSpotFullScreen(activity, PUBLISHER_ID, MEDIA_ID, SPOT_ID)
-    verify(iMobileSdkWrapper).setImobileSdkAdListener(eq(SPOT_ID), any())
+    verify(iMobileSdkWrapper).setImobileSdkAdListener(eq(SPOT_ID), isA<IMobileInterstitialAd>())
     verify(iMobileSdkWrapper, never()).start(any())
     assertThat(interstitialAdLoadCallback).hasSucceeded()
   }
