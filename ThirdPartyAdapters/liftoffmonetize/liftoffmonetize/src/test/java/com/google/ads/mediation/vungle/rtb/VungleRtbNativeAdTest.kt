@@ -18,6 +18,7 @@ import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfiguration
 import com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID
 import com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID
+import com.google.ads.mediation.vungle.VungleConstants.MEDIATION_PARTNER_NAME
 import com.google.ads.mediation.vungle.VungleFactory
 import com.google.ads.mediation.vungle.VungleInitializer
 import com.google.ads.mediation.vungle.VungleMediationAdapter
@@ -117,6 +118,16 @@ class VungleRtbNativeAdTest {
     assertThat(adapterRtbNativeAd.overrideImpressionRecording).isTrue()
     assertThat(adapterRtbNativeAd.overrideClickHandling).isTrue()
     assertThat(nativeAdLoadCallback).hasSucceededWith(adapterRtbNativeAd)
+  }
+
+  @Test
+  fun render_setsMediationPartnerNameOnLiftoffAd() {
+    Mockito.mockStatic(VungleInitializer::class.java).use {
+      whenever(VungleInitializer.getInstance()) doReturn vungleInitializer
+      adapterRtbNativeAd.render(mediationNativeAdConfiguration)
+    }
+
+    verify(vungleNativeAd).mediationPartnerName = MEDIATION_PARTNER_NAME
   }
 
   @Test

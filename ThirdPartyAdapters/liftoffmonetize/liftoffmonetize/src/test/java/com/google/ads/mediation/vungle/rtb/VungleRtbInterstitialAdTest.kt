@@ -15,6 +15,7 @@ import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConf
 import com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID
 import com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION
 import com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID
+import com.google.ads.mediation.vungle.VungleConstants.MEDIATION_PARTNER_NAME
 import com.google.ads.mediation.vungle.VungleFactory
 import com.google.ads.mediation.vungle.VungleInitializer
 import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_CANNOT_PLAY_AD
@@ -85,6 +86,16 @@ class VungleRtbInterstitialAdTest {
     adapterRtbInterstitialAd.onAdLoaded(vungleInterstitialAd)
 
     assertThat(interstitialAdLoadCallback).hasSucceededWith(adapterRtbInterstitialAd)
+  }
+
+  @Test
+  fun render_setsMediationPartnerNameOnLiftoffAd() {
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(VungleInitializer.getInstance()) doReturn mockVungleInitializer
+      adapterRtbInterstitialAd.render(mediationInterstitialAdConfiguration)
+    }
+
+    verify(vungleInterstitialAd).mediationPartnerName = MEDIATION_PARTNER_NAME
   }
 
   @Test

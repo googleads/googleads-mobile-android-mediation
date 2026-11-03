@@ -15,6 +15,7 @@ import com.google.ads.mediation.adaptertestkit.createMediationAppOpenAdConfigura
 import com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID
 import com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION
 import com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID
+import com.google.ads.mediation.vungle.VungleConstants.MEDIATION_PARTNER_NAME
 import com.google.ads.mediation.vungle.VungleFactory
 import com.google.ads.mediation.vungle.VungleInitializer
 import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_CANNOT_PLAY_AD
@@ -83,6 +84,16 @@ class VungleRtbAppOpenAdTest {
     adapterRtbAppOpenAd.onAdLoaded(vungleAppOpenAd)
 
     assertThat(appOpenAdLoadCallback).hasSucceededWith(adapterRtbAppOpenAd)
+  }
+
+  @Test
+  fun render_setsMediationPartnerNameOnLiftoffAd() {
+    Mockito.mockStatic(VungleInitializer::class.java).use {
+      whenever(VungleInitializer.getInstance()) doReturn vungleInitializer
+      adapterRtbAppOpenAd.render(mediationAppOpenAdConfiguration)
+    }
+
+    verify(vungleAppOpenAd).mediationPartnerName = MEDIATION_PARTNER_NAME
   }
 
   @Test
