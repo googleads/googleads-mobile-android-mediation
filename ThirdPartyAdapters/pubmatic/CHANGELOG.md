@@ -1,6 +1,6 @@
 ## PubMatic Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 5.5.0.0 (In progress)
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
 
 #### Version 5.4.1.0
