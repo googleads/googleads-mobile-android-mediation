@@ -88,6 +88,21 @@ class DTExchangeRtbBannerAdTest {
   }
 
   @Test
+  fun onInneractiveSuccessfulAdRequest_withNullAdSpot_invokesOnFailure() {
+    // adSpot is null because loadAd() was never called
+    val expectedAdError =
+      AdError(
+        DTExchangeErrorCodes.ERROR_AD_NOT_READY,
+        "DT Exchange's banner ad spot is null.",
+        DTExchangeErrorCodes.ERROR_DOMAIN,
+      )
+
+    dtExchangeRtbBannerAd.onInneractiveSuccessfulAdRequest(mock())
+
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
+  }
+
+  @Test
   fun onInneractiveSuccessfulAdRequest_withInvalidUnitController_invokesOnFailure() {
     mockStatic(InneractiveAdSpotManager::class.java).use {
       val mockAdSpot =
@@ -138,19 +153,25 @@ class DTExchangeRtbBannerAdTest {
 
   @Test
   fun onInneractiveFailedAdRequest_invokesOnFailure() {
-    val mockAdSpot = mock<InneractiveAdSpot>()
-    val iErrorCode = InneractiveErrorCode.LOAD_TIMEOUT
-    val expectedAdError =
-      AdError(
-        307,
-        "DT Exchange failed to request ad with reason: Failed Due To load timeout",
-        DTExchangeErrorCodes.ERROR_DOMAIN,
-      )
+    mockStatic(InneractiveAdSpotManager::class.java).use {
+      val mockAdSpot = mock<InneractiveAdSpot>()
+      val mockInneractiveAdSpotManager =
+        mock<InneractiveAdSpotManager> { on { createSpot() } doReturn mockAdSpot }
+      whenever(InneractiveAdSpotManager.get()) doReturn mockInneractiveAdSpotManager
+      val iErrorCode = InneractiveErrorCode.LOAD_TIMEOUT
+      val expectedAdError =
+        AdError(
+          307,
+          "DT Exchange failed to request ad with reason: Failed Due To load timeout",
+          DTExchangeErrorCodes.ERROR_DOMAIN,
+        )
+      dtExchangeRtbBannerAd.loadAd(adConfiguration)
 
-    dtExchangeRtbBannerAd.onInneractiveFailedAdRequest(mockAdSpot, iErrorCode)
+      dtExchangeRtbBannerAd.onInneractiveFailedAdRequest(mock(), iErrorCode)
 
-    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
-    verify(mockAdSpot).destroy()
+      assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
+      verify(mockAdSpot).destroy()
+    }
   }
 
   @Test

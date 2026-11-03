@@ -313,6 +313,11 @@ class DTExchangeWaterfallInterstitialAdTest {
   }
 
   @Test
+  fun onAdWillCloseInternalBrowser_throwsNoException() {
+    waterfallInterstitialAd.onAdWillCloseInternalBrowser(mock())
+  }
+
+  @Test
   fun onAdDismissed_invokesCallbackAndDestroysAdSpot() {
     val mockFullscreenController = mock<InneractiveFullscreenUnitController>()
     val interstitialSpot =

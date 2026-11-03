@@ -3,6 +3,11 @@
 #### Next version
 
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+- Added missing `InneractiveAdSpot.destroy()` calls on ad dismissal, errors, and
+  subsequent ad loads, and removed redundant `NativeAdContent.destroy()` call
+  during native ad cleanup.
+- Forwarded `onAdFailedToShow()` callback when `onAdEnteredErrorState()` is
+  invoked for bidding interstitial and rewarded ads.
 
 #### Version 8.5.0.0
 - Fixed an issue where native ads invoked the `onAdOpened()` callback on impression.
