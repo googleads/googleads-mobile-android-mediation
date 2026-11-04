@@ -37,6 +37,11 @@ Please keep these in mind when making adapter modifications:
    checking **Enable google-java-format**.
    When enabled, you can reformat your code using **Code > Reformat Code**.
 
+2. Leave adapter version fields (`stringVersion` and `versionCode` in
+   `build.gradle`) untouched and add changelog entries under
+   `#### Next version` in `CHANGELOG.md`. Adapter version numbers are updated
+   automatically during the release process.
+
 ## Troubleshooting
 
 ### Android Studio errors

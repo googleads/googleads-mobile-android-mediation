@@ -82,6 +82,39 @@ jobs:
             JSON_ARRAY=$(python3 -c "import json, sys; print(json.dumps(sys.argv[1:]))" "${TEST_LIST[@]}")
           fi
           echo "adapters_to_test=$JSON_ARRAY" >> $GITHUB_OUTPUT
+      - name: Block version updates in external PRs
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name != github.repository &&
+          !contains(github.event.pull_request.labels.*.name, 'allow-version-bump')
+        run: |
+          git fetch --no-tags --depth=2 origin "$GITHUB_SHA"
+
+          MODIFIED_FILES=$(git diff --name-only --diff-filter=M HEAD^1 HEAD)
+          FAILED=0
+
+          while IFS= read -r file; do
+            [[ -z "$file" ]] && continue
+            ADDED_LINES=$(git diff -U0 HEAD^1 HEAD -- "$file" | grep -E '^\+[^+]' || true)
+            [[ -z "$ADDED_LINES" ]] && continue
+
+            if [[ "$file" =~ ^ThirdPartyAdapters/.+/build\.gradle$ ]]; then
+              if echo "$ADDED_LINES" | grep -q -E '^\+[[:space:]]*(stringVersion|versionCode)\b'; then
+                echo "::error file=$file::Do not update stringVersion or versionCode in PRs. Adapter versions are bumped automatically during release; add release notes under '#### Next version' in CHANGELOG.md instead."
+                FAILED=1
+              fi
+            elif [[ "$file" =~ ^ThirdPartyAdapters/.+/CHANGELOG\.md$ ]]; then
+              if echo "$ADDED_LINES" | grep -q -E '^\+[[:space:]]*####[[:space:]]+\[?[Vv]ersion\b'; then
+                echo "::error file=$file::Do not add a '#### Version ...' heading in PRs. Add your release notes under '#### Next version' in CHANGELOG.md instead."
+                FAILED=1
+              fi
+            fi
+          done <<< "$MODIFIED_FILES"
+
+          if [[ "$FAILED" -ne 0 ]]; then
+            echo "Version updates detected in external PR. Revert version changes and place changelog entries under '#### Next version' (maintainers can add the 'allow-version-bump' label to override)."
+            exit 1
+          fi
 
   test-adapters:
     needs: check-paths
