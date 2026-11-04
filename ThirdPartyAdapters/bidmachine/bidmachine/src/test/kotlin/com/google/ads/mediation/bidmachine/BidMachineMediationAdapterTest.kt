@@ -35,6 +35,7 @@ import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_EMPTY_SIGNAL_CONFIGURATIONS
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_INVALID_AD_FORMAT
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_INVALID_AD_SIZE
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_MISSING_SOURCE_ID
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_EMPTY_SIGNAL_CONFIGURATIONS
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_INVALID_AD_FORMAT
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_INVALID_AD_SIZE
@@ -158,7 +159,9 @@ class BidMachineMediationAdapterTest {
   fun initialize_withEmptyConfiguration_invokesOnInitializationFailed() {
     adapter.initialize(context, initializationCompleteCallback, mediationConfigurations = listOf())
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_MISSING_SOURCE_ID)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SOURCE_ID, ERROR_MSG_MISSING_SOURCE_ID, ADAPTER_ERROR_DOMAIN)
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -168,7 +171,9 @@ class BidMachineMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_MISSING_SOURCE_ID)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SOURCE_ID, ERROR_MSG_MISSING_SOURCE_ID, ADAPTER_ERROR_DOMAIN)
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
@@ -178,7 +183,9 @@ class BidMachineMediationAdapterTest {
 
     adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
 
-    assertThat(initializationCompleteCallback).hasFailedWith(ERROR_MSG_MISSING_SOURCE_ID)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SOURCE_ID, ERROR_MSG_MISSING_SOURCE_ID, ADAPTER_ERROR_DOMAIN)
+    assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
   }
 
   @Test

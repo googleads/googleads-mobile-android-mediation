@@ -124,13 +124,17 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
       }
     }
     if (sourceIds.isEmpty()) {
-      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_SOURCE_ID)
+      val adError =
+        AdError(ERROR_CODE_MISSING_SOURCE_ID, ERROR_MSG_MISSING_SOURCE_ID, ADAPTER_ERROR_DOMAIN)
+      initializationCompleteCallback.onInitializationFailed(adError)
       return
     }
 
     val sourceIdForInit = sourceIds[0]
     if (sourceIdForInit.isEmpty()) {
-      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_SOURCE_ID)
+      val adError =
+        AdError(ERROR_CODE_MISSING_SOURCE_ID, ERROR_MSG_MISSING_SOURCE_ID, ADAPTER_ERROR_DOMAIN)
+      initializationCompleteCallback.onInitializationFailed(adError)
       return
     }
     if (sourceIds.size > 1) {
@@ -348,5 +352,6 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
     const val ERROR_MSG_COULD_NOT_SHOW_FULLSCREEN_AD = "Fullscreen ad could not be shown."
     const val ERROR_CODE_EMPTY_NATIVE_AD_DATA = 106
     const val ERROR_MSG_EMPTY_NATIVE_AD_DATA = "Native Ad Data received was null."
+    const val ERROR_CODE_MISSING_SOURCE_ID = 107
   }
 }
