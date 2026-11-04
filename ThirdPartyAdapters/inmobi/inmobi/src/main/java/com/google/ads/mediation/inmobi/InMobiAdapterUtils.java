@@ -165,14 +165,9 @@ public class InMobiAdapterUtils {
     setIsAgeRestricted(new InMobiSdkWrapper());
   }
 
-  @VisibleForTesting
-  static void setApplicationMuted(
+  public static void setApplicationMuted(
       @NonNull InMobiExtras inMobiExtras, @NonNull InMobiSdkWrapper inMobiSdkWrapper) {
     inMobiSdkWrapper.setApplicationMuted(inMobiExtras.getIsMuted());
-  }
-
-  public static void setApplicationMuted(@NonNull InMobiExtras inMobiExtras) {
-    setApplicationMuted(inMobiExtras, new InMobiSdkWrapper());
   }
 
   @VisibleForTesting

@@ -239,7 +239,8 @@ public class InMobiMediationAdapter extends RtbAdapter {
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               callback) {
     inMobiRtbInterstitialAd =
-        new InMobiRtbInterstitialAd(callback, inMobiInitializer, inMobiAdFactory);
+        new InMobiRtbInterstitialAd(
+            callback, inMobiInitializer, inMobiAdFactory, inMobiSdkWrapper);
     inMobiRtbInterstitialAd.loadAd(adConfiguration);
   }
 
@@ -247,7 +248,8 @@ public class InMobiMediationAdapter extends RtbAdapter {
   public void loadRtbRewardedAd(
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
-    inMobiRtbRewardedAd = new InMobiRtbRewardedAd(callback, inMobiInitializer, inMobiAdFactory);
+    inMobiRtbRewardedAd =
+        new InMobiRtbRewardedAd(callback, inMobiInitializer, inMobiAdFactory, inMobiSdkWrapper);
     inMobiRtbRewardedAd.loadAd(adConfiguration);
   }
 
@@ -256,7 +258,7 @@ public class InMobiMediationAdapter extends RtbAdapter {
       @NonNull MediationRewardedAdConfiguration adConfiguration,
       @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback> callback) {
     inMobiRtbRewardedInterstitialAd =
-        new InMobiRtbRewardedAd(callback, inMobiInitializer, inMobiAdFactory);
+        new InMobiRtbRewardedAd(callback, inMobiInitializer, inMobiAdFactory, inMobiSdkWrapper);
     inMobiRtbRewardedInterstitialAd.loadAd(adConfiguration);
   }
 
@@ -275,7 +277,8 @@ public class InMobiMediationAdapter extends RtbAdapter {
       final @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
               mediationAdLoadCallback) {
     inMobiWaterfallRewardedAd =
-        new InMobiWaterfallRewardedAd(mediationAdLoadCallback, inMobiInitializer, inMobiAdFactory);
+        new InMobiWaterfallRewardedAd(
+            mediationAdLoadCallback, inMobiInitializer, inMobiAdFactory, inMobiSdkWrapper);
     inMobiWaterfallRewardedAd.loadAd(adConfiguration);
   }
 
@@ -285,7 +288,8 @@ public class InMobiMediationAdapter extends RtbAdapter {
       final @NonNull MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>
               mediationAdLoadCallback) {
     inMobiWaterfallRewardedInterstitialAd =
-        new InMobiWaterfallRewardedAd(mediationAdLoadCallback, inMobiInitializer, inMobiAdFactory);
+        new InMobiWaterfallRewardedAd(
+            mediationAdLoadCallback, inMobiInitializer, inMobiAdFactory, inMobiSdkWrapper);
     inMobiWaterfallRewardedInterstitialAd.loadAd(mediationRewardedAdConfiguration);
   }
 
@@ -305,7 +309,8 @@ public class InMobiMediationAdapter extends RtbAdapter {
           MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>
               callback) {
     inMobiWaterfallInterstitialAd =
-        new InMobiWaterfallInterstitialAd(callback, inMobiInitializer, inMobiAdFactory);
+        new InMobiWaterfallInterstitialAd(
+            callback, inMobiInitializer, inMobiAdFactory, inMobiSdkWrapper);
     inMobiWaterfallInterstitialAd.loadAd(adConfiguration);
   }
 

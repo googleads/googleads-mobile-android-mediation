@@ -15,17 +15,16 @@ import com.google.ads.mediation.inmobi.InMobiConstants
 import com.google.ads.mediation.inmobi.InMobiInitializer
 import com.google.ads.mediation.inmobi.InMobiInterstitialWrapper
 import com.google.ads.mediation.inmobi.InMobiNetworkKeys
+import com.google.ads.mediation.inmobi.InMobiSdkWrapper
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.google.common.truth.Truth.assertThat
 import com.inmobi.ads.AdMetaInfo
 import com.inmobi.ads.InMobiAdRequestStatus
-import com.inmobi.sdk.InMobiSdk
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
@@ -47,6 +46,7 @@ class InMobiWaterfallInterstitialAdTest {
     )
   private val inMobiInitializer = mock<InMobiInitializer>()
   private val inMobiAdFactory = mock<InMobiAdFactory>()
+  private val inMobiSdkWrapper = mock<InMobiSdkWrapper>()
   private val inMobiInterstitialWrapper = mock<InMobiInterstitialWrapper>()
 
   private lateinit var waterfallInterstitialAd: InMobiWaterfallInterstitialAd
@@ -56,7 +56,12 @@ class InMobiWaterfallInterstitialAdTest {
   fun setUp() {
     adMetaInfo = AdMetaInfo("fake", null)
     waterfallInterstitialAd =
-      InMobiWaterfallInterstitialAd(mediationAdLoadCallback, inMobiInitializer, inMobiAdFactory)
+      InMobiWaterfallInterstitialAd(
+        mediationAdLoadCallback,
+        inMobiInitializer,
+        inMobiAdFactory,
+        inMobiSdkWrapper,
+      )
   }
 
   @Test
@@ -120,14 +125,12 @@ class InMobiWaterfallInterstitialAdTest {
     whenever(interstitialAdConfiguration.mediationExtras) doReturn
       bundleOf(InMobiNetworkKeys.MUTE_AUDIO to true)
 
-    mockStatic(InMobiSdk::class.java).use { mockedInMobiSdk ->
-      waterfallInterstitialAd.loadAd(interstitialAdConfiguration)
-      verify(inMobiInitializer)
-        .init(eq(context), eq("accountTest"), initializerListenerCaptor.capture())
-      initializerListenerCaptor.firstValue.onInitializeSuccess()
+    waterfallInterstitialAd.loadAd(interstitialAdConfiguration)
+    verify(inMobiInitializer)
+      .init(eq(context), eq("accountTest"), initializerListenerCaptor.capture())
+    initializerListenerCaptor.firstValue.onInitializeSuccess()
 
-      mockedInMobiSdk.verify { InMobiSdk.setApplicationMuted(true) }
-    }
+    verify(inMobiSdkWrapper).setApplicationMuted(true)
   }
 
   @Test
