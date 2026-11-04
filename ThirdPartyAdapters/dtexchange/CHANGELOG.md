@@ -1,6 +1,6 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
-#### Next version
+#### Version 8.5.0.1 (In progress)
 
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
 - Added missing `InneractiveAdSpot.destroy()` calls on ad dismissal, errors, and
