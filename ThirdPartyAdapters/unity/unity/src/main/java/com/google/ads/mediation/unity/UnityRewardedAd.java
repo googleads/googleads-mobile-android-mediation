@@ -29,7 +29,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationRewardedAd;
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback;
@@ -42,7 +41,6 @@ import com.unity3d.ads.UnityAds.UnityAdsLoadError;
 import com.unity3d.ads.UnityAds.UnityAdsShowError;
 import com.unity3d.ads.UnityAdsLoadOptions;
 import com.unity3d.ads.UnityAdsShowOptions;
-import com.unity3d.ads.metadata.MetaData;
 import java.util.UUID;
 
 /**
@@ -224,8 +222,6 @@ public class UnityRewardedAd implements MediationRewardedAd {
                   + "and can now load rewarded ad with placement ID: %s",
               gameId, placementId);
       Log.d(TAG, logMessage);
-      UnityAdsAdapterUtils.setUnityAdsPrivacy(
-          MobileAds.getRequestConfiguration(), new MetaData(context));
 
       objectId = UUID.randomUUID().toString();
       UnityAdsLoadOptions unityAdsLoadOptions =
