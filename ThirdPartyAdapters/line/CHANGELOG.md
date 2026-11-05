@@ -1,5 +1,9 @@
 ## LINE Android Mediation Adapter Changelog
 
+#### Next Version
+- Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+- Updated the minimum required Android API level to 24.
+
 #### Version 3.2.0.0
 - Verified compatibility with FiveAd SDK version 3.2.0.0.
 

@@ -113,7 +113,9 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
     }
 
     if (appIds.isEmpty()) {
-      initializationCompleteCallback.onInitializationFailed(ERROR_MSG_MISSING_APP_ID)
+      val adError =
+        AdError(ERROR_CODE_MISSING_APP_ID, ERROR_MSG_MISSING_APP_ID, ADAPTER_ERROR_DOMAIN)
+      initializationCompleteCallback.onInitializationFailed(adError)
       return
     }
 
@@ -124,12 +126,7 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
       Log.w(TAG, message)
     }
 
-    try {
-      LineInitializer.initialize(context, initAppId)
-    } catch (exception: IllegalArgumentException) {
-      exception.message?.let { initializationCompleteCallback.onInitializationFailed(it) }
-      return
-    }
+    LineInitializer.initialize(context, initAppId)
 
     initializationCompleteCallback.onInitializationSucceeded()
   }
