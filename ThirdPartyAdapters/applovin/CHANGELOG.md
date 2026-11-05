@@ -1,7 +1,13 @@
 ## AppLovin Android Mediation Adapter Changelog
 
-#### Version 13.7.0.0 (In progress)
+#### Version 13.7.0.0
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+- Verified compatibility with AppLovin SDK 13.7.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.5.0.
+- Google Mobile Ads Next-Gen SDK version 1.6.0.
+- AppLovin SDK version 13.7.0.
 
 #### Version 13.6.4.2
 - Added `setTestDeviceAdvertisingIds` API to `AppLovinMediationAdapter` to support AppLovin SDK test mode registration.
