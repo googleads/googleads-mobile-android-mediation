@@ -557,6 +557,8 @@ Built and tested with:
 #### Version 10.3.2.0
 - Verified compatibility with AppLovin SDK 10.3.2.
 - Added standardized adapter error codes and messages.
+- Removed error code `103` (`ERROR_NULL_CONTEXT`).
+- Removed error code `109` (`ERROR_CONTEXT_NOT_ACTIVITY`).
 
 Built and tested with:
 - Google Mobile Ads SDK version 20.2.0.
