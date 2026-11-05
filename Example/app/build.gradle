@@ -24,11 +24,16 @@ android {
 
 dependencies {
     implementation rootProject.ext.appcompat
-    implementation rootProject.ext.playServicesAds
+    implementation rootProject.ext.adsMobileSdk
     implementation project(':customevent')
 
     // Include partner mediation snippets if property is set explicitly to true.
    if (project.hasProperty('includeSnippets') && includeSnippets.toBoolean()) {
         implementation project(':snippets')
    }
+}
+
+configurations.configureEach {
+    exclude group: "com.google.android.gms", module: "play-services-ads"
+    exclude group: "com.google.android.gms", module: "play-services-ads-lite"
 }

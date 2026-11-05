@@ -1,4 +1,4 @@
-<com.google.android.gms.ads.nativead.NativeAdView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/native_ad_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
@@ -95,7 +95,7 @@
             android:layout_marginRight="20dp"
             android:textSize="12sp" />
 
-        <com.google.android.gms.ads.nativead.MediaView
+        <com.google.android.libraries.ads.mobile.sdk.nativead.MediaView
             android:id="@+id/ad_media"
             android:layout_width="250dp"
             android:layout_height="175dp"
@@ -140,4 +140,4 @@
       </LinearLayout>
     </LinearLayout>
   </LinearLayout>
-</com.google.android.gms.ads.nativead.NativeAdView>
+</com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView>
