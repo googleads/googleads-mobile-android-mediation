@@ -18,6 +18,7 @@ import static com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID;
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION;
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID;
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_USER_ID;
+import static com.google.ads.mediation.vungle.VungleConstants.MEDIATION_PARTNER_NAME;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_CANNOT_PLAY_AD;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
@@ -127,6 +128,7 @@ public class VungleRtbRewardedAd implements MediationRewardedAd, RewardedAdListe
               public void onInitializeSuccess() {
                 rewardedAd = vungleFactory.createRewardedAd(context, placement, adConfig);
                 rewardedAd.setAdListener(VungleRtbRewardedAd.this);
+                rewardedAd.setMediationPartnerName(MEDIATION_PARTNER_NAME);
                 rewardedAd.setAdapterAdFormat("VungleRtbRewardedAd");
                 if (!TextUtils.isEmpty(userId)) {
                   rewardedAd.setUserId(userId);

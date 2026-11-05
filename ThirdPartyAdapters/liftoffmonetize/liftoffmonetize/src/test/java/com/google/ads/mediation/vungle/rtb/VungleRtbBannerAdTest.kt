@@ -31,6 +31,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 /** Tests for [VungleRtbBannerAd]. */
@@ -82,6 +83,16 @@ class VungleRtbBannerAdTest {
     adapterRtbBannerAd.onAdLoaded(baseAd)
 
     assertThat(bannerAdLoadCallback).hasSucceededWith(adapterRtbBannerAd)
+  }
+
+  @Test
+  fun validateParamsAndLoadAd_setsMediationPartnerNameOnLiftoffAd() {
+    mockStatic(VungleInitializer::class.java).use {
+      whenever(VungleInitializer.getInstance()) doReturn mockVungleInitializer
+      adapterRtbBannerAd.validateParamsAndLoadAd(mediationBannerAdConfiguration)
+    }
+
+    verify(vungleBannerView).mediationPartnerName = VungleConstants.MEDIATION_PARTNER_NAME
   }
 
   @Test

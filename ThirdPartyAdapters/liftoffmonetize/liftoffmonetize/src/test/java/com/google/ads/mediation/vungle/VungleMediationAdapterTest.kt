@@ -24,6 +24,7 @@ import com.google.ads.mediation.vungle.VungleConstants.KEY_BACK_BUTTON_IMMEDIATE
 import com.google.ads.mediation.vungle.VungleConstants.KEY_ORIENTATION
 import com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID
 import com.google.ads.mediation.vungle.VungleConstants.KEY_USER_ID
+import com.google.ads.mediation.vungle.VungleConstants.MEDIATION_PARTNER_NAME
 import com.google.ads.mediation.vungle.VungleInitializer.VungleInitializationListener
 import com.google.ads.mediation.vungle.VungleInitializer.getInstance
 import com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN
@@ -320,6 +321,7 @@ class VungleMediationAdapterTest {
     assertThat(vungleAdSizeCaptor.firstValue.width).isEqualTo(VungleAdSize.BANNER.width)
     assertThat(vungleAdSizeCaptor.firstValue.height).isEqualTo(VungleAdSize.BANNER.height)
     verify(vungleBannerAd).load(null)
+    verify(vungleBannerAd).mediationPartnerName = MEDIATION_PARTNER_NAME
     val bannerAdCaptor = argumentCaptor<VungleBannerAd>()
     verify(vungleBannerAd).adListener = bannerAdCaptor.capture()
     val bannerAdView = bannerAdCaptor.firstValue.view as VungleBannerView
@@ -359,6 +361,7 @@ class VungleMediationAdapterTest {
 
     verify(mockVungleInitializer).initialize(eq(TEST_APP_ID_1), eq(context), any())
     verify(vungleBannerAd).load(null)
+    verify(vungleBannerAd).mediationPartnerName = MEDIATION_PARTNER_NAME
     val bannerAdCaptor = argumentCaptor<VungleBannerAd>()
     verify(vungleBannerAd).adListener = bannerAdCaptor.capture()
     val bannerAdView = bannerAdCaptor.firstValue.view as VungleBannerView
@@ -479,6 +482,7 @@ class VungleMediationAdapterTest {
     verify(vungleFactory).createInterstitialAd(context, TEST_PLACEMENT_ID, vungleAdConfig)
     verify(vungleInterstitialAd).adListener = any()
     verify(vungleInterstitialAd).load()
+    verify(vungleInterstitialAd).mediationPartnerName = MEDIATION_PARTNER_NAME
   }
 
   @Test
@@ -599,6 +603,7 @@ class VungleMediationAdapterTest {
     verify(vungleRewardedAd).adListener = adapter
     verify(vungleRewardedAd).setUserId(TEST_USER_ID)
     verify(vungleRewardedAd).load()
+    verify(vungleRewardedAd).mediationPartnerName = MEDIATION_PARTNER_NAME
   }
 
   @Test
@@ -711,6 +716,7 @@ class VungleMediationAdapterTest {
     verify(vungleNativeAd).adOptionsPosition = TOP_RIGHT
     verify(vungleNativeAd).adListener = any()
     verify(vungleNativeAd).load("")
+    verify(vungleNativeAd).mediationPartnerName = MEDIATION_PARTNER_NAME
   }
 
   @Test
@@ -884,6 +890,7 @@ class VungleMediationAdapterTest {
     verify(vungleRewardedAd).adListener = adapter
     verify(vungleRewardedAd).setUserId(TEST_USER_ID)
     verify(vungleRewardedAd).load()
+    verify(vungleRewardedAd).mediationPartnerName = MEDIATION_PARTNER_NAME
   }
 
   @Test
@@ -999,6 +1006,7 @@ class VungleMediationAdapterTest {
     verify(vungleFactory).createInterstitialAd(context, TEST_PLACEMENT_ID, vungleAdConfig)
     verify(vungleAppOpenAd).adListener = any()
     verify(vungleAppOpenAd).load(eq(null))
+    verify(vungleAppOpenAd).mediationPartnerName = MEDIATION_PARTNER_NAME
   }
 
   @Test

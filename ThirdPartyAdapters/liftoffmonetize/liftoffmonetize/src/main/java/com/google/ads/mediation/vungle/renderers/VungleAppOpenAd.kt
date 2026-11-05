@@ -103,6 +103,7 @@ abstract class VungleAppOpenAd(
             // the function and return if it's null.
             appOpenAd = vungleFactory.createInterstitialAd(context, placement!!, adConfig)
             appOpenAd?.adListener = this@VungleAppOpenAd
+            appOpenAd?.mediationPartnerName = VungleConstants.MEDIATION_PARTNER_NAME
             appOpenAd?.adapterAdFormat = "VungleAppOpenAd"
             appOpenAd?.load(getAdMarkup(mediationAppOpenAdConfiguration))
           }

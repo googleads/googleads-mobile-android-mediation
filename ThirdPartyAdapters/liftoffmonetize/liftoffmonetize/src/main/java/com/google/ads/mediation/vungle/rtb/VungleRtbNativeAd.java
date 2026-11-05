@@ -16,6 +16,7 @@ package com.google.ads.mediation.vungle.rtb;
 
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_APP_ID;
 import static com.google.ads.mediation.vungle.VungleConstants.KEY_PLACEMENT_ID;
+import static com.google.ads.mediation.vungle.VungleConstants.MEDIATION_PARTNER_NAME;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_DOMAIN;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.ERROR_INVALID_SERVER_PARAMETERS;
 import static com.google.ads.mediation.vungle.VungleMediationAdapter.TAG;
@@ -145,6 +146,7 @@ public class VungleRtbNativeAd extends UnifiedNativeAdMapper implements NativeAd
                 nativeAd = vungleFactory.createNativeAd(context, placementId);
                 nativeAd.setAdOptionsPosition(adOptionsPosition);
                 nativeAd.setAdListener(VungleRtbNativeAd.this);
+                nativeAd.setMediationPartnerName(MEDIATION_PARTNER_NAME);
                 nativeAd.setAdapterAdFormat("VungleRtbNativeAd");
                 if (googleVideoOptions != null) {
                   NativeVideoOptions vngVideoOptions = nativeAd.getVideoOptions();
