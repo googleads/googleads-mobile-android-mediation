@@ -24,6 +24,7 @@ Built and tested with:
 
 #### Version 4.20.0.1
 - Removed adapter requirement of an Activity context for loading banner ads.
+- Removed error code `105` (`ERROR_CONTEXT_NOT_ACTIVITY`).
 - Updated bidding signal collection to fail and report an error if an empty
   signal is received.
 
@@ -358,6 +359,7 @@ Built and tested with:
 
 #### Version 4.4.1.0
 - Verified compatibility with Unity Ads SDK 4.4.1.
+- Removed error code `108` (`ERROR_AD_ALREADY_LOADING`).
 
 Built and tested with:
 - Google Mobile Ads SDK version 21.2.0
