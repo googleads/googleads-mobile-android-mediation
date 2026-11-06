@@ -36,6 +36,7 @@ import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_BODY
 import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_CALL_TO_ACTION
 import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_HEADLINE
+import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_ICON
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -222,8 +223,14 @@ class BigoNativeAdTest {
     val headline = TextView(context)
     val body = TextView(context)
     val cta = Button(context)
+    val iconView = ImageView(context)
     val clickableAssetViews =
-      mapOf(ASSET_HEADLINE to headline, ASSET_BODY to body, ASSET_CALL_TO_ACTION to cta)
+      mapOf(
+        ASSET_HEADLINE to headline,
+        ASSET_BODY to body,
+        ASSET_CALL_TO_ACTION to cta,
+        ASSET_ICON to iconView,
+      )
     val nonClickableAssetViews = emptyMap<String, View>()
 
     val mediaViewCaptor = argumentCaptor<MediaView>()
@@ -242,7 +249,8 @@ class BigoNativeAdTest {
       )
 
     assertThat(container.tag).isEqualTo(AdTag.NATIVE_AD_VIEW)
-    assertThat(iconViewCaptor.firstValue.tag).isEqualTo(AdTag.ICON_VIEW)
+    assertThat(iconViewCaptor.firstValue).isSameInstanceAs(iconView)
+    assertThat(iconView.tag).isEqualTo(AdTag.ICON_VIEW)
     assertThat(mediaViewCaptor.firstValue.tag).isEqualTo(AdTag.MEDIA_VIEW)
     assertThat(adOptionsViewCaptor.firstValue.tag).isEqualTo(AdTag.OPTION_VIEW)
     assertThat(headline.tag).isEqualTo(AdTag.TITLE)

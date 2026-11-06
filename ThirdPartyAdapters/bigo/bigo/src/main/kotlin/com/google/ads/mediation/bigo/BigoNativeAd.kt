@@ -31,6 +31,7 @@ import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_BODY
 import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_CALL_TO_ACTION
 import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_HEADLINE
+import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_ICON
 import sg.bigo.ads.api.AdError
 import sg.bigo.ads.api.AdInteractionListener
 import sg.bigo.ads.api.AdLoadListener
@@ -50,7 +51,6 @@ private constructor(
   private val bidResponse: String,
   private val slotId: String,
   private val mediaView: MediaView,
-  private val iconView: ImageView,
   private val adOptionsView: AdOptionsView,
   private val watermark: String,
 ) :
@@ -131,14 +131,18 @@ private constructor(
     nonClickableAssetViews: Map<String, View>,
   ) {
     container.tag = AdTag.NATIVE_AD_VIEW
-    iconView.tag = AdTag.ICON_VIEW
     mediaView.tag = AdTag.MEDIA_VIEW
     adOptionsView.tag = AdTag.OPTION_VIEW
+    var iconView: ImageView? = null
     for (asset in clickableAssetViews) {
       when (asset.key) {
         ASSET_BODY -> asset.value?.tag = AdTag.DESCRIPTION
         ASSET_CALL_TO_ACTION -> asset.value?.tag = AdTag.CALL_TO_ACTION
         ASSET_HEADLINE -> asset.value?.tag = AdTag.TITLE
+        ASSET_ICON -> {
+          iconView = asset.value as? ImageView
+          iconView?.tag = AdTag.ICON_VIEW
+        }
       }
     }
     nativeAd?.registerViewForInteraction(
@@ -159,7 +163,9 @@ private constructor(
     headline = nativeAd.title
     body = nativeAd.description
     if (nativeAd.hasIcon()) {
-      icon = NativeAdImage(iconView.drawable)
+      // Bigo renders the icon into the view passed to registerViewForInteraction, so there is no
+      // drawable at load time.
+      icon = NativeAdImage()
     }
     callToAction = nativeAd.callToAction
     setMediaView(mediaView)
@@ -176,7 +182,7 @@ private constructor(
   }
 
   internal class NativeAdImage(
-    private val drawable: Drawable?,
+    private val drawable: Drawable? = null,
     private val uri: Uri? = Uri.EMPTY,
     private val scale: Double = 1.0,
   ) : com.google.android.gms.ads.nativead.NativeAd.Image() {
@@ -216,7 +222,6 @@ private constructor(
           bidResponse,
           slotId,
           MediaView(context),
-          ImageView(context),
           AdOptionsView(context),
           watermark,
         )

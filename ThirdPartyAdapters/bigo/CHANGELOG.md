@@ -1,6 +1,7 @@
 ## Bigo Android Mediation Adapter Changelog
 
 #### Version 6.2.0.0 (In progress)
+- Fixed an issue where native ad icons failed to display.
 - Destroy Bigo ad objects when the ad is closed or untracked.
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
 
