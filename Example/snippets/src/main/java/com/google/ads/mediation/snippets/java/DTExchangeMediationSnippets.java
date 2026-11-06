@@ -20,7 +20,7 @@ import android.os.Bundle;
 import com.fyber.inneractive.sdk.external.InneractiveAdManager;
 import com.fyber.inneractive.sdk.external.InneractiveMediationDefs;
 import com.google.ads.mediation.fyber.FyberMediationAdapter;
-import com.google.android.gms.ads.AdRequest;
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest;
 
 /**
  * Java code snippets for https://developers.google.com/admob/android/mediation/dt-exchange and
@@ -28,6 +28,7 @@ import com.google.android.gms.ads.AdRequest;
  */
 public class DTExchangeMediationSnippets {
 
+  private static final String AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111";
   // Placeholder value for a user's US privacy string.
   private static final String US_PRIVACY_STRING = "TODO: Obtain US_PRIVACY_STRING from your CMP";
 
@@ -44,7 +45,9 @@ public class DTExchangeMediationSnippets {
     extras.putBoolean(FyberMediationAdapter.KEY_MUTE_VIDEO, false);
 
     AdRequest request =
-        new AdRequest.Builder().addNetworkExtrasBundle(FyberMediationAdapter.class, extras).build();
+        new AdRequest.Builder(AD_UNIT_ID)
+            .putAdSourceExtrasBundle(FyberMediationAdapter.class, extras)
+            .build();
     // [END set_network_specific_params]
   }
 }
