@@ -1,8 +1,14 @@
 ## Bigo Android Mediation Adapter Changelog
 
-#### Version 6.2.0.0 (In progress)
+#### Version 6.2.0.0
 - Destroy Bigo ad objects when the ad is closed or untracked.
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+- Verified compatibility with Bigo Ads SDK 6.2.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.5.0.
+- Google Mobile Ads Next-Gen SDK version 1.6.0.
+- Bigo Ads SDK version 6.2.0.
 
 #### Version 6.1.0.0
 - Verified compatibility with Bigo Ads SDK 6.1.0.
