@@ -1,13 +1,18 @@
 ## DT Exchange Android Mediation Adapter Changelog
 
-#### Version 8.5.1.0 (In progress)
-
+#### Version 8.5.1.0
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
 - Added missing `InneractiveAdSpot.destroy()` calls on ad dismissal, errors, and
   subsequent ad loads, and removed redundant `NativeAdContent.destroy()` call
   during native ad cleanup.
 - Forwarded `onAdFailedToShow()` callback when `onAdEnteredErrorState()` is
   invoked for bidding interstitial and rewarded ads.
+- Verified compatibility with DT Exchange SDK 8.5.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.5.0.
+- Google Mobile Ads Next-Gen SDK version 1.6.0.
+- DT Exchange SDK version 8.5.1.
 
 #### Version 8.5.0.0
 - Fixed an issue where native ads invoked the `onAdOpened()` callback on impression.
