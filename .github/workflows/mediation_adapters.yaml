@@ -19,6 +19,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   check-paths:
@@ -30,15 +31,26 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check changes
         id: filter
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
-          # Fetch base branch to compare
-          git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }} HEAD)
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            # Fetch base branch to compare
+            git fetch origin "$PR_BASE_REF" --depth=1
+            CHANGED_FILES=$(git diff --name-only "origin/$PR_BASE_REF" HEAD)
+          elif [[ "$EVENT_NAME" == "push" ]]; then
+            # Fetch parent commit on main to compare
+            git fetch --deepen=1 origin
+            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          else
+            CHANGED_FILES=""
+          fi
           echo "Changed files:"
           echo "$CHANGED_FILES"
 
           # 1. Check if Example changed
-          if echo "$CHANGED_FILES" | grep -q "^Example/"; then
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]] || echo "$CHANGED_FILES" | grep -q "^Example/"; then
             echo "example=true" >> $GITHUB_OUTPUT
           else
             echo "example=false" >> $GITHUB_OUTPUT
@@ -50,9 +62,9 @@ jobs:
           DEPRECATED_ADAPTERS="adcolony fyber nend tapjoy vungle"
           ADAPTERS=$(ls -d ThirdPartyAdapters/*/ | sed 's/ThirdPartyAdapters\///' | sed 's/\///')
 
-          # Check for global changes (common utilities or workflow files themselves)
+          # Check for global changes (common utilities, workflow files themselves, or manual dispatch)
           TEST_ALL=false
-          if echo "$CHANGED_FILES" | grep -q -E "^ThirdPartyAdapters/(common|adaptertestkit)/|^\.github/workflows/"; then
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]] || echo "$CHANGED_FILES" | grep -q -E "^ThirdPartyAdapters/(common|adaptertestkit)/|^\.github/workflows/"; then
             TEST_ALL=true
           fi
 
