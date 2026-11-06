@@ -28,6 +28,7 @@ import com.google.ads.mediation.unity.UnityMediationBannerAd.ERROR_MSG_NO_MATCHI
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
@@ -250,7 +251,6 @@ class UnityMediationAdapterTest {
 
   @Test
   fun initialize_withCorrectParameters_commitsUnityMediationMetaDataBeforeInitialization() {
-    doReturn(TEST_VERSION_NUMBER).whenever(unityAdsWrapper).getVersion()
     mediationConfigurations = listOf(MediationConfiguration(AdFormat.BANNER, serverParameters))
 
     unityMediationAdapter.initialize(
@@ -264,7 +264,7 @@ class UnityMediationAdapterTest {
       verify(mediationMetadata).commit()
     }
     inOrder(mediationMetadata) {
-      verify(mediationMetadata).setVersion(TEST_VERSION_NUMBER)
+      verify(mediationMetadata).setVersion(MobileAds.getVersion().toString())
       verify(mediationMetadata).commit()
     }
     inOrder(mediationMetadata) {
@@ -529,6 +529,48 @@ class UnityMediationAdapterTest {
     unityMediationAdapter.collectSignals(rtbSignalData, signalCallbacks)
     verify(unityAdsWrapper).getToken(any())
     assertThat(signalCallbacks).hasSucceededWith(TEST_TOKEN)
+  }
+
+  @Test
+  fun collectSignals_withTokenConfiguration_commitsMediationMetaDataBeforeGetToken() {
+    val rtbSignalData =
+      RtbSignalData(
+        activity,
+        listOf(MediationConfiguration(AdFormat.BANNER, /* serverParameters= */ bundleOf())),
+        /* networkExtras= */ bundleOf(),
+        AdSize.BANNER,
+      )
+
+    unityMediationAdapter.collectSignals(rtbSignalData, signalCallbacks)
+
+    inOrder(mediationMetadata, unityAdsWrapper) {
+      verify(mediationMetadata).setName(ADMOB)
+      verify(mediationMetadata).setVersion(MobileAds.getVersion().toString())
+      verify(mediationMetadata).set(KEY_ADAPTER_VERSION, BuildConfig.ADAPTER_VERSION)
+      verify(mediationMetadata).commit()
+      verify(unityAdsWrapper).getToken(any(), any())
+    }
+  }
+
+  @Test
+  fun collectSignals_withoutTokenConfiguration_commitsMediationMetaDataBeforeGetToken() {
+    val rtbSignalData =
+      RtbSignalData(
+        activity,
+        listOf(MediationConfiguration(AdFormat.NATIVE, /* serverParameters= */ bundleOf())),
+        /* networkExtras= */ bundleOf(),
+        null,
+      )
+
+    unityMediationAdapter.collectSignals(rtbSignalData, signalCallbacks)
+
+    inOrder(mediationMetadata, unityAdsWrapper) {
+      verify(mediationMetadata).setName(ADMOB)
+      verify(mediationMetadata).setVersion(MobileAds.getVersion().toString())
+      verify(mediationMetadata).set(KEY_ADAPTER_VERSION, BuildConfig.ADAPTER_VERSION)
+      verify(mediationMetadata).commit()
+      verify(unityAdsWrapper).getToken(any())
+    }
   }
 
   @Test
@@ -1102,7 +1144,6 @@ class UnityMediationAdapterTest {
 
   companion object {
     const val TEST_ERROR_MESSAGE = "Test Error Message"
-    const val TEST_VERSION_NUMBER = "100"
     const val TEST_GAME_ID = "gameId"
     const val TEST_PLACEMENT_ID = "placementId"
     const val TEST_TOKEN = "test_token"
