@@ -88,6 +88,7 @@ private constructor(
 
   override fun onAdClosed() {
     bannerAdCallback?.onAdClosed()
+    adView.destroy()
   }
 
   companion object {

@@ -153,12 +153,13 @@ class BigoBannerAdTest {
   }
 
   @Test
-  fun onAdClosed_invokesOnAdClosed() {
+  fun onAdClosed_invokesOnAdClosedAndDestroysAd() {
     bigoBannerAd.onAdLoaded(mock())
 
     bigoBannerAd.onAdClosed()
 
     assertThat(bannerAdCallback.isClosed).isTrue()
+    verify(mockBigoAdView).destroy()
   }
 
   private companion object {
