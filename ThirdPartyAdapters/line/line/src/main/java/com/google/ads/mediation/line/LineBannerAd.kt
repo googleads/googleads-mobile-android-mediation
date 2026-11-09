@@ -23,8 +23,6 @@ import com.five_corp.ad.BidData
 import com.five_corp.ad.FiveAdCustomLayout
 import com.five_corp.ad.FiveAdCustomLayoutEventListener
 import com.five_corp.ad.FiveAdErrorCode
-import com.five_corp.ad.FiveAdInterface
-import com.five_corp.ad.FiveAdLoadListener
 import com.google.ads.mediation.line.LineExtras.Companion.KEY_ENABLE_AD_SOUND
 import com.google.ads.mediation.line.LineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
@@ -49,7 +47,7 @@ private constructor(
   private val adSize: AdSize,
   private val networkExtras: Bundle?,
   private val mediationUtils: MediationUtilsWrapper,
-) : MediationBannerAd, FiveAdLoadListener, FiveAdCustomLayoutEventListener {
+) : MediationBannerAd, FiveAdCustomLayoutEventListener {
 
   private var mediationBannerAdCallback: MediationBannerAdCallback? = null
   private lateinit var adView: FiveAdCustomLayout
@@ -66,18 +64,71 @@ private constructor(
       return
     }
     LineInitializer.initialize(context, appId)
+    val fiveAdConfig = LineInitializer.getFiveAdConfig(appId)
+    val adLoader = LineSdkFactory.delegate.createAdLoader(context, fiveAdConfig) ?: return
+    val slotConfig = LineInitializer.getAdSlotConfig(slotId)
     // FiveAd SDK requires the size of the banner given in pixels.
-    adView =
-      LineSdkFactory.delegate.createFiveAdCustomLayout(
-        context,
-        slotId,
-        adSize.getWidthInPixels(context),
-      )
-    adView.setLoadListener(this)
-    if (networkExtras != null) {
-      adView.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, false))
-    }
-    adView.loadAdAsync()
+    adLoader.loadBannerAd(
+      slotConfig,
+      adSize.getWidthInPixels(context),
+      object : AdLoader.LoadBannerAdCallback {
+        override fun onLoad(fiveAdCustomLayout: FiveAdCustomLayout) {
+          Log.d(TAG, "Finished loading Line Banner Ad for slotId: ${fiveAdCustomLayout.slotId}")
+          // Transforming ad size from pixels to dips
+          val density = fiveAdCustomLayout.context.resources.displayMetrics.density
+          val returnedAdSize =
+            AdSize(
+              (fiveAdCustomLayout.logicalWidth / density).roundToInt(),
+              (fiveAdCustomLayout.logicalHeight / density).roundToInt(),
+            )
+          Log.d(
+            TAG,
+            "Received Banner Ad dimensions: ${returnedAdSize.width} x ${returnedAdSize.height}",
+          )
+          val closestSize =
+            mediationUtils.findClosestSize(
+              fiveAdCustomLayout.context,
+              adSize,
+              listOf(returnedAdSize),
+            )
+          if (closestSize == null) {
+            val logMessage =
+              LineMediationAdapter.ERROR_MSG_MISMATCH_AD_SIZE.format(
+                adSize.width,
+                adSize.height,
+                fiveAdCustomLayout.logicalWidth,
+                fiveAdCustomLayout.logicalHeight,
+              )
+            Log.w(TAG, logMessage)
+            val adError =
+              AdError(
+                LineMediationAdapter.ERROR_CODE_MISMATCH_AD_SIZE,
+                logMessage,
+                LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+              )
+            mediationAdLoadCallback.onFailure(adError)
+            return
+          }
+          adView = fiveAdCustomLayout
+          if (networkExtras != null) {
+            adView.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, false))
+          }
+          adView.setEventListener(this@LineBannerAd)
+          mediationBannerAdCallback = mediationAdLoadCallback.onSuccess(this@LineBannerAd)
+        }
+
+        override fun onError(adErrorCode: FiveAdErrorCode) {
+          val adError =
+            AdError(
+              adErrorCode.value,
+              String.format(LineMediationAdapter.ERROR_MSG_AD_LOADING, adErrorCode.name),
+              SDK_ERROR_DOMAIN,
+            )
+          Log.w(TAG, adError.message)
+          mediationAdLoadCallback.onFailure(adError)
+        }
+      },
+    )
   }
 
   fun loadRtbAd(context: Context) {
@@ -106,55 +157,6 @@ private constructor(
   }
 
   override fun getView(): View = adView
-
-  override fun onFiveAdLoad(ad: FiveAdInterface) {
-    // This callback is not used in the RTB flow.
-    Log.d(TAG, "Finished loading Line Banner Ad for slotId: ${ad.slotId}")
-    val loadedAd = ad as? FiveAdCustomLayout
-    loadedAd?.let {
-      // Transforming ad size from pixels to dips
-      val density = it.context.resources.displayMetrics.density
-      val returnedAdSize =
-        AdSize((it.logicalWidth / density).roundToInt(), (it.logicalHeight / density).roundToInt())
-      Log.d(
-        TAG,
-        "Received Banner Ad dimensions: ${returnedAdSize.width} x ${returnedAdSize.height}",
-      )
-      val closestSize = mediationUtils.findClosestSize(it.context, adSize, listOf(returnedAdSize))
-      if (closestSize == null) {
-        val logMessage =
-          LineMediationAdapter.ERROR_MSG_MISMATCH_AD_SIZE.format(
-            adSize.width,
-            adSize.height,
-            it.logicalWidth,
-            it.logicalHeight,
-          )
-        Log.w(TAG, logMessage)
-        val adError =
-          AdError(
-            LineMediationAdapter.ERROR_CODE_MISMATCH_AD_SIZE,
-            logMessage,
-            LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
-          )
-        mediationAdLoadCallback.onFailure(adError)
-        return
-      }
-    }
-    adView.setEventListener(this)
-    mediationBannerAdCallback = mediationAdLoadCallback.onSuccess(this)
-  }
-
-  override fun onFiveAdLoadError(ad: FiveAdInterface, errorCode: FiveAdErrorCode) {
-    // This callback is not used in the RTB flow.
-    val adError =
-      AdError(
-        errorCode.value,
-        String.format(LineMediationAdapter.ERROR_MSG_AD_LOADING, errorCode.name),
-        SDK_ERROR_DOMAIN,
-      )
-    Log.w(TAG, adError.message)
-    mediationAdLoadCallback.onFailure(adError)
-  }
 
   override fun onViewError(
     fiveAdCustomLayout: FiveAdCustomLayout,

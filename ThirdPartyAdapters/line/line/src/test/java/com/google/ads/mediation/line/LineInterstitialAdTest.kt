@@ -19,6 +19,7 @@ import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.five_corp.ad.AdLoader
+import com.five_corp.ad.AdSlotConfig
 import com.five_corp.ad.BidData
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdErrorCode
@@ -54,12 +55,15 @@ class LineInterstitialAdTest {
 
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
   private val mockFiveAdConfig = mock<FiveAdConfig>()
+  private val mockAdLoader = mock<AdLoader>()
+  private val slotConfig = AdSlotConfig(TEST_SLOT_ID)
   private val mockFiveAdInterstitial = mock<FiveAdInterstitial>()
   private val interstitialAdCallback = FakeMediationInterstitialAdCallback()
   private val sdkFactory =
     mock<SdkFactory> {
       on { createFiveAdConfig(any()) } doReturn mockFiveAdConfig
-      on { createFiveAdInterstitial(activity, TEST_SLOT_ID) } doReturn mockFiveAdInterstitial
+      on { createAdLoader(any(), any()) } doReturn mockAdLoader
+      on { createAdSlotConfig(TEST_SLOT_ID) } doReturn slotConfig
     }
   private val mediationAdLoadCallback =
     FakeMediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>(
@@ -177,6 +181,9 @@ class LineInterstitialAdTest {
 
     ad?.loadAd(activity)
 
+    val callbackCaptor = argumentCaptor<AdLoader.LoadInterstitialAdCallback>()
+    verify(mockAdLoader).loadInterstitialAd(eq(slotConfig), callbackCaptor.capture())
+    callbackCaptor.firstValue.onLoad(mockFiveAdInterstitial)
     verify(mockFiveAdInterstitial).enableSound(false)
   }
 
@@ -189,7 +196,19 @@ class LineInterstitialAdTest {
 
     ad?.loadAd(activity)
 
+    val callbackCaptor = argumentCaptor<AdLoader.LoadInterstitialAdCallback>()
+    verify(mockAdLoader).loadInterstitialAd(eq(slotConfig), callbackCaptor.capture())
+    callbackCaptor.firstValue.onLoad(mockFiveAdInterstitial)
     verify(mockFiveAdInterstitial).enableSound(true)
+  }
+
+  @Test
+  fun loadAd_whenNullAdLoader_returnsEarlySafely() {
+    whenever(sdkFactory.createAdLoader(eq(activity), any())) doReturn null
+
+    lineInterstitialAd.loadAd(activity)
+
+    verify(sdkFactory, never()).createAdSlotConfig(any())
   }
 
   // endregion
@@ -292,8 +311,7 @@ class LineInterstitialAdTest {
 
   @Test
   fun showAd_invokesFiveAdShowAd() {
-    lineInterstitialAd.loadAd(activity)
-    lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
+    loadWaterfallInterstitialAd()
 
     lineInterstitialAd.showAd(activity)
 
@@ -301,18 +319,19 @@ class LineInterstitialAdTest {
   }
 
   @Test
-  fun onFiveAdLoad_invokesOnSuccess() {
-    lineInterstitialAd.loadAd(activity)
-
-    lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
+  fun loadAd_onLoad_invokesOnSuccess() {
+    loadWaterfallInterstitialAd()
 
     verify(mockFiveAdInterstitial).setEventListener(lineInterstitialAd)
     assertThat(mediationAdLoadCallback).hasSucceededWith(lineInterstitialAd)
   }
 
   @Test
-  fun onFiveAdLoadError_invokesOnFailure() {
-    lineInterstitialAd.onFiveAdLoadError(mockFiveAdInterstitial, FiveAdErrorCode.INTERNAL_ERROR)
+  fun loadAd_onError_invokesOnFailure() {
+    lineInterstitialAd.loadAd(activity)
+    val callbackCaptor = argumentCaptor<AdLoader.LoadInterstitialAdCallback>()
+    verify(mockAdLoader).loadInterstitialAd(eq(slotConfig), callbackCaptor.capture())
+    callbackCaptor.firstValue.onError(FiveAdErrorCode.INTERNAL_ERROR)
 
     val expectedError =
       AdError(
@@ -325,8 +344,7 @@ class LineInterstitialAdTest {
 
   @Test
   fun onClick_invokesReportAdClickedAndOnAdLeftApplication() {
-    lineInterstitialAd.loadAd(activity)
-    lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
+    loadWaterfallInterstitialAd()
 
     lineInterstitialAd.onClick(mockFiveAdInterstitial)
 
@@ -336,8 +354,7 @@ class LineInterstitialAdTest {
 
   @Test
   fun onFullScreenClose_invokesOnAdClosed() {
-    lineInterstitialAd.loadAd(activity)
-    lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
+    loadWaterfallInterstitialAd()
 
     lineInterstitialAd.onFullScreenClose(mockFiveAdInterstitial)
 
@@ -346,8 +363,7 @@ class LineInterstitialAdTest {
 
   @Test
   fun onImpression_invokesReportAdImpression() {
-    lineInterstitialAd.loadAd(activity)
-    lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
+    loadWaterfallInterstitialAd()
 
     lineInterstitialAd.onImpression(mockFiveAdInterstitial)
 
@@ -356,8 +372,7 @@ class LineInterstitialAdTest {
 
   @Test
   fun onViewError_invokesOnAdFailedToShow() {
-    lineInterstitialAd.loadAd(activity)
-    lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
+    loadWaterfallInterstitialAd()
     val dummyErrorCode = FiveAdErrorCode.INTERNAL_ERROR
 
     lineInterstitialAd.onViewError(mockFiveAdInterstitial, dummyErrorCode)
@@ -374,12 +389,18 @@ class LineInterstitialAdTest {
 
   @Test
   fun onFullScreenOpen_invokesOnAdOpened() {
-    lineInterstitialAd.loadAd(activity)
-    lineInterstitialAd.onFiveAdLoad(mockFiveAdInterstitial)
+    loadWaterfallInterstitialAd()
 
     lineInterstitialAd.onFullScreenOpen(mockFiveAdInterstitial)
 
     assertThat(interstitialAdCallback.isOpened).isTrue()
+  }
+
+  private fun loadWaterfallInterstitialAd() {
+    lineInterstitialAd.loadAd(activity)
+    val callbackCaptor = argumentCaptor<AdLoader.LoadInterstitialAdCallback>()
+    verify(mockAdLoader).loadInterstitialAd(eq(slotConfig), callbackCaptor.capture())
+    callbackCaptor.firstValue.onLoad(mockFiveAdInterstitial)
   }
 
   @Test

@@ -25,6 +25,7 @@ import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.five_corp.ad.AdLoader
+import com.five_corp.ad.AdSlotConfig
 import com.five_corp.ad.BidData
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdErrorCode
@@ -54,7 +55,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
-import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
@@ -85,6 +85,8 @@ class LineNativeAdTest {
     }
   private val mockInfoBitmap = mock<Bitmap>()
   private val mockFiveAdConfig = mock<FiveAdConfig>()
+  private val mockAdLoader = mock<AdLoader>()
+  private val slotConfig = AdSlotConfig(TEST_SLOT_ID)
   private val mockFiveAdNative =
     mock<FiveAdNative> {
       on { adTitle } doReturn "FunnyTitle"
@@ -94,7 +96,8 @@ class LineNativeAdTest {
   private val sdkFactory =
     mock<SdkFactory> {
       on { createFiveAdConfig(any()) } doReturn mockFiveAdConfig
-      on { createFiveAdNative(context, TEST_SLOT_ID) } doReturn mockFiveAdNative
+      on { createAdLoader(any(), any()) } doReturn mockAdLoader
+      on { createAdSlotConfig(TEST_SLOT_ID) } doReturn slotConfig
     }
   private val nativeAdCallback = FakeMediationNativeAdCallback()
   private val mediationAdLoadCallback =
@@ -218,9 +221,13 @@ class LineNativeAdTest {
     LineNativeAd.newInstance(config, mediationAdLoadCallback, Dispatchers.Unconfined).onSuccess {
       ad = it
     }
+    initiateImageLoadCallbacks()
 
     ad?.loadAd()
 
+    val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
+    verify(mockAdLoader).loadNativeAd(eq(slotConfig), eq(0), loadCallbackCaptor.capture())
+    loadCallbackCaptor.firstValue.onLoad(mockFiveAdNative)
     verify(mockFiveAdNative).enableSound(false)
   }
 
@@ -233,10 +240,23 @@ class LineNativeAdTest {
     LineNativeAd.newInstance(config, mediationAdLoadCallback, Dispatchers.Unconfined).onSuccess {
       ad = it
     }
+    initiateImageLoadCallbacks()
 
     ad?.loadAd()
 
+    val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
+    verify(mockAdLoader).loadNativeAd(eq(slotConfig), eq(0), loadCallbackCaptor.capture())
+    loadCallbackCaptor.firstValue.onLoad(mockFiveAdNative)
     verify(mockFiveAdNative).enableSound(true)
+  }
+
+  @Test
+  fun loadAd_whenNullAdLoader_returnsEarlySafely() {
+    whenever(sdkFactory.createAdLoader(eq(context), any())) doReturn null
+
+    lineNativeAd.loadAd()
+
+    verify(sdkFactory, never()).createAdSlotConfig(any())
   }
 
   // endregion
@@ -356,14 +376,16 @@ class LineNativeAdTest {
 
   // region Native Ad Mapping & Callbacks Tests
   @Test
-  fun onFiveAdLoad_mapsNativeAdAndInvokesOnSuccess() {
+  fun loadAd_onLoad_mapsNativeAdAndInvokesOnSuccess() {
     testCoroutineScope.runTest {
       // Required to verify mediaView assignment
       val spiedLineNativeAd = spy(lineNativeAd)
       initiateImageLoadCallbacks()
       spiedLineNativeAd.loadAd()
 
-      spiedLineNativeAd.onFiveAdLoad(mockFiveAdNative)
+      val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
+      verify(mockAdLoader).loadNativeAd(eq(slotConfig), eq(0), loadCallbackCaptor.capture())
+      loadCallbackCaptor.firstValue.onLoad(mockFiveAdNative)
       advanceUntilIdle()
 
       with(spiedLineNativeAd) {
@@ -385,13 +407,15 @@ class LineNativeAdTest {
   }
 
   @Test
-  fun onFiveAdLoad_whenInformationIconFails_invokesOnFailure() {
+  fun loadAd_whenInformationIconFails_invokesOnFailure() {
     testCoroutineScope.runTest {
       val spiedLineNativeAd = spy(lineNativeAd)
       initiateImageLoadCallbacks(returnValidIconImage = true, returnValidInformationImage = false)
       spiedLineNativeAd.loadAd()
 
-      spiedLineNativeAd.onFiveAdLoad(mockFiveAdNative)
+      val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
+      verify(mockAdLoader).loadNativeAd(eq(slotConfig), eq(0), loadCallbackCaptor.capture())
+      loadCallbackCaptor.firstValue.onLoad(mockFiveAdNative)
       advanceUntilIdle()
 
       val expectedError =
@@ -405,13 +429,15 @@ class LineNativeAdTest {
   }
 
   @Test
-  fun onFiveAdLoad_whenAppIconFailsButInformationIconSucceeds_completesLoadWithNullIcon() {
+  fun loadAd_whenAppIconFailsButInformationIconSucceeds_completesLoadWithNullIcon() {
     testCoroutineScope.runTest {
       val spiedLineNativeAd = spy(lineNativeAd)
       initiateImageLoadCallbacks(returnValidIconImage = false, returnValidInformationImage = true)
       spiedLineNativeAd.loadAd()
 
-      spiedLineNativeAd.onFiveAdLoad(mockFiveAdNative)
+      val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
+      verify(mockAdLoader).loadNativeAd(eq(slotConfig), eq(0), loadCallbackCaptor.capture())
+      loadCallbackCaptor.firstValue.onLoad(mockFiveAdNative)
       advanceUntilIdle()
 
       with(spiedLineNativeAd) {
@@ -423,17 +449,19 @@ class LineNativeAdTest {
   }
 
   @Test
-  fun onFiveAdLoad_inLowerGMASdkVersions_doesNotInvokeOverrideImpressionRecording() {
+  fun loadAd_inLowerGMASdkVersions_doesNotInvokeOverrideImpressionRecording() {
     testCoroutineScope.runTest {
       // Required to verify mediaView assignment
       val spiedLineNativeAd = spy(lineNativeAd)
       initiateImageLoadCallbacks()
       spiedLineNativeAd.loadAd()
+      val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
+      verify(mockAdLoader).loadNativeAd(eq(slotConfig), eq(0), loadCallbackCaptor.capture())
 
       Mockito.mockStatic(MobileAds::class.java).use {
         // Return a version of GMA SDK that doesn't listen to adapter-reported impressions.
         whenever(MobileAds.getVersion()) doReturn VersionInfo(24, 0, 0)
-        spiedLineNativeAd.onFiveAdLoad(mockFiveAdNative)
+        loadCallbackCaptor.firstValue.onLoad(mockFiveAdNative)
         advanceUntilIdle()
       }
 
@@ -442,17 +470,19 @@ class LineNativeAdTest {
   }
 
   @Test
-  fun onFiveAdLoad_ifGmaSdkVersionBetween018And650_setsOverrideImpressionRecordingAsTrue() {
+  fun loadAd_ifGmaSdkVersionBetween018And650_setsOverrideImpressionRecordingAsTrue() {
     testCoroutineScope.runTest {
       // Required to verify mediaView assignment
       val spiedLineNativeAd = spy(lineNativeAd)
       initiateImageLoadCallbacks()
       spiedLineNativeAd.loadAd()
+      val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
+      verify(mockAdLoader).loadNativeAd(eq(slotConfig), eq(0), loadCallbackCaptor.capture())
 
       Mockito.mockStatic(MobileAds::class.java).use {
         // Return a version of GMA SDK that does listens to adapter-reported impressions.
         whenever(MobileAds.getVersion()) doReturn VersionInfo(4, 0, 0)
-        spiedLineNativeAd.onFiveAdLoad(mockFiveAdNative)
+        loadCallbackCaptor.firstValue.onLoad(mockFiveAdNative)
         advanceUntilIdle()
       }
 
@@ -461,8 +491,11 @@ class LineNativeAdTest {
   }
 
   @Test
-  fun onFiveAdLoadError_invokesOnFailure() {
-    lineNativeAd.onFiveAdLoadError(mockFiveAdNative, FiveAdErrorCode.INTERNAL_ERROR)
+  fun loadAd_onError_invokesOnFailure() {
+    lineNativeAd.loadAd()
+    val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
+    verify(mockAdLoader).loadNativeAd(eq(slotConfig), eq(0), loadCallbackCaptor.capture())
+    loadCallbackCaptor.firstValue.onError(FiveAdErrorCode.INTERNAL_ERROR)
 
     val expectedError =
       AdError(
@@ -478,7 +511,9 @@ class LineNativeAdTest {
     initiateImageLoadCallbacks()
     testCoroutineScope.runTest {
       lineNativeAd.loadAd()
-      lineNativeAd.onFiveAdLoad(mockFiveAdNative)
+      val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
+      verify(mockAdLoader).loadNativeAd(eq(slotConfig), eq(0), loadCallbackCaptor.capture())
+      loadCallbackCaptor.firstValue.onLoad(mockFiveAdNative)
       advanceUntilIdle()
     }
 
@@ -498,7 +533,9 @@ class LineNativeAdTest {
     testCoroutineScope.runTest {
       initiateImageLoadCallbacks()
       lineNativeAd.loadAd()
-      lineNativeAd.onFiveAdLoad(mockFiveAdNative)
+      val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
+      verify(mockAdLoader).loadNativeAd(eq(slotConfig), eq(0), loadCallbackCaptor.capture())
+      loadCallbackCaptor.firstValue.onLoad(mockFiveAdNative)
       advanceUntilIdle()
 
       lineNativeAd.onImpression(mockFiveAdNative)
@@ -531,7 +568,14 @@ class LineNativeAdTest {
 
   @Test
   fun trackViews_invokesRegisterViews() {
-    lineNativeAd.loadAd()
+    initiateImageLoadCallbacks()
+    testCoroutineScope.runTest {
+      lineNativeAd.loadAd()
+      val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
+      verify(mockAdLoader).loadNativeAd(eq(slotConfig), eq(0), loadCallbackCaptor.capture())
+      loadCallbackCaptor.firstValue.onLoad(mockFiveAdNative)
+      advanceUntilIdle()
+    }
     lineNativeAd.adChoicesContent = View(context)
     val viewContainer = View(context)
 

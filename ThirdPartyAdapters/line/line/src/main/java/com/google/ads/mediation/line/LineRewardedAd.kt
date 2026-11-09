@@ -20,8 +20,6 @@ import android.util.Log
 import com.five_corp.ad.AdLoader
 import com.five_corp.ad.BidData
 import com.five_corp.ad.FiveAdErrorCode
-import com.five_corp.ad.FiveAdInterface
-import com.five_corp.ad.FiveAdLoadListener
 import com.five_corp.ad.FiveAdVideoReward
 import com.five_corp.ad.FiveAdVideoRewardEventListener
 import com.google.ads.mediation.line.LineExtras.Companion.KEY_ENABLE_AD_SOUND
@@ -45,7 +43,7 @@ private constructor(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   private val networkExtras: Bundle?,
-) : MediationRewardedAd, FiveAdLoadListener, FiveAdVideoRewardEventListener {
+) : MediationRewardedAd, FiveAdVideoRewardEventListener {
 
   private var mediationRewardedAdCallback: MediationRewardedAdCallback? = null
   private lateinit var rewardedAd: FiveAdVideoReward
@@ -62,12 +60,34 @@ private constructor(
       return
     }
     LineInitializer.initialize(context, appId)
-    rewardedAd = LineSdkFactory.delegate.createFiveVideoRewarded(context, slotId)
-    rewardedAd.setLoadListener(this)
-    if (networkExtras != null) {
-      rewardedAd.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, true))
-    }
-    rewardedAd.loadAdAsync()
+    val fiveAdConfig = LineInitializer.getFiveAdConfig(appId)
+    val adLoader = LineSdkFactory.delegate.createAdLoader(context, fiveAdConfig) ?: return
+    val slotConfig = LineInitializer.getAdSlotConfig(slotId)
+    adLoader.loadRewardAd(
+      slotConfig,
+      object : AdLoader.LoadRewardAdCallback {
+        override fun onLoad(fiveAdRewarded: FiveAdVideoReward) {
+          Log.d(TAG, "Finished loading Line Rewarded Ad for slotId: ${fiveAdRewarded.slotId}")
+          rewardedAd = fiveAdRewarded
+          if (networkExtras != null) {
+            rewardedAd.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, true))
+          }
+          mediationRewardedAdCallback = mediationAdLoadCallback.onSuccess(this@LineRewardedAd)
+          rewardedAd.setEventListener(this@LineRewardedAd)
+        }
+
+        override fun onError(adErrorCode: FiveAdErrorCode) {
+          val adError =
+            AdError(
+              adErrorCode.value,
+              String.format(LineMediationAdapter.ERROR_MSG_AD_LOADING, adErrorCode.name),
+              SDK_ERROR_DOMAIN,
+            )
+          Log.w(TAG, adError.message)
+          mediationAdLoadCallback.onFailure(adError)
+        }
+      },
+    )
   }
 
   fun loadRtbAd(context: Context) {
@@ -96,23 +116,6 @@ private constructor(
 
   override fun showAd(context: Context) {
     rewardedAd.showAd()
-  }
-
-  override fun onFiveAdLoad(ad: FiveAdInterface) {
-    Log.d(TAG, "Finished loading Line Rewarded Ad for slotId: ${ad.slotId}")
-    mediationRewardedAdCallback = mediationAdLoadCallback.onSuccess(this)
-    rewardedAd.setEventListener(this)
-  }
-
-  override fun onFiveAdLoadError(ad: FiveAdInterface, errorCode: FiveAdErrorCode) {
-    val adError =
-      AdError(
-        errorCode.value,
-        String.format(LineMediationAdapter.ERROR_MSG_AD_LOADING, errorCode.name),
-        SDK_ERROR_DOMAIN,
-      )
-    Log.w(TAG, adError.message)
-    mediationAdLoadCallback.onFailure(adError)
   }
 
   override fun onViewError(fiveAdVideoReward: FiveAdVideoReward, fiveAdErrorCode: FiveAdErrorCode) {

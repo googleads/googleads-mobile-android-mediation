@@ -16,6 +16,7 @@ package com.google.ads.mediation.line
 
 import android.content.Context
 import androidx.annotation.VisibleForTesting
+import com.five_corp.ad.AdSlotConfig
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.NeedChildDirectedTreatment
 import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils
@@ -28,6 +29,7 @@ import com.google.android.gms.ads.RequestConfiguration
  * testing of the class.
  */
 object LineInitializer {
+  internal const val MEDIATION_NAME = "AdMob"
   private var fiveAdConfig: FiveAdConfig? = null
 
   fun initialize(context: Context, appId: String) {
@@ -38,6 +40,13 @@ object LineInitializer {
 
     val config = getFiveAdConfig(appId)
     LineSdkWrapper.delegate.initialize(context, config)
+  }
+
+  fun getAdSlotConfig(slotId: String): AdSlotConfig {
+    val adapterVersion = LineMediationAdapter.adapterVersionDelegate ?: BuildConfig.ADAPTER_VERSION
+    return LineSdkFactory.delegate.createAdSlotConfig(slotId).apply {
+      setMediationInfo(MEDIATION_NAME, adapterVersion)
+    }
   }
 
   fun getFiveAdConfig(appId: String): FiveAdConfig {
