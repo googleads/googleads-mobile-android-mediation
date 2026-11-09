@@ -15,40 +15,61 @@
 package com.google.ads.mediation.bigo
 
 import android.content.Context
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.APP_ID_KEY
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_CODE_MISSING_APP_ID
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MISSING_APP_ID
 import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils
 import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import sg.bigo.ads.BigoAdSdk
 import sg.bigo.ads.ConsentOptions
 import sg.bigo.ads.api.AdConfig
-import sg.bigo.ads.api.AdSize
+import sg.bigo.ads.api.AdSize as BigoAdSize
 
 object BigoUtils {
-  fun getGmaAdError(code: Int, message: String, domain: String) = AdError(code, message, domain)
+  /** Banner ad sizes supported by Bigo. */
+  private val SUPPORTED_BANNER_SIZES =
+    listOf(AdSize.BANNER, AdSize.MEDIUM_RECTANGLE, AdSize.LARGE_BANNER, AdSize.LEADERBOARD)
 
+  /**
+   * Maps the publisher-requested banner size to the closest Bigo banner size. Falls back to
+   * [BigoAdSize.BANNER] if the requested size isn't close to any supported size.
+   *
+   * Used for bidding ad loads, which must not reject banner sizes (go/dont-check-size).
+   */
   fun mapAdSizeToBigoBannerSize(
     context: Context,
-    adSize: com.google.android.gms.ads.AdSize,
+    adSize: AdSize,
     mediationUtils: MediationUtilsWrapper,
-  ): AdSize {
-    // List of banner ad sizes supported by Bigo.
-    val supportedSizes =
-      listOf(
-        com.google.android.gms.ads.AdSize.BANNER,
-        com.google.android.gms.ads.AdSize.MEDIUM_RECTANGLE,
-        com.google.android.gms.ads.AdSize.LARGE_BANNER,
-        com.google.android.gms.ads.AdSize.LEADERBOARD,
-      )
+  ): BigoAdSize = findClosestBigoBannerSize(context, adSize, mediationUtils) ?: BigoAdSize.BANNER
+
+  /**
+   * Returns the Bigo banner size closest to the publisher-requested banner size, or `null` if the
+   * requested size isn't close to any banner size supported by Bigo.
+   *
+   * Waterfall ad loads must fail when this returns `null`.
+   */
+  fun findClosestBigoBannerSize(
+    context: Context,
+    adSize: AdSize,
+    mediationUtils: MediationUtilsWrapper,
+  ): BigoAdSize? {
     // Find the supported size that is closest to the publisher-requested size.
-    val closestSupportedSize = mediationUtils.findClosestSize(context, adSize, supportedSizes)
+    val closestSupportedSize =
+      mediationUtils.findClosestSize(context, adSize, SUPPORTED_BANNER_SIZES)
     return when (closestSupportedSize) {
-      com.google.android.gms.ads.AdSize.BANNER -> AdSize.BANNER
-      com.google.android.gms.ads.AdSize.MEDIUM_RECTANGLE -> AdSize.MEDIUM_RECTANGLE
-      com.google.android.gms.ads.AdSize.LARGE_BANNER -> AdSize.LARGE_BANNER
-      com.google.android.gms.ads.AdSize.LEADERBOARD -> AdSize.LEADERBOARD
-      else -> AdSize.BANNER
+      AdSize.BANNER -> BigoAdSize.BANNER
+      AdSize.MEDIUM_RECTANGLE -> BigoAdSize.MEDIUM_RECTANGLE
+      AdSize.LARGE_BANNER -> BigoAdSize.MOBILE_LARGE_LEADERBOARD
+      AdSize.LEADERBOARD -> BigoAdSize.LEADERBOARD
+      else -> null
     }
   }
 
@@ -80,9 +101,44 @@ object BigoUtils {
     }
   }
 
+  /**
+   * Prepares the Bigo SDK for a waterfall ad load.
+   *
+   * Applies the publisher's COPPA settings (see [configureBigoPrivacy]), since Bigo requires
+   * privacy settings to be set before each ad request. Then, if the Bigo SDK isn't initialized yet,
+   * initializes it using the application ID in [serverParameters].
+   *
+   * Invokes [onReady] once the SDK is ready to load an ad, or [onFailure] if the server parameters
+   * are invalid (such as a missing app ID).
+   */
+  fun prepareBigoSdkForWaterfallAdLoad(
+    context: Context,
+    serverParameters: Bundle,
+    onReady: () -> Unit,
+    onFailure: (AdError) -> Unit,
+  ) {
+    configureBigoPrivacy(context)
+
+    if (BigoAdSdk.isInitialized()) {
+      onReady()
+      return
+    }
+
+    val appId = serverParameters.getString(APP_ID_KEY)
+    if (appId.isNullOrEmpty()) {
+      onFailure(AdError(ERROR_CODE_MISSING_APP_ID, ERROR_MSG_MISSING_APP_ID, ADAPTER_ERROR_DOMAIN))
+      return
+    }
+
+    initializeBigoSdk(context, appId, onReady)
+  }
+
   /** Initializes the Bigo SDK with [appId] and invokes [onInitialized] once it's initialized. */
   fun initializeBigoSdk(context: Context, appId: String, onInitialized: () -> Unit) {
     val adConfig = AdConfig.Builder().setAppId(appId).build()
-    BigoAdSdk.initialize(context, adConfig) { onInitialized() }
+    BigoAdSdk.initialize(context, adConfig) {
+      // The Bigo SDK may invoke this callback off the main thread.
+      Handler(Looper.getMainLooper()).post { onInitialized() }
+    }
   }
 }

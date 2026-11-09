@@ -31,6 +31,7 @@ import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfiguration
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SLOT_ID_KEY
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_BODY
@@ -47,7 +48,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import sg.bigo.ads.api.AdError
+import sg.bigo.ads.api.AdError as BigoAdError
 import sg.bigo.ads.api.AdOptionsView
 import sg.bigo.ads.api.AdTag
 import sg.bigo.ads.api.MediaView
@@ -126,9 +127,9 @@ class BigoNativeAdTest {
 
   @Test
   fun onError_invokesOnFailure() {
-    val expectedAdError = BigoUtils.getGmaAdError(TEST_ERROR_CODE, TEST_ERROR_MSG, SDK_ERROR_DOMAIN)
+    val expectedAdError = AdError(TEST_ERROR_CODE, TEST_ERROR_MSG, SDK_ERROR_DOMAIN)
 
-    bigoNativeAd.onError(AdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
+    bigoNativeAd.onError(BigoAdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
 
     assertThat(adLoadCallback).hasFailedWith(expectedAdError)
   }
@@ -301,7 +302,7 @@ class BigoNativeAdTest {
         watermark = TEST_WATERMARK,
       )
     val expectedAdError =
-      BigoUtils.getGmaAdError(
+      AdError(
         BigoMediationAdapter.ERROR_CODE_MISSING_SLOT_ID,
         BigoMediationAdapter.ERROR_MSG_MISSING_SLOT_ID,
         BigoMediationAdapter.ADAPTER_ERROR_DOMAIN,

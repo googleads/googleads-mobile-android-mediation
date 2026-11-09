@@ -15,8 +15,17 @@
 package com.google.ads.mediation.bigo
 
 import android.content.Context
+import android.os.Looper
+import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_APP_ID
+import com.google.ads.mediation.adaptertestkit.assertThat
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.APP_ID_KEY
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_CODE_MISSING_APP_ID
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MISSING_APP_ID
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
@@ -28,13 +37,17 @@ import org.junit.runner.RunWith
 import org.mockito.MockedStatic
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.whenever
+import org.robolectric.Shadows.shadowOf
 import sg.bigo.ads.BigoAdSdk
 import sg.bigo.ads.ConsentOptions
+import sg.bigo.ads.api.AdConfig
+import sg.bigo.ads.api.AdSize as BigoAdSize
 
 @RunWith(AndroidJUnit4::class)
 class BigoUtilsTest {
@@ -61,7 +74,7 @@ class BigoUtilsTest {
 
     val bigoAdSize = BigoUtils.mapAdSizeToBigoBannerSize(context, AdSize.BANNER, mockMediationUtils)
 
-    assertThat(bigoAdSize).isEqualTo(sg.bigo.ads.api.AdSize.BANNER)
+    assertThat(bigoAdSize).isEqualTo(BigoAdSize.BANNER)
   }
 
   @Test
@@ -73,11 +86,11 @@ class BigoUtilsTest {
     val bigoAdSize =
       BigoUtils.mapAdSizeToBigoBannerSize(context, AdSize.MEDIUM_RECTANGLE, mockMediationUtils)
 
-    assertThat(bigoAdSize).isEqualTo(sg.bigo.ads.api.AdSize.MEDIUM_RECTANGLE)
+    assertThat(bigoAdSize).isEqualTo(BigoAdSize.MEDIUM_RECTANGLE)
   }
 
   @Test
-  fun mapAdSizeToBigoBannerSize_largeBanner_returnsBigoLargeBanner() {
+  fun mapAdSizeToBigoBannerSize_largeBanner_returnsBigoMobileLargeLeaderboard() {
     whenever(
       mockMediationUtils.findClosestSize(eq(context), eq(AdSize.LARGE_BANNER), any())
     ) doReturn AdSize.LARGE_BANNER
@@ -85,7 +98,7 @@ class BigoUtilsTest {
     val bigoAdSize =
       BigoUtils.mapAdSizeToBigoBannerSize(context, AdSize.LARGE_BANNER, mockMediationUtils)
 
-    assertThat(bigoAdSize).isEqualTo(sg.bigo.ads.api.AdSize.LARGE_BANNER)
+    assertThat(bigoAdSize).isEqualTo(BigoAdSize.MOBILE_LARGE_LEADERBOARD)
   }
 
   @Test
@@ -97,7 +110,7 @@ class BigoUtilsTest {
     val bigoAdSize =
       BigoUtils.mapAdSizeToBigoBannerSize(context, AdSize.LEADERBOARD, mockMediationUtils)
 
-    assertThat(bigoAdSize).isEqualTo(sg.bigo.ads.api.AdSize.LEADERBOARD)
+    assertThat(bigoAdSize).isEqualTo(BigoAdSize.LEADERBOARD)
   }
 
   @Test
@@ -109,7 +122,31 @@ class BigoUtilsTest {
     val bigoAdSize =
       BigoUtils.mapAdSizeToBigoBannerSize(context, AdSize.WIDE_SKYSCRAPER, mockMediationUtils)
 
-    assertThat(bigoAdSize).isEqualTo(sg.bigo.ads.api.AdSize.BANNER)
+    assertThat(bigoAdSize).isEqualTo(BigoAdSize.BANNER)
+  }
+
+  @Test
+  fun findClosestBigoBannerSize_mediumRectangle_returnsBigoMediumRectangle() {
+    whenever(
+      mockMediationUtils.findClosestSize(eq(context), eq(AdSize.MEDIUM_RECTANGLE), any())
+    ) doReturn AdSize.MEDIUM_RECTANGLE
+
+    val bigoAdSize =
+      BigoUtils.findClosestBigoBannerSize(context, AdSize.MEDIUM_RECTANGLE, mockMediationUtils)
+
+    assertThat(bigoAdSize).isEqualTo(BigoAdSize.MEDIUM_RECTANGLE)
+  }
+
+  @Test
+  fun findClosestBigoBannerSize_unsupportedSize_returnsNull() {
+    whenever(
+      mockMediationUtils.findClosestSize(eq(context), eq(AdSize.WIDE_SKYSCRAPER), any())
+    ) doReturn null
+
+    val bigoAdSize =
+      BigoUtils.findClosestBigoBannerSize(context, AdSize.WIDE_SKYSCRAPER, mockMediationUtils)
+
+    assertThat(bigoAdSize).isNull()
   }
 
   // region configureBigoPrivacy tests
@@ -179,6 +216,91 @@ class BigoUtilsTest {
       { BigoAdSdk.setUserConsent(eq(context), eq(ConsentOptions.COPPA), any()) },
       never(),
     )
+  }
+
+  // endregion
+
+  // region prepareBigoSdkForWaterfallAdLoad tests
+  @Test
+  fun prepareBigoSdkForWaterfallAdLoad_whenInitialized_invokesOnReadyWithoutInitializing() {
+    whenever(BigoAdSdk.isInitialized()) doReturn true
+    var isReady = false
+    var adError: AdError? = null
+
+    BigoUtils.prepareBigoSdkForWaterfallAdLoad(
+      context,
+      bundleOf(APP_ID_KEY to TEST_APP_ID),
+      onReady = { isReady = true },
+      onFailure = { adError = it },
+    )
+
+    assertThat(isReady).isTrue()
+    assertThat(adError).isNull()
+    mockBigoSdk.verify({ BigoAdSdk.initialize(any(), any(), any()) }, never())
+  }
+
+  @Test
+  fun prepareBigoSdkForWaterfallAdLoad_whenNotInitialized_initializesThenInvokesOnReady() {
+    whenever(BigoAdSdk.isInitialized()) doReturn false
+    val adConfigCaptor = argumentCaptor<AdConfig>()
+    val initListenerCaptor = argumentCaptor<BigoAdSdk.InitListener>()
+    var isReady = false
+
+    BigoUtils.prepareBigoSdkForWaterfallAdLoad(
+      context,
+      bundleOf(APP_ID_KEY to TEST_APP_ID),
+      onReady = { isReady = true },
+      onFailure = {},
+    )
+
+    mockBigoSdk.verify {
+      BigoAdSdk.initialize(eq(context), adConfigCaptor.capture(), initListenerCaptor.capture())
+    }
+    assertThat(adConfigCaptor.firstValue.appKey).isEqualTo(TEST_APP_ID)
+    assertThat(isReady).isFalse()
+    initListenerCaptor.firstValue.onInitialized()
+    shadowOf(Looper.getMainLooper()).idle()
+    assertThat(isReady).isTrue()
+  }
+
+  @Test
+  fun prepareBigoSdkForWaterfallAdLoad_whenNotInitializedAndMissingAppId_invokesOnFailure() {
+    whenever(BigoAdSdk.isInitialized()) doReturn false
+    var isReady = false
+    var adError: AdError? = null
+
+    BigoUtils.prepareBigoSdkForWaterfallAdLoad(
+      context,
+      bundleOf(),
+      onReady = { isReady = true },
+      onFailure = { adError = it },
+    )
+
+    assertThat(isReady).isFalse()
+    assertThat(adError)
+      .isEqualTo(AdError(ERROR_CODE_MISSING_APP_ID, ERROR_MSG_MISSING_APP_ID, ADAPTER_ERROR_DOMAIN))
+    mockBigoSdk.verify({ BigoAdSdk.initialize(any(), any(), any()) }, never())
+  }
+
+  @Test
+  fun prepareBigoSdkForWaterfallAdLoad_appliesPrivacyBeforeAdLoad() {
+    whenever(BigoAdSdk.isInitialized()) doReturn true
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+        .build()
+    )
+
+    BigoUtils.prepareBigoSdkForWaterfallAdLoad(
+      context,
+      bundleOf(APP_ID_KEY to TEST_APP_ID),
+      onReady = {},
+      onFailure = {},
+    )
+
+    mockBigoSdk.verify {
+      BigoAdSdk.setUserConsent(eq(context), eq(ConsentOptions.COPPA), eq(false))
+    }
   }
 
   // endregion
