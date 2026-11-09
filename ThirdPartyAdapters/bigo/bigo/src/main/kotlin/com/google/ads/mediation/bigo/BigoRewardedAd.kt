@@ -37,9 +37,9 @@ class BigoRewardedAd
 private constructor(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
-  private val bidResponse: String,
+  private val bidResponse: String?,
   private val slotId: String,
-  private val watermark: String,
+  private val watermark: String?,
 ) : MediationRewardedAd, AdLoadListener<RewardVideoAd>, RewardAdInteractionListener {
   private var rewardedAdCallback: MediationRewardedAdCallback? = null
   private var rewardVideoAd: RewardVideoAd? = null
@@ -93,15 +93,20 @@ private constructor(
   }
 
   companion object {
+    /**
+     * Creates a [BigoRewardedAd]. Set [isRtb] to `true` for bidding ad loads and `false` for
+     * waterfall ad loads. Waterfall ad requests don't include a bid response or watermark.
+     */
     fun newInstance(
       mediationRewardedAdConfiguration: MediationRewardedAdConfiguration,
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
+      isRtb: Boolean,
     ): Result<BigoRewardedAd> {
       val serverParameters = mediationRewardedAdConfiguration.serverParameters
-      val bidResponse = mediationRewardedAdConfiguration.bidResponse
+      val bidResponse = if (isRtb) mediationRewardedAdConfiguration.bidResponse else null
       val slotId = serverParameters.getString(SLOT_ID_KEY)
-      val watermark = mediationRewardedAdConfiguration.watermark
+      val watermark = if (isRtb) mediationRewardedAdConfiguration.watermark else null
 
       if (slotId.isNullOrEmpty()) {
         val gmaAdError =

@@ -69,6 +69,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import sg.bigo.ads.BigoAdSdk
 import sg.bigo.ads.ConsentOptions
@@ -400,6 +401,19 @@ class BigoMediationAdapterTest {
     assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
+  @Test
+  fun loadBannerAd_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationBannerAdConfiguration(context, adSize = AdSize.BANNER)
+    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize.BANNER), any())) doReturn
+      AdSize.BANNER
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadBannerAd(adConfiguration, bannerAdLoadCallback)
+
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
+  }
+
   // endregion
 
   // region Interstitial tests
@@ -410,6 +424,17 @@ class BigoMediationAdapterTest {
       AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
 
     adapter.loadRtbInterstitialAd(adConfiguration, interstitialAdLoadCallback)
+
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
+  }
+
+  @Test
+  fun loadInterstitialAd_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationInterstitialAdConfiguration(context)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadInterstitialAd(adConfiguration, interstitialAdLoadCallback)
 
     assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
   }
@@ -428,6 +453,17 @@ class BigoMediationAdapterTest {
     assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
+  @Test
+  fun loadRewardedAd_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationRewardedAdConfiguration(context)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRewardedAd(adConfiguration, rewardedAdLoadCallback)
+
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
+  }
+
   // endregion
 
   // region Rewarded Interstitial tests
@@ -438,6 +474,17 @@ class BigoMediationAdapterTest {
       AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
 
     adapter.loadRtbRewardedInterstitialAd(adConfiguration, rewardedInterstitialAdLoadCallback)
+
+    assertThat(rewardedInterstitialAdLoadCallback).hasFailedWith(expectedAdError)
+  }
+
+  @Test
+  fun loadRewardedInterstitialAd_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationRewardedAdConfiguration(context)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRewardedInterstitialAd(adConfiguration, rewardedInterstitialAdLoadCallback)
 
     assertThat(rewardedInterstitialAdLoadCallback).hasFailedWith(expectedAdError)
   }
@@ -472,4 +519,7 @@ class BigoMediationAdapterTest {
 
   // endregion
 
+  private companion object {
+    const val TEST_SLOT_ID = "testSlotId"
+  }
 }

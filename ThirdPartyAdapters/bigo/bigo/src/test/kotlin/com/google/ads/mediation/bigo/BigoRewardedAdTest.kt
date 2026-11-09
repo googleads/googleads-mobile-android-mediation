@@ -37,6 +37,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import sg.bigo.ads.api.AdError
 import sg.bigo.ads.api.RewardVideoAd
 import sg.bigo.ads.api.RewardVideoAdRequest
@@ -73,7 +74,31 @@ class BigoRewardedAdTest {
         watermark = TEST_WATERMARK,
       )
     BigoFactory.delegate = mockBigoFactory
-    BigoRewardedAd.newInstance(adConfiguration, adLoadCallback).onSuccess { bigoRewardedAd = it }
+    BigoRewardedAd.newInstance(adConfiguration, adLoadCallback, isRtb = true).onSuccess {
+      bigoRewardedAd = it
+    }
+  }
+
+  @Test
+  fun loadAd_waterfall_createsAdRequestWithoutBidResponseAndWatermark() {
+    val waterfallAdRequest = mock<RewardVideoAdRequest>()
+    whenever(mockBigoFactory.createRewardVideoAdRequest(eq(null), eq(TEST_SLOT_ID), eq(null)))
+      .thenReturn(waterfallAdRequest)
+    val waterfallAdConfiguration =
+      createMediationRewardedAdConfiguration(
+        context = context,
+        bidResponse = TEST_BID_RESPONSE,
+        serverParameters = bundleOf(SLOT_ID_KEY to TEST_SLOT_ID),
+        watermark = TEST_WATERMARK,
+      )
+    lateinit var waterfallAd: BigoRewardedAd
+    BigoRewardedAd.newInstance(waterfallAdConfiguration, adLoadCallback, isRtb = false).onSuccess {
+      waterfallAd = it
+    }
+
+    waterfallAd.loadAd(TEST_VERSION_STRING)
+
+    verify(mockRewardVideoAdLoader).loadAd(waterfallAdRequest)
   }
 
   @Test
