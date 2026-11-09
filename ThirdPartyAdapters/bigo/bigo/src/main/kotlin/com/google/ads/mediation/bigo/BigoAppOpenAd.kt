@@ -25,7 +25,6 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAd
 import com.google.android.gms.ads.mediation.MediationAppOpenAdCallback
 import com.google.android.gms.ads.mediation.MediationAppOpenAdConfiguration
-import java.lang.IllegalArgumentException
 import sg.bigo.ads.api.AdError as BigoAdError
 import sg.bigo.ads.api.AdLoadListener
 import sg.bigo.ads.api.SplashAd
@@ -38,9 +37,9 @@ class BigoAppOpenAd
 private constructor(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>,
-  private val bidResponse: String,
+  private val bidResponse: String?,
   private val slotId: String,
-  private val watermark: String,
+  private val watermark: String?,
 ) : MediationAppOpenAd, AdLoadListener<SplashAd>, SplashAdInteractionListener {
   private var appOpenAdCallback: MediationAppOpenAdCallback? = null
   private var splashAd: SplashAd? = null
@@ -98,15 +97,20 @@ private constructor(
   }
 
   companion object {
+    /**
+     * Creates a [BigoAppOpenAd]. Set [isRtb] to `true` for bidding ad loads and `false` for
+     * waterfall ad loads. Waterfall ad requests don't include a bid response or watermark.
+     */
     fun newInstance(
       mediationAppOpenAdConfiguration: MediationAppOpenAdConfiguration,
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationAppOpenAd, MediationAppOpenAdCallback>,
+      isRtb: Boolean,
     ): Result<BigoAppOpenAd> {
       val serverParameters = mediationAppOpenAdConfiguration.serverParameters
-      val bidResponse = mediationAppOpenAdConfiguration.bidResponse
+      val bidResponse = mediationAppOpenAdConfiguration.bidResponse.takeIf { isRtb }
       val slotId = serverParameters.getString(SLOT_ID_KEY)
-      val watermark = mediationAppOpenAdConfiguration.watermark
+      val watermark = mediationAppOpenAdConfiguration.watermark.takeIf { isRtb }
 
       if (slotId.isNullOrEmpty()) {
         val gmaAdError =
