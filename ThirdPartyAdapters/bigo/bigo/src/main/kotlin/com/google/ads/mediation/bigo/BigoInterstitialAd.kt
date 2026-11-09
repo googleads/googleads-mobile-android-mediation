@@ -38,9 +38,9 @@ class BigoInterstitialAd
 private constructor(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
-  private val bidResponse: String,
+  private val bidResponse: String?,
   private val slotId: String,
-  private val watermark: String,
+  private val watermark: String?,
 ) : MediationInterstitialAd, AdLoadListener<InterstitialAd>, AdInteractionListener {
 
   private var interstitialAdCallback: MediationInterstitialAdCallback? = null
@@ -91,15 +91,20 @@ private constructor(
   }
 
   companion object {
+    /**
+     * Creates a [BigoInterstitialAd]. Set [isRtb] to `true` for bidding ad loads and `false` for
+     * waterfall ad loads. Waterfall ad requests don't include a bid response or watermark.
+     */
     fun newInstance(
       mediationInterstitialAdConfiguration: MediationInterstitialAdConfiguration,
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
+      isRtb: Boolean,
     ): Result<BigoInterstitialAd> {
       val serverParameters = mediationInterstitialAdConfiguration.serverParameters
-      val bidResponse = mediationInterstitialAdConfiguration.bidResponse
+      val bidResponse = if (isRtb) mediationInterstitialAdConfiguration.bidResponse else null
       val slotId = serverParameters.getString(SLOT_ID_KEY)
-      val watermark = mediationInterstitialAdConfiguration.watermark
+      val watermark = if (isRtb) mediationInterstitialAdConfiguration.watermark else null
 
       if (slotId.isNullOrEmpty()) {
         val gmaAdError =
