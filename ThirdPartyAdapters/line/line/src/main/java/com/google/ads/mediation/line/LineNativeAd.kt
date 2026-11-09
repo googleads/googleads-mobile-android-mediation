@@ -24,8 +24,6 @@ import androidx.core.graphics.drawable.toDrawable
 import com.five_corp.ad.AdLoader
 import com.five_corp.ad.BidData
 import com.five_corp.ad.FiveAdErrorCode
-import com.five_corp.ad.FiveAdInterface
-import com.five_corp.ad.FiveAdLoadListener
 import com.five_corp.ad.FiveAdNative
 import com.five_corp.ad.FiveAdNativeEventListener
 import com.google.ads.mediation.line.LineMediationAdapter.Companion.SDK_ERROR_DOMAIN
@@ -62,7 +60,7 @@ private constructor(
   private val mediationNativeAdLoadCallback:
     MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
   private val adapterScope: CoroutineScope,
-) : NativeAdMapper(), FiveAdLoadListener, FiveAdNativeEventListener {
+) : NativeAdMapper(), FiveAdNativeEventListener {
 
   private var mediationNativeAdCallback: MediationNativeAdCallback? = null
   private lateinit var nativeAd: FiveAdNative
@@ -83,13 +81,40 @@ private constructor(
       return
     }
     LineInitializer.initialize(context, appId)
-    nativeAd = LineSdkFactory.delegate.createFiveAdNative(context, slotId)
-    val videoOptions = nativeAdOptions?.videoOptions
-    if (videoOptions != null) {
-      nativeAd.enableSound(!videoOptions.startMuted)
-    }
-    nativeAd.setLoadListener(this)
-    nativeAd.loadAdAsync()
+    val fiveAdConfig = LineInitializer.getFiveAdConfig(appId)
+    val adLoader = LineSdkFactory.delegate.createAdLoader(context, fiveAdConfig) ?: return
+    val slotConfig = LineInitializer.getAdSlotConfig(slotId)
+    adLoader.loadNativeAd(
+      slotConfig,
+      /* initialWidth= */ 0,
+      object : AdLoader.LoadNativeAdCallback {
+        override fun onLoad(fiveAdNative: FiveAdNative) {
+          Log.d(TAG, "Finished loading Line Native Ad for slotId: ${fiveAdNative.slotId}")
+          nativeAd = fiveAdNative
+          val videoOptions = nativeAdOptions?.videoOptions
+          if (videoOptions != null) {
+            nativeAd.enableSound(!videoOptions.startMuted)
+          }
+          adapterScope.async {
+            mapNativeAd()
+            mediationNativeAdCallback = mediationNativeAdLoadCallback.onSuccess(this@LineNativeAd)
+            nativeAd.setEventListener(this@LineNativeAd)
+          }
+        }
+
+        override fun onError(adErrorCode: FiveAdErrorCode) {
+          adapterScope.cancel()
+          val adError =
+            AdError(
+              adErrorCode.value,
+              LineMediationAdapter.ERROR_MSG_AD_LOADING.format(adErrorCode.name),
+              LineMediationAdapter.SDK_ERROR_DOMAIN,
+            )
+          Log.w(TAG, adError.message)
+          mediationNativeAdLoadCallback.onFailure(adError)
+        }
+      },
+    )
   }
 
   fun loadRtbAd() {
@@ -187,29 +212,6 @@ private constructor(
     nonClickableAssetViews: Map<String, View>,
   ) {
     nativeAd.registerViews(containerView, adChoicesContent, clickableAssetViews.values.toList())
-  }
-
-  override fun onFiveAdLoad(ad: FiveAdInterface) {
-    // This callback is used only in the waterfall flow
-    Log.d(TAG, "Finished loading Line Native Ad for slotId: ${ad.slotId}")
-    adapterScope.async {
-      mapNativeAd()
-      mediationNativeAdCallback = mediationNativeAdLoadCallback.onSuccess(this@LineNativeAd)
-      nativeAd.setEventListener(this@LineNativeAd)
-    }
-  }
-
-  override fun onFiveAdLoadError(ad: FiveAdInterface, errorCode: FiveAdErrorCode) {
-    // This callback is used only in the waterfall flow
-    adapterScope.cancel()
-    val adError =
-      AdError(
-        errorCode.value,
-        LineMediationAdapter.ERROR_MSG_AD_LOADING.format(errorCode.name),
-        LineMediationAdapter.SDK_ERROR_DOMAIN,
-      )
-    Log.w(TAG, adError.message)
-    mediationNativeAdLoadCallback.onFailure(adError)
   }
 
   override fun onViewError(fiveAdNative: FiveAdNative, fiveAdErrorCode: FiveAdErrorCode) {

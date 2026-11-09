@@ -1,5 +1,8 @@
 ## LINE Android Mediation Adapter Changelog
 
+#### Next Version
+- Sets mediation info on `AdSlotConfig` for waterfall ad requests.
+
 #### Version 3.2.0.0
 - Verified compatibility with FiveAd SDK version 3.2.0.0.
 

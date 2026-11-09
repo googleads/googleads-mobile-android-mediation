@@ -20,10 +20,8 @@ import android.util.Log
 import com.five_corp.ad.AdLoader
 import com.five_corp.ad.BidData
 import com.five_corp.ad.FiveAdErrorCode
-import com.five_corp.ad.FiveAdInterface
 import com.five_corp.ad.FiveAdInterstitial
 import com.five_corp.ad.FiveAdInterstitialEventListener
-import com.five_corp.ad.FiveAdLoadListener
 import com.google.ads.mediation.line.LineExtras.Companion.KEY_ENABLE_AD_SOUND
 import com.google.ads.mediation.line.LineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.android.gms.ads.AdError
@@ -45,7 +43,7 @@ private constructor(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   private val networkExtras: Bundle?,
-) : MediationInterstitialAd, FiveAdLoadListener, FiveAdInterstitialEventListener {
+) : MediationInterstitialAd, FiveAdInterstitialEventListener {
 
   private var mediationInterstitialAdCallback: MediationInterstitialAdCallback? = null
   private lateinit var interstitialAd: FiveAdInterstitial
@@ -62,12 +60,38 @@ private constructor(
       return
     }
     LineInitializer.initialize(context, appId)
-    interstitialAd = LineSdkFactory.delegate.createFiveAdInterstitial(context, slotId)
-    interstitialAd.setLoadListener(this)
-    if (networkExtras != null) {
-      interstitialAd.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, true))
-    }
-    interstitialAd.loadAdAsync()
+    val fiveAdConfig = LineInitializer.getFiveAdConfig(appId)
+    val adLoader = LineSdkFactory.delegate.createAdLoader(context, fiveAdConfig) ?: return
+    val slotConfig = LineInitializer.getAdSlotConfig(slotId)
+    adLoader.loadInterstitialAd(
+      slotConfig,
+      object : AdLoader.LoadInterstitialAdCallback {
+        override fun onLoad(fiveAdInterstitial: FiveAdInterstitial) {
+          Log.d(
+            TAG,
+            "Finished loading Line Interstitial Ad for slotId: ${fiveAdInterstitial.slotId}",
+          )
+          interstitialAd = fiveAdInterstitial
+          if (networkExtras != null) {
+            interstitialAd.enableSound(networkExtras.getBoolean(KEY_ENABLE_AD_SOUND, true))
+          }
+          mediationInterstitialAdCallback =
+            mediationAdLoadCallback.onSuccess(this@LineInterstitialAd)
+          interstitialAd.setEventListener(this@LineInterstitialAd)
+        }
+
+        override fun onError(adErrorCode: FiveAdErrorCode) {
+          val adError =
+            AdError(
+              adErrorCode.value,
+              String.format(LineMediationAdapter.ERROR_MSG_AD_LOADING, adErrorCode.name),
+              SDK_ERROR_DOMAIN,
+            )
+          Log.w(TAG, adError.message)
+          mediationAdLoadCallback.onFailure(adError)
+        }
+      },
+    )
   }
 
   fun loadRtbAd(context: Context) {
@@ -97,23 +121,6 @@ private constructor(
 
   override fun showAd(context: Context) {
     interstitialAd.showAd()
-  }
-
-  override fun onFiveAdLoad(ad: FiveAdInterface) {
-    Log.d(TAG, "Finished loading Line Interstitial Ad for slotId: ${ad.slotId}")
-    mediationInterstitialAdCallback = mediationAdLoadCallback.onSuccess(this)
-    interstitialAd.setEventListener(this)
-  }
-
-  override fun onFiveAdLoadError(ad: FiveAdInterface, errorCode: FiveAdErrorCode) {
-    val adError =
-      AdError(
-        errorCode.value,
-        String.format(LineMediationAdapter.ERROR_MSG_AD_LOADING, errorCode.name),
-        SDK_ERROR_DOMAIN,
-      )
-    Log.w(TAG, adError.message)
-    mediationAdLoadCallback.onFailure(adError)
   }
 
   override fun onViewError(fiveAdInterstitial: FiveAdInterstitial, errorCode: FiveAdErrorCode) {
