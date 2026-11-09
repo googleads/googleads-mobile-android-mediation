@@ -3,7 +3,7 @@
 #### Next Version
 
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
-
+- Sets mediation info on `AdSlotConfig` for waterfall ad requests.
 #### Version 3.2.0.0
 - Verified compatibility with FiveAd SDK version 3.2.0.0.
 

@@ -20,6 +20,7 @@ import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.five_corp.ad.AdLoader
+import com.five_corp.ad.AdSlotConfig
 import com.five_corp.ad.BidData
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.FiveAdCustomLayout
@@ -35,6 +36,7 @@ import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
 import com.google.common.truth.Truth.assertThat
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -44,6 +46,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -55,6 +58,8 @@ class LineBannerAdTest {
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val mockFiveAdConfig = mock<FiveAdConfig>()
+  private val mockAdLoader = mock<AdLoader>()
+  private val slotConfig = AdSlotConfig(TEST_SLOT_ID)
   private val mockFiveAdCustomLayout =
     mock<FiveAdCustomLayout> {
       on { logicalWidth } doReturn AdSize.BANNER.width
@@ -65,8 +70,8 @@ class LineBannerAdTest {
   private val sdkFactory =
     mock<SdkFactory> {
       on { createFiveAdConfig(any()) } doReturn mockFiveAdConfig
-      on { createFiveAdCustomLayout(context, TEST_SLOT_ID, AdSize.BANNER.width) } doReturn
-        mockFiveAdCustomLayout
+      on { createAdLoader(any(), any()) } doReturn mockAdLoader
+      on { createAdSlotConfig(TEST_SLOT_ID) } doReturn slotConfig
     }
   private val mediationAdLoadCallback =
     FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
@@ -82,6 +87,11 @@ class LineBannerAdTest {
       AdSize.BANNER
     LineBannerAd.newInstance(mediationAdConfiguration, mediationAdLoadCallback, mediationUtils)
       .onSuccess { lineBannerAd = it }
+  }
+
+  @After
+  fun tearDown() {
+    LineSdkFactory.delegate = LineSdkFactory.defaultDelegate
   }
 
   // region newInstance Tests
@@ -184,6 +194,14 @@ class LineBannerAdTest {
 
     ad?.loadAd(context)
 
+    val callbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
+    verify(mockAdLoader)
+      .loadBannerAd(
+        eq(slotConfig),
+        eq(AdSize.BANNER.getWidthInPixels(context)),
+        callbackCaptor.capture(),
+      )
+    callbackCaptor.firstValue.onLoad(mockFiveAdCustomLayout)
     verify(mockFiveAdCustomLayout).enableSound(true)
   }
 
@@ -196,7 +214,30 @@ class LineBannerAdTest {
 
     ad?.loadAd(context)
 
+    val callbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
+    verify(mockAdLoader)
+      .loadBannerAd(
+        eq(slotConfig),
+        eq(AdSize.BANNER.getWidthInPixels(context)),
+        callbackCaptor.capture(),
+      )
+    callbackCaptor.firstValue.onLoad(mockFiveAdCustomLayout)
     verify(mockFiveAdCustomLayout).enableSound(false)
+  }
+
+  @Test
+  fun loadAd_whenNullAdLoader_invokesOnFailure() {
+    sdkFactory.stub { on { createAdLoader(eq(context), any()) } doReturn null }
+
+    lineBannerAd.loadAd(context)
+
+    val expectedError =
+      AdError(
+        LineMediationAdapter.ERROR_CODE_NULL_AD_LOADER,
+        LineMediationAdapter.ERROR_MSG_NULL_AD_LOADER,
+        LineMediationAdapter.ADAPTER_ERROR_DOMAIN,
+      )
+    assertThat(mediationAdLoadCallback).hasFailedWith(expectedError)
   }
 
   // endregion
@@ -329,7 +370,7 @@ class LineBannerAdTest {
 
   @Test
   fun getView_returnsCreatedBannerAd() {
-    lineBannerAd.loadAd(context)
+    loadWaterfallBannerAd()
 
     val createdAdView = lineBannerAd.view
 
@@ -337,7 +378,7 @@ class LineBannerAdTest {
   }
 
   @Test
-  fun onFiveAdLoad_withUnexpectedAdSize_invokesOnFailure() {
+  fun loadAd_onLoadWithUnexpectedAdSize_invokesOnFailure() {
     val differentBannerAd =
       mock<FiveAdCustomLayout> {
         on { logicalWidth } doReturn AdSize.LARGE_BANNER.width
@@ -346,7 +387,15 @@ class LineBannerAdTest {
       }
     whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize.BANNER), any())) doReturn null
 
-    lineBannerAd.onFiveAdLoad(differentBannerAd)
+    lineBannerAd.loadAd(context)
+    val callbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
+    verify(mockAdLoader)
+      .loadBannerAd(
+        eq(slotConfig),
+        eq(AdSize.BANNER.getWidthInPixels(context)),
+        callbackCaptor.capture(),
+      )
+    callbackCaptor.firstValue.onLoad(differentBannerAd)
 
     val expectedError =
       AdError(
@@ -358,18 +407,26 @@ class LineBannerAdTest {
   }
 
   @Test
-  fun onFiveAdLoad_invokesOnSuccess() {
-    lineBannerAd.loadAd(context)
+  fun loadAd_onLoad_invokesOnSuccess() {
+    loadWaterfallBannerAd()
 
-    lineBannerAd.onFiveAdLoad(mockFiveAdCustomLayout)
-
+    assertThat(slotConfig.mediationInfo?.name).isEqualTo("AdMob")
+    assertThat(slotConfig.mediationInfo?.version).isEqualTo(BuildConfig.ADAPTER_VERSION)
     verify(mockFiveAdCustomLayout).setEventListener(lineBannerAd)
     assertThat(mediationAdLoadCallback).hasSucceededWith(lineBannerAd)
   }
 
   @Test
-  fun onFiveAdLoadError_invokesOnFailure() {
-    lineBannerAd.onFiveAdLoadError(mockFiveAdCustomLayout, FiveAdErrorCode.INTERNAL_ERROR)
+  fun loadAd_onError_invokesOnFailure() {
+    lineBannerAd.loadAd(context)
+    val callbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
+    verify(mockAdLoader)
+      .loadBannerAd(
+        eq(slotConfig),
+        eq(AdSize.BANNER.getWidthInPixels(context)),
+        callbackCaptor.capture(),
+      )
+    callbackCaptor.firstValue.onError(FiveAdErrorCode.INTERNAL_ERROR)
 
     val expectedError =
       AdError(
@@ -382,8 +439,7 @@ class LineBannerAdTest {
 
   @Test
   fun onClick_invokesReportAdClickedAndOnAdLeftApplication() {
-    lineBannerAd.loadAd(context)
-    lineBannerAd.onFiveAdLoad(mockFiveAdCustomLayout)
+    loadWaterfallBannerAd()
 
     lineBannerAd.onClick(mockFiveAdCustomLayout)
 
@@ -393,12 +449,23 @@ class LineBannerAdTest {
 
   @Test
   fun onImpression_invokesReportAdImpression() {
-    lineBannerAd.loadAd(context)
-    lineBannerAd.onFiveAdLoad(mockFiveAdCustomLayout)
+    loadWaterfallBannerAd()
 
     lineBannerAd.onImpression(mockFiveAdCustomLayout)
 
     assertThat(bannerAdCallback.isImpressionReported).isTrue()
+  }
+
+  private fun loadWaterfallBannerAd() {
+    lineBannerAd.loadAd(context)
+    val callbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
+    verify(mockAdLoader)
+      .loadBannerAd(
+        eq(slotConfig),
+        eq(AdSize.BANNER.getWidthInPixels(context)),
+        callbackCaptor.capture(),
+      )
+    callbackCaptor.firstValue.onLoad(mockFiveAdCustomLayout)
   }
 
   @Test
