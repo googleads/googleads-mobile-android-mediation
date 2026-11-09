@@ -25,7 +25,6 @@ import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
-import java.lang.IllegalArgumentException
 import sg.bigo.ads.api.AdError as BigoAdError
 import sg.bigo.ads.api.AdLoadListener
 import sg.bigo.ads.api.RewardAdInteractionListener
@@ -38,9 +37,9 @@ class BigoRewardedAd
 private constructor(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
-  private val bidResponse: String,
+  private val bidResponse: String?,
   private val slotId: String,
-  private val watermark: String,
+  private val watermark: String?,
 ) : MediationRewardedAd, AdLoadListener<RewardVideoAd>, RewardAdInteractionListener {
   private var rewardedAdCallback: MediationRewardedAdCallback? = null
   private var rewardVideoAd: RewardVideoAd? = null
@@ -94,15 +93,20 @@ private constructor(
   }
 
   companion object {
+    /**
+     * Creates a [BigoRewardedAd]. Set [isRtb] to `true` for bidding ad loads and `false` for
+     * waterfall ad loads. Waterfall ad requests don't include a bid response or watermark.
+     */
     fun newInstance(
       mediationRewardedAdConfiguration: MediationRewardedAdConfiguration,
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
+      isRtb: Boolean,
     ): Result<BigoRewardedAd> {
       val serverParameters = mediationRewardedAdConfiguration.serverParameters
-      val bidResponse = mediationRewardedAdConfiguration.bidResponse
+      val bidResponse = mediationRewardedAdConfiguration.bidResponse.takeIf { isRtb }
       val slotId = serverParameters.getString(SLOT_ID_KEY)
-      val watermark = mediationRewardedAdConfiguration.watermark
+      val watermark = mediationRewardedAdConfiguration.watermark.takeIf { isRtb }
 
       if (slotId.isNullOrEmpty()) {
         val gmaAdError =
