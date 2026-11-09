@@ -158,14 +158,36 @@ constructor(val mediationUtils: MediationUtilsWrapper = MediationUtilsWrapper())
     callback.onSuccess(bidToken ?: "")
   }
 
+  override fun loadBannerAd(
+    mediationBannerAdConfiguration: MediationBannerAdConfiguration,
+    callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
+  ) {
+    BigoBannerAd.newInstance(
+        mediationBannerAdConfiguration,
+        callback,
+        mediationUtils,
+        isRtb = false,
+      )
+      .onSuccess { ad ->
+        bannerAd = ad
+        BigoUtils.prepareBigoSdkForWaterfallAdLoad(
+          mediationBannerAdConfiguration.context,
+          mediationBannerAdConfiguration.serverParameters,
+          onReady = { ad.loadAd(versionString) },
+          onFailure = callback::onFailure,
+        )
+      }
+  }
+
   override fun loadRtbBannerAd(
     mediationBannerAdConfiguration: MediationBannerAdConfiguration,
     callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   ) {
-    BigoBannerAd.newInstance(mediationBannerAdConfiguration, callback, mediationUtils).onSuccess {
-      bannerAd = it
-      bannerAd.loadAd(versionString)
-    }
+    BigoBannerAd.newInstance(mediationBannerAdConfiguration, callback, mediationUtils, isRtb = true)
+      .onSuccess {
+        bannerAd = it
+        it.loadAd(versionString)
+      }
   }
 
   override fun loadRtbInterstitialAd(
@@ -231,5 +253,8 @@ constructor(val mediationUtils: MediationUtilsWrapper = MediationUtilsWrapper())
     const val ERROR_MSG_MISSING_SLOT_ID = "Missing or empty Bigo Slot Id"
     const val ERROR_CODE_MISSING_APP_ID = 102
     const val ERROR_MSG_MISSING_APP_ID = "App Id to initialize Bigo SDK is empty or missing."
+    const val ERROR_CODE_INVALID_BANNER_SIZE = 103
+    const val ERROR_MSG_INVALID_BANNER_SIZE =
+      "The requested banner size isn't close to any banner size supported by Bigo."
   }
 }

@@ -19,7 +19,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_CODE_INVALID_BANNER_SIZE
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_CODE_MISSING_SLOT_ID
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_INVALID_BANNER_SIZE
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MISSING_SLOT_ID
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SLOT_ID_KEY
@@ -42,10 +44,10 @@ private constructor(
   private val mediationAdLoadCallback:
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   private val adSize: AdSize,
-  private val bidResponse: String,
+  private val bidResponse: String?,
   private val slotId: String,
   private val adView: BigoAdView,
-  private val watermark: String,
+  private val watermark: String?,
 ) : MediationBannerAd, AdLoadListener<BigoAdView>, AdInteractionListener {
 
   private var bannerAdCallback: MediationBannerAdCallback? = null
@@ -93,23 +95,47 @@ private constructor(
   }
 
   companion object {
+    /**
+     * Creates a [BigoBannerAd]. Set [isRtb] to `true` for bidding ad loads and `false` for
+     * waterfall ad loads. Waterfall ad requests don't include a bid response or watermark.
+     */
     fun newInstance(
       mediationBannerAdConfiguration: MediationBannerAdConfiguration,
       mediationAdLoadCallback:
         MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
       mediationUtils: MediationUtilsWrapper,
+      isRtb: Boolean,
     ): Result<BigoBannerAd> {
       val context = mediationBannerAdConfiguration.context
       val serverParameters = mediationBannerAdConfiguration.serverParameters
       val adSize =
-        BigoUtils.mapAdSizeToBigoBannerSize(
-          context,
-          mediationBannerAdConfiguration.adSize,
-          mediationUtils,
-        )
-      val bidResponse = mediationBannerAdConfiguration.bidResponse
+        if (isRtb) {
+          BigoUtils.mapAdSizeToBigoBannerSize(
+            context,
+            mediationBannerAdConfiguration.adSize,
+            mediationUtils,
+          )
+        } else {
+          // Waterfall ad loads fail if the requested size isn't close to a Bigo-supported size.
+          BigoUtils.findClosestBigoBannerSize(
+            context,
+            mediationBannerAdConfiguration.adSize,
+            mediationUtils,
+          )
+            ?: run {
+              val gmaAdError =
+                AdError(
+                  ERROR_CODE_INVALID_BANNER_SIZE,
+                  ERROR_MSG_INVALID_BANNER_SIZE,
+                  ADAPTER_ERROR_DOMAIN,
+                )
+              mediationAdLoadCallback.onFailure(gmaAdError)
+              return Result.failure(IllegalArgumentException(gmaAdError.toString()))
+            }
+        }
+      val bidResponse = mediationBannerAdConfiguration.bidResponse.takeIf { isRtb }
       val slotId = serverParameters.getString(SLOT_ID_KEY)
-      val watermark = mediationBannerAdConfiguration.watermark
+      val watermark = mediationBannerAdConfiguration.watermark.takeIf { isRtb }
 
       if (slotId.isNullOrEmpty()) {
         val gmaAdError =
