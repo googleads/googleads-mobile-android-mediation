@@ -1,8 +1,13 @@
 ## Moloco Android Mediation Adapter Changelog
 
-#### Version 4.14.1.0 (In progress)
+#### Version 4.14.1.0
 - Updated how the Google Mobile Ads SDK `tagForUnderAgeOfConsent` and
 `tagForChildDirectedTreatment` parameters are forwarded to the Moloco SDK.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.5.0.
+- Google Mobile Ads Next-Gen SDK version 1.6.0.
+- Moloco SDK version 4.14.1.
 
 #### Version 4.14.0.0
 - Verified compatibility with Moloco SDK 4.14.0.
