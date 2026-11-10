@@ -45,27 +45,27 @@ object BigoFactory {
       override fun createBigoAdView(context: Context) = BigoAdView(context)
 
       override fun createBannerAdRequest(
-        bidResponse: String,
+        bidResponse: String?,
         slotId: String,
         adSize: AdSize,
-        watermark: String,
+        watermark: String?,
       ) =
         BannerAdRequest.Builder()
-          .withBid(bidResponse)
           .withSlotId(slotId)
           .withAdSizes(adSize)
-          .withWatermark(watermark)
+          .applyIfNotNull(bidResponse) { withBid(it) }
+          .applyIfNotNull(watermark) { withWatermark(it) }
           .build()
 
       override fun createInterstitialAdRequest(
-        bidResponse: String,
+        bidResponse: String?,
         slotId: String,
-        watermark: String,
+        watermark: String?,
       ) =
         InterstitialAdRequest.Builder()
-          .withBid(bidResponse)
           .withSlotId(slotId)
-          .withWatermark(watermark)
+          .applyIfNotNull(bidResponse) { withBid(it) }
+          .applyIfNotNull(watermark) { withWatermark(it) }
           .build()
 
       override fun createInterstitialAdLoader() =
@@ -89,14 +89,14 @@ object BigoFactory {
         }
 
       override fun createRewardVideoAdRequest(
-        bidResponse: String,
+        bidResponse: String?,
         slotId: String,
-        watermark: String,
+        watermark: String?,
       ) =
         RewardVideoAdRequest.Builder()
-          .withBid(bidResponse)
           .withSlotId(slotId)
-          .withWatermark(watermark)
+          .applyIfNotNull(bidResponse) { withBid(it) }
+          .applyIfNotNull(watermark) { withWatermark(it) }
           .build()
 
       override fun createRewardVideoAdLoader() =
@@ -119,11 +119,11 @@ object BigoFactory {
           }
         }
 
-      override fun createSplashAdRequest(bidResponse: String, slotId: String, watermark: String) =
+      override fun createSplashAdRequest(bidResponse: String?, slotId: String, watermark: String?) =
         SplashAdRequest.Builder()
-          .withBid(bidResponse)
           .withSlotId(slotId)
-          .withWatermark(watermark)
+          .applyIfNotNull(bidResponse) { withBid(it) }
+          .applyIfNotNull(watermark) { withWatermark(it) }
           .build()
 
       override fun createSplashAdLoader() =
@@ -140,11 +140,11 @@ object BigoFactory {
           }
         }
 
-      override fun createNativeAdRequest(bidResponse: String, slotId: String, watermark: String) =
+      override fun createNativeAdRequest(bidResponse: String?, slotId: String, watermark: String?) =
         NativeAdRequest.Builder()
-          .withBid(bidResponse)
           .withSlotId(slotId)
-          .withWatermark(watermark)
+          .applyIfNotNull(bidResponse) { withBid(it) }
+          .applyIfNotNull(watermark) { withWatermark(it) }
           .build()
 
       override fun createNativeAdLoader(): BigoNativeAdLoaderWrapper =
@@ -163,32 +163,66 @@ object BigoFactory {
     }
 }
 
+/** Runs [block] with [value] if [value] isn't null. */
+private fun <T> T.applyIfNotNull(value: String?, block: T.(String) -> Unit): T {
+  if (value != null) block(value)
+  return this
+}
+
 /** Declares the methods that will invoke the Bigo SDK */
 interface SdkFactory {
   fun createBigoAdView(context: Context): BigoAdView
 
+  /**
+   * Creates a Bigo banner ad request. [bidResponse] and [watermark] are only set for bidding ad
+   * requests; pass `null` for waterfall ad requests.
+   */
   fun createBannerAdRequest(
-    bidResponse: String,
+    bidResponse: String?,
     slotId: String,
     adSize: AdSize,
-    watermark: String,
+    watermark: String?,
   ): BannerAdRequest
 
+  /**
+   * Creates a Bigo interstitial ad request. [bidResponse] and [watermark] are only set for bidding
+   * ad requests; pass `null` for waterfall ad requests.
+   */
   fun createInterstitialAdRequest(
-    bidResponse: String,
+    bidResponse: String?,
     slotId: String,
-    watermark: String,
+    watermark: String?,
   ): InterstitialAdRequest
 
+  /**
+   * Creates a Bigo reward video ad request. [bidResponse] and [watermark] are only set for bidding
+   * ad requests; pass `null` for waterfall ad requests.
+   */
   fun createRewardVideoAdRequest(
-    bidResponse: String,
+    bidResponse: String?,
     slotId: String,
-    watermark: String,
+    watermark: String?,
   ): RewardVideoAdRequest
 
-  fun createSplashAdRequest(bidResponse: String, slotId: String, watermark: String): SplashAdRequest
+  /**
+   * Creates a Bigo splash (app open) ad request. [bidResponse] and [watermark] are only set for
+   * bidding ad requests; pass `null` for waterfall ad requests.
+   */
+  fun createSplashAdRequest(
+    bidResponse: String?,
+    slotId: String,
+    watermark: String?,
+  ): SplashAdRequest
 
-  fun createNativeAdRequest(bidResponse: String, slotId: String, watermark: String): NativeAdRequest
+  /**
+   * Creates a Bigo native ad request. [bidResponse] and [watermark] are only set for bidding ad
+   * requests; pass `null` for waterfall ad requests.
+   */
+  fun createNativeAdRequest(
+    bidResponse: String?,
+    slotId: String,
+    watermark: String?,
+  ): NativeAdRequest
 
   fun createInterstitialAdLoader(): BigoInterstitialAdLoaderWrapper
 
