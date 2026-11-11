@@ -14,11 +14,15 @@
 
 name: Mediation Adapters CI
 
+permissions:
+  contents: read
+
 on:
   pull_request:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   check-paths:
@@ -27,18 +31,36 @@ jobs:
       adapters_to_test: ${{ steps.filter.outputs.adapters_to_test }}
       example: ${{ steps.filter.outputs.example }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          persist-credentials: false
       - name: Check changes
         id: filter
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PUSH_BEFORE: ${{ github.event.before }}
         run: |
-          # Fetch base branch to compare
-          git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }} HEAD)
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            # Fetch base branch to compare
+            git fetch --no-tags origin "$PR_BASE_REF" --depth=1
+            CHANGED_FILES=$(git diff --name-only "origin/$PR_BASE_REF" HEAD)
+          elif [[ "$EVENT_NAME" == "push" ]]; then
+            # Compare against the pre-push commit on main (falling back to HEAD~1 if all-zeros or unreachable)
+            if [[ -n "$PUSH_BEFORE" && ! "$PUSH_BEFORE" =~ ^0+$ ]] && git fetch --no-tags --depth=1 origin "$PUSH_BEFORE"; then
+              CHANGED_FILES=$(git diff --name-only "$PUSH_BEFORE" HEAD)
+            else
+              git fetch --no-tags --depth=2 origin "$GITHUB_SHA"
+              CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+            fi
+          else
+            CHANGED_FILES=""
+          fi
           echo "Changed files:"
           echo "$CHANGED_FILES"
 
           # 1. Check if Example changed
-          if echo "$CHANGED_FILES" | grep -q "^Example/"; then
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]] || echo "$CHANGED_FILES" | grep -q "^Example/"; then
             echo "example=true" >> $GITHUB_OUTPUT
           else
             echo "example=false" >> $GITHUB_OUTPUT
@@ -50,9 +72,9 @@ jobs:
           DEPRECATED_ADAPTERS="adcolony fyber nend tapjoy vungle"
           ADAPTERS=$(ls -d ThirdPartyAdapters/*/ | sed 's/ThirdPartyAdapters\///' | sed 's/\///')
 
-          # Check for global changes (common utilities or workflow files themselves)
+          # Check for global changes (common utilities, workflow files themselves, or manual dispatch)
           TEST_ALL=false
-          if echo "$CHANGED_FILES" | grep -q -E "^ThirdPartyAdapters/(common|adaptertestkit)/|^\.github/workflows/"; then
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]] || echo "$CHANGED_FILES" | grep -q -E "^ThirdPartyAdapters/(common|adaptertestkit)/|^\.github/workflows/"; then
             TEST_ALL=true
           fi
 
@@ -126,16 +148,19 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0
-      - uses: actions/setup-java@v4
+          persist-credentials: false
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: temurin
           java-version: '17'
       - name: Unit Tests
+        env:
+          ADAPTER: ${{ matrix.adapter }}
         run: |
-          cd ThirdPartyAdapters/${{ matrix.adapter }}/
+          cd "ThirdPartyAdapters/$ADAPTER/"
           GRADLE_VERSION=$(sed -E -n 's/.*gradle-(.*)-(bin|all)\.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
           GRADLE_MAJOR_VERSION="${GRADLE_VERSION%%.*}"
           brew install gradle@$GRADLE_MAJOR_VERSION
@@ -150,8 +175,10 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: temurin
           java-version: '17'
@@ -171,16 +198,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check Status
+        env:
+          CHECK_PATHS_RESULT: ${{ needs.check-paths.result }}
+          BUILD_RESULT: ${{ needs.Build.result }}
+          TEST_ADAPTERS_RESULT: ${{ needs.test-adapters.result }}
         run: |
-          if [[ "${{ needs.check-paths.result }}" == "failure" || "${{ needs.check-paths.result }}" == "cancelled" ]]; then
+          if [[ "$CHECK_PATHS_RESULT" == "failure" || "$CHECK_PATHS_RESULT" == "cancelled" ]]; then
             echo "check-paths failed or was cancelled."
             exit 1
           fi
-          if [[ "${{ needs.Build.result }}" == "failure" || "${{ needs.Build.result }}" == "cancelled" ]]; then
+          if [[ "$BUILD_RESULT" == "failure" || "$BUILD_RESULT" == "cancelled" ]]; then
             echo "Build failed or was cancelled."
             exit 1
           fi
-          if [[ "${{ needs.test-adapters.result }}" == "failure" || "${{ needs.test-adapters.result }}" == "cancelled" ]]; then
+          if [[ "$TEST_ADAPTERS_RESULT" == "failure" || "$TEST_ADAPTERS_RESULT" == "cancelled" ]]; then
             echo "test-adapters failed or was cancelled."
             exit 1
           fi
