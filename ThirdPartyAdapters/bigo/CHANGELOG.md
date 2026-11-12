@@ -1,6 +1,6 @@
 ## Bigo Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 6.2.0.1 (In progress)
 - Destroy Bigo banner ad objects when the ad is closed.
 
 #### Version 6.2.0.0
