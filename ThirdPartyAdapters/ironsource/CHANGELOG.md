@@ -1,5 +1,7 @@
 ## IronSource Android Mediation Adapter Changelog
 
+#### Version 9.8.0.0 (In progress)
+
 #### Version 9.7.0.0
 - Updated `collectSignals()` to invoke `onFailure()` with error code 108 when
   the ironSource SDK returns null or empty bidding signals.
