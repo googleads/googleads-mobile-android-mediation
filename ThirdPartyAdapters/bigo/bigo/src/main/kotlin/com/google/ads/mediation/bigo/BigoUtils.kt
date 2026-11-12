@@ -16,7 +16,6 @@ package com.google.ads.mediation.bigo
 
 import android.content.Context
 import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils
-import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
@@ -26,8 +25,6 @@ import sg.bigo.ads.api.AdConfig
 import sg.bigo.ads.api.AdSize
 
 object BigoUtils {
-  fun getGmaAdError(code: Int, message: String, domain: String) = AdError(code, message, domain)
-
   fun mapAdSizeToBigoBannerSize(
     context: Context,
     adSize: com.google.android.gms.ads.AdSize,

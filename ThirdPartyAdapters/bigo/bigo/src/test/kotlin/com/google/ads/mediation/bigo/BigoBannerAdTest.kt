@@ -26,6 +26,7 @@ import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SLOT_ID_KEY
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.common.truth.Truth.assertThat
@@ -40,7 +41,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import sg.bigo.ads.ad.banner.BigoAdView
-import sg.bigo.ads.api.AdError
+import sg.bigo.ads.api.AdError as BigoAdError
 import sg.bigo.ads.api.AdSize
 import sg.bigo.ads.api.BannerAdRequest
 
@@ -113,16 +114,16 @@ class BigoBannerAdTest {
 
   @Test
   fun onError_invokesOnFailure() {
-    val expectedAdError = BigoUtils.getGmaAdError(TEST_ERROR_CODE, TEST_ERROR_MSG, SDK_ERROR_DOMAIN)
+    val expectedAdError = AdError(TEST_ERROR_CODE, TEST_ERROR_MSG, SDK_ERROR_DOMAIN)
 
-    bigoBannerAd.onError(AdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
+    bigoBannerAd.onError(BigoAdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
 
     assertThat(adLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
   fun onAdError_throwsNoException() {
-    bigoBannerAd.onAdError(AdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
+    bigoBannerAd.onAdError(BigoAdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
   }
 
   @Test
