@@ -24,6 +24,7 @@ import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_CODE_M
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MISSING_SLOT_ID
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SLOT_ID_KEY
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
@@ -32,7 +33,7 @@ import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_BODY
 import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_CALL_TO_ACTION
 import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_HEADLINE
 import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_ICON
-import sg.bigo.ads.api.AdError
+import sg.bigo.ads.api.AdError as BigoAdError
 import sg.bigo.ads.api.AdInteractionListener
 import sg.bigo.ads.api.AdLoadListener
 import sg.bigo.ads.api.AdOptionsView
@@ -69,8 +70,8 @@ private constructor(
     nativeAdLoader.loadAd(adRequest)
   }
 
-  override fun onError(adError: AdError) {
-    val gmaAdError = BigoUtils.getGmaAdError(adError.code, adError.message, SDK_ERROR_DOMAIN)
+  override fun onError(adError: BigoAdError) {
+    val gmaAdError = AdError(adError.code, adError.message, SDK_ERROR_DOMAIN)
     mediationNativeAdLoadCallback.onFailure(gmaAdError)
   }
 
@@ -81,7 +82,7 @@ private constructor(
     nativeAdCallback = mediationNativeAdLoadCallback.onSuccess(this)
   }
 
-  override fun onAdError(adError: AdError) {
+  override fun onAdError(adError: BigoAdError) {
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
@@ -207,11 +208,7 @@ private constructor(
 
       if (slotId.isNullOrEmpty()) {
         val gmaAdError =
-          BigoUtils.getGmaAdError(
-            ERROR_CODE_MISSING_SLOT_ID,
-            ERROR_MSG_MISSING_SLOT_ID,
-            ADAPTER_ERROR_DOMAIN,
-          )
+          AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
         mediationNativeAdLoadCallback.onFailure(gmaAdError)
         return Result.failure(IllegalArgumentException(gmaAdError.toString()))
       }

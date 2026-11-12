@@ -26,6 +26,7 @@ import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConfiguration
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SLOT_ID_KEY
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.common.truth.Truth.assertThat
@@ -37,7 +38,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import sg.bigo.ads.api.AdError
+import sg.bigo.ads.api.AdError as BigoAdError
 import sg.bigo.ads.api.InterstitialAd
 import sg.bigo.ads.api.InterstitialAdRequest
 
@@ -100,9 +101,9 @@ class BigoInterstitialAdTest {
 
   @Test
   fun onError_invokesOnFailure() {
-    val expectedAdError = BigoUtils.getGmaAdError(TEST_ERROR_CODE, TEST_ERROR_MSG, SDK_ERROR_DOMAIN)
+    val expectedAdError = AdError(TEST_ERROR_CODE, TEST_ERROR_MSG, SDK_ERROR_DOMAIN)
 
-    bigoInterstitialAd.onError(AdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
+    bigoInterstitialAd.onError(BigoAdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
 
     assertThat(adLoadCallback).hasFailedWith(expectedAdError)
   }
@@ -119,10 +120,10 @@ class BigoInterstitialAdTest {
 
   @Test
   fun onAdError_invokesOnAdFailedToShow() {
-    val expectedAdError = BigoUtils.getGmaAdError(TEST_ERROR_CODE, TEST_ERROR_MSG, SDK_ERROR_DOMAIN)
+    val expectedAdError = AdError(TEST_ERROR_CODE, TEST_ERROR_MSG, SDK_ERROR_DOMAIN)
     bigoInterstitialAd.onAdLoaded(mock())
 
-    bigoInterstitialAd.onAdError(AdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
+    bigoInterstitialAd.onAdError(BigoAdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
 
     assertThat(interstitialAdCallback.isFailedToShow).isTrue()
     assertThat(interstitialAdCallback.adFailedToShowError).isEqualTo(expectedAdError)

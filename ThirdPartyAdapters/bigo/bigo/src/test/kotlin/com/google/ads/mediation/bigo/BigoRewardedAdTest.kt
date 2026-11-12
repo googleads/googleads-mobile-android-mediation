@@ -26,6 +26,7 @@ import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SLOT_ID_KEY
+import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.common.truth.Truth.assertThat
@@ -37,7 +38,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import sg.bigo.ads.api.AdError
+import sg.bigo.ads.api.AdError as BigoAdError
 import sg.bigo.ads.api.RewardVideoAd
 import sg.bigo.ads.api.RewardVideoAdRequest
 
@@ -98,9 +99,9 @@ class BigoRewardedAdTest {
 
   @Test
   fun onError_invokesOnFailure() {
-    val expectedAdError = BigoUtils.getGmaAdError(TEST_ERROR_CODE, TEST_ERROR_MSG, SDK_ERROR_DOMAIN)
+    val expectedAdError = AdError(TEST_ERROR_CODE, TEST_ERROR_MSG, SDK_ERROR_DOMAIN)
 
-    bigoRewardedAd.onError(AdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
+    bigoRewardedAd.onError(BigoAdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
 
     assertThat(adLoadCallback).hasFailedWith(expectedAdError)
   }
@@ -126,10 +127,10 @@ class BigoRewardedAdTest {
 
   @Test
   fun onAdError_invokesOnAdFailedToShow() {
-    val expectedAdError = BigoUtils.getGmaAdError(TEST_ERROR_CODE, TEST_ERROR_MSG, SDK_ERROR_DOMAIN)
+    val expectedAdError = AdError(TEST_ERROR_CODE, TEST_ERROR_MSG, SDK_ERROR_DOMAIN)
     bigoRewardedAd.onAdLoaded(mock())
 
-    bigoRewardedAd.onAdError(AdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
+    bigoRewardedAd.onAdError(BigoAdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
 
     assertThat(rewardedAdCallback.isFailedToShow).isTrue()
     assertThat(rewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)

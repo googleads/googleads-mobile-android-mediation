@@ -24,8 +24,13 @@ import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
 import com.google.ads.mediation.adaptertestkit.FakeMediationBannerAdCallback
 import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationBannerAdConfiguration
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_CODE_INVALID_BANNER_SIZE
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_INVALID_BANNER_SIZE
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SLOT_ID_KEY
+import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.common.truth.Truth.assertThat
@@ -40,8 +45,8 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import sg.bigo.ads.ad.banner.BigoAdView
-import sg.bigo.ads.api.AdError
-import sg.bigo.ads.api.AdSize
+import sg.bigo.ads.api.AdError as BigoAdError
+import sg.bigo.ads.api.AdSize as BigoAdSize
 import sg.bigo.ads.api.BannerAdRequest
 
 @RunWith(AndroidJUnit4::class)
@@ -61,7 +66,7 @@ class BigoBannerAdTest {
         createBannerAdRequest(
           eq(TEST_BID_RESPONSE),
           eq(TEST_SLOT_ID),
-          eq(AdSize.BANNER),
+          eq(BigoAdSize.BANNER),
           eq(TEST_WATERMARK),
         )
       } doReturn mockBannerAdRequest
@@ -78,24 +83,81 @@ class BigoBannerAdTest {
         bidResponse = TEST_BID_RESPONSE,
         serverParameters = serverParams,
         watermark = TEST_WATERMARK,
-        adSize = com.google.android.gms.ads.AdSize.BANNER,
+        adSize = AdSize.BANNER,
       )
-    whenever(
-      mediationUtils.findClosestSize(
-        eq(context),
-        eq(com.google.android.gms.ads.AdSize.BANNER),
-        any(),
-      )
-    ) doReturn com.google.android.gms.ads.AdSize.BANNER
+    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize.BANNER), any())) doReturn
+      AdSize.BANNER
     BigoFactory.delegate = mockBigoFactory
-    BigoBannerAd.newInstance(adConfiguration, adLoadCallback, mediationUtils).onSuccess {
-      bigoBannerAd = it
-    }
+    BigoBannerAd.newInstance(adConfiguration, adLoadCallback, mediationUtils, isRtb = true)
+      .onSuccess { bigoBannerAd = it }
+  }
+
+  @Test
+  fun loadAd_waterfall_createsAdRequestWithoutBidResponseAndWatermark() {
+    val waterfallAdRequest = mock<BannerAdRequest>()
+    whenever(
+      mockBigoFactory.createBannerAdRequest(
+        eq(null),
+        eq(TEST_SLOT_ID),
+        eq(BigoAdSize.BANNER),
+        eq(null),
+      )
+    ) doReturn waterfallAdRequest
+    val waterfallAdConfiguration =
+      createMediationBannerAdConfiguration(
+        context = context,
+        bidResponse = TEST_BID_RESPONSE,
+        serverParameters = bundleOf(SLOT_ID_KEY to TEST_SLOT_ID),
+        watermark = TEST_WATERMARK,
+        adSize = AdSize.BANNER,
+      )
+    lateinit var waterfallBannerAd: BigoBannerAd
+    BigoBannerAd.newInstance(
+        waterfallAdConfiguration,
+        adLoadCallback,
+        mediationUtils,
+        isRtb = false,
+      )
+      .onSuccess { waterfallBannerAd = it }
+
+    waterfallBannerAd.loadAd(TEST_VERSION_STRING)
+
+    verify(mockBigoAdView).loadAd(waterfallAdRequest, TEST_VERSION_STRING)
+  }
+
+  @Test
+  fun newInstance_waterfallWithUnsupportedSize_invokesOnFailure() {
+    val waterfallAdLoadCallback =
+      FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
+    whenever(
+      mediationUtils.findClosestSize(eq(context), eq(AdSize.WIDE_SKYSCRAPER), any())
+    ) doReturn null
+    val waterfallAdConfiguration =
+      createMediationBannerAdConfiguration(
+        context = context,
+        serverParameters = bundleOf(SLOT_ID_KEY to TEST_SLOT_ID),
+        adSize = AdSize.WIDE_SKYSCRAPER,
+      )
+    val expectedAdError =
+      AdError(ERROR_CODE_INVALID_BANNER_SIZE, ERROR_MSG_INVALID_BANNER_SIZE, ADAPTER_ERROR_DOMAIN)
+
+    val result =
+      BigoBannerAd.newInstance(
+        waterfallAdConfiguration,
+        waterfallAdLoadCallback,
+        mediationUtils,
+        isRtb = false,
+      )
+
+    assertThat(result.isFailure).isTrue()
+    assertThat(waterfallAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
   fun loadAd_invokesSetAdLoaderListenerSetAdInteractorListenerAndLoadAd() {
     bigoBannerAd.loadAd(TEST_VERSION_STRING)
+
+    assertThat(bigoBannerAd.view).isEqualTo(mockBigoAdView)
 
     inOrder(mockBigoAdView) {
       verify(mockBigoAdView).setAdLoadListener(bigoBannerAd)
@@ -113,16 +175,16 @@ class BigoBannerAdTest {
 
   @Test
   fun onError_invokesOnFailure() {
-    val expectedAdError = BigoUtils.getGmaAdError(TEST_ERROR_CODE, TEST_ERROR_MSG, SDK_ERROR_DOMAIN)
+    val expectedAdError = AdError(TEST_ERROR_CODE, TEST_ERROR_MSG, SDK_ERROR_DOMAIN)
 
-    bigoBannerAd.onError(AdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
+    bigoBannerAd.onError(BigoAdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
 
     assertThat(adLoadCallback).hasFailedWith(expectedAdError)
   }
 
   @Test
   fun onAdError_throwsNoException() {
-    bigoBannerAd.onAdError(AdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
+    bigoBannerAd.onAdError(BigoAdError(TEST_ERROR_CODE, TEST_ERROR_MSG))
   }
 
   @Test
@@ -154,6 +216,7 @@ class BigoBannerAdTest {
 
   @Test
   fun onAdClosed_invokesOnAdClosedAndDestroysAd() {
+    bigoBannerAd.loadAd(TEST_VERSION_STRING)
     bigoBannerAd.onAdLoaded(mock())
 
     bigoBannerAd.onAdClosed()
