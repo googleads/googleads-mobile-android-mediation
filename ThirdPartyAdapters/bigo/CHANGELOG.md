@@ -2,6 +2,9 @@
 
 #### Next Version
 - Destroy Bigo banner ad objects when the ad is closed.
+- Added waterfall support for banner, interstitial, rewarded, and rewarded interstitial ads.
+- Added error code `103` for waterfall banner requests whose size isn't close
+  to a banner size supported by Bigo.
 
 #### Version 6.2.0.0
 - Destroy Bigo ad objects when the ad is closed or untracked.

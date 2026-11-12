@@ -37,6 +37,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import sg.bigo.ads.api.AdError
 import sg.bigo.ads.api.InterstitialAd
 import sg.bigo.ads.api.InterstitialAdRequest
@@ -73,9 +74,30 @@ class BigoInterstitialAdTest {
         watermark = TEST_WATERMARK,
       )
     BigoFactory.delegate = mockBigoFactory
-    BigoInterstitialAd.newInstance(adConfiguration, adLoadCallback).onSuccess {
+    BigoInterstitialAd.newInstance(adConfiguration, adLoadCallback, isRtb = true).onSuccess {
       bigoInterstitialAd = it
     }
+  }
+
+  @Test
+  fun loadAd_waterfall_createsAdRequestWithoutBidResponseAndWatermark() {
+    val waterfallAdRequest = mock<InterstitialAdRequest>()
+    whenever(mockBigoFactory.createInterstitialAdRequest(eq(null), eq(TEST_SLOT_ID), eq(null)))
+      .thenReturn(waterfallAdRequest)
+    val waterfallAdConfiguration =
+      createMediationInterstitialAdConfiguration(
+        context = context,
+        bidResponse = TEST_BID_RESPONSE,
+        serverParameters = bundleOf(SLOT_ID_KEY to TEST_SLOT_ID),
+        watermark = TEST_WATERMARK,
+      )
+    lateinit var waterfallInterstitialAd: BigoInterstitialAd
+    BigoInterstitialAd.newInstance(waterfallAdConfiguration, adLoadCallback, isRtb = false)
+      .onSuccess { waterfallInterstitialAd = it }
+
+    waterfallInterstitialAd.loadAd(TEST_VERSION_STRING)
+
+    verify(mockInterstitialAdLoader).loadAd(waterfallAdRequest)
   }
 
   @Test

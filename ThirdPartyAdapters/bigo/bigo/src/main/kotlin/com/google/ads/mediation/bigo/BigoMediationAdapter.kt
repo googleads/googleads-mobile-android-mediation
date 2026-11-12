@@ -158,34 +158,106 @@ constructor(val mediationUtils: MediationUtilsWrapper = MediationUtilsWrapper())
     callback.onSuccess(bidToken ?: "")
   }
 
+  override fun loadBannerAd(
+    mediationBannerAdConfiguration: MediationBannerAdConfiguration,
+    callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
+  ) {
+    BigoBannerAd.newInstance(
+        mediationBannerAdConfiguration,
+        callback,
+        mediationUtils,
+        isRtb = false,
+      )
+      .onSuccess { ad ->
+        bannerAd = ad
+        BigoUtils.prepareBigoSdkForWaterfallAdLoad(
+          mediationBannerAdConfiguration.context,
+          mediationBannerAdConfiguration.serverParameters,
+          onReady = { ad.loadAd(versionString) },
+          onFailure = callback::onFailure,
+        )
+      }
+  }
+
   override fun loadRtbBannerAd(
     mediationBannerAdConfiguration: MediationBannerAdConfiguration,
     callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   ) {
-    BigoBannerAd.newInstance(mediationBannerAdConfiguration, callback, mediationUtils).onSuccess {
-      bannerAd = it
-      bannerAd.loadAd(versionString)
-    }
+    BigoBannerAd.newInstance(mediationBannerAdConfiguration, callback, mediationUtils, isRtb = true)
+      .onSuccess {
+        bannerAd = it
+        it.loadAd(versionString)
+      }
+  }
+
+  override fun loadInterstitialAd(
+    mediationInterstitialAdConfiguration: MediationInterstitialAdConfiguration,
+    callback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
+  ) {
+    BigoInterstitialAd.newInstance(mediationInterstitialAdConfiguration, callback, isRtb = false)
+      .onSuccess { ad ->
+        interstitialAd = ad
+        BigoUtils.prepareBigoSdkForWaterfallAdLoad(
+          mediationInterstitialAdConfiguration.context,
+          mediationInterstitialAdConfiguration.serverParameters,
+          onReady = { ad.loadAd(versionString) },
+          onFailure = callback::onFailure,
+        )
+      }
   }
 
   override fun loadRtbInterstitialAd(
     mediationInterstitialAdConfiguration: MediationInterstitialAdConfiguration,
     callback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   ) {
-    BigoInterstitialAd.newInstance(mediationInterstitialAdConfiguration, callback).onSuccess {
-      interstitialAd = it
-      interstitialAd.loadAd(versionString)
-    }
+    BigoInterstitialAd.newInstance(mediationInterstitialAdConfiguration, callback, isRtb = true)
+      .onSuccess {
+        interstitialAd = it
+        it.loadAd(versionString)
+      }
+  }
+
+  override fun loadRewardedAd(
+    mediationRewardedAdConfiguration: MediationRewardedAdConfiguration,
+    callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
+  ) {
+    BigoRewardedAd.newInstance(mediationRewardedAdConfiguration, callback, isRtb = false)
+      .onSuccess { ad ->
+        rewardedAd = ad
+        BigoUtils.prepareBigoSdkForWaterfallAdLoad(
+          mediationRewardedAdConfiguration.context,
+          mediationRewardedAdConfiguration.serverParameters,
+          onReady = { ad.loadAd(versionString) },
+          onFailure = callback::onFailure,
+        )
+      }
   }
 
   override fun loadRtbRewardedAd(
     mediationRewardedAdConfiguration: MediationRewardedAdConfiguration,
     callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   ) {
-    BigoRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
+    BigoRewardedAd.newInstance(mediationRewardedAdConfiguration, callback, isRtb = true).onSuccess {
       rewardedAd = it
-      rewardedAd.loadAd(versionString)
+      it.loadAd(versionString)
     }
+  }
+
+  override fun loadRewardedInterstitialAd(
+    mediationRewardedAdConfiguration: MediationRewardedAdConfiguration,
+    callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
+  ) {
+    // Reuses Rewarded Ads
+    BigoRewardedAd.newInstance(mediationRewardedAdConfiguration, callback, isRtb = false)
+      .onSuccess { ad ->
+        rewardedInterstitialAd = ad
+        BigoUtils.prepareBigoSdkForWaterfallAdLoad(
+          mediationRewardedAdConfiguration.context,
+          mediationRewardedAdConfiguration.serverParameters,
+          onReady = { ad.loadAd(versionString) },
+          onFailure = callback::onFailure,
+        )
+      }
   }
 
   override fun loadRtbRewardedInterstitialAd(
@@ -193,9 +265,9 @@ constructor(val mediationUtils: MediationUtilsWrapper = MediationUtilsWrapper())
     callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   ) {
     // Reuses Rewarded Ads
-    BigoRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
+    BigoRewardedAd.newInstance(mediationRewardedAdConfiguration, callback, isRtb = true).onSuccess {
       rewardedInterstitialAd = it
-      rewardedInterstitialAd.loadAd(versionString)
+      it.loadAd(versionString)
     }
   }
 
@@ -231,5 +303,8 @@ constructor(val mediationUtils: MediationUtilsWrapper = MediationUtilsWrapper())
     const val ERROR_MSG_MISSING_SLOT_ID = "Missing or empty Bigo Slot Id"
     const val ERROR_CODE_MISSING_APP_ID = 102
     const val ERROR_MSG_MISSING_APP_ID = "App Id to initialize Bigo SDK is empty or missing."
+    const val ERROR_CODE_INVALID_BANNER_SIZE = 103
+    const val ERROR_MSG_INVALID_BANNER_SIZE =
+      "The requested banner size isn't close to any banner size supported by Bigo."
   }
 }
