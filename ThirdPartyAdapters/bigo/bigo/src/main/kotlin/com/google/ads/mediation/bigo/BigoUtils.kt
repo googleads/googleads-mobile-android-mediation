@@ -46,7 +46,7 @@ object BigoUtils {
     return when (closestSupportedSize) {
       com.google.android.gms.ads.AdSize.BANNER -> AdSize.BANNER
       com.google.android.gms.ads.AdSize.MEDIUM_RECTANGLE -> AdSize.MEDIUM_RECTANGLE
-      com.google.android.gms.ads.AdSize.LARGE_BANNER -> AdSize.LARGE_BANNER
+      com.google.android.gms.ads.AdSize.LARGE_BANNER -> AdSize.MOBILE_LARGE_LEADERBOARD
       com.google.android.gms.ads.AdSize.LEADERBOARD -> AdSize.LEADERBOARD
       else -> AdSize.BANNER
     }
