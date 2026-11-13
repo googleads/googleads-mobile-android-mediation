@@ -1,5 +1,9 @@
 ## Moloco Android Mediation Adapter Changelog
 
+#### Next version
+- Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+- Added error code `104: Moloco SDK failed to initialize`.
+
 #### Version 4.14.1.0 (In progress)
 - Updated how the Google Mobile Ads SDK `tagForUnderAgeOfConsent` and
 `tagForChildDirectedTreatment` parameters are forwarded to the Moloco SDK.
