@@ -15,6 +15,7 @@
 package com.google.ads.mediation.bigo
 
 import android.content.Context
+import android.os.Looper
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -38,6 +39,7 @@ import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_CODE_M
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_CODE_MISSING_SLOT_ID
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MISSING_APP_ID
 import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.ERROR_MSG_MISSING_SLOT_ID
+import com.google.ads.mediation.bigo.BigoMediationAdapter.Companion.SLOT_ID_KEY
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
 import com.google.android.gms.ads.AdSize
@@ -64,14 +66,18 @@ import org.junit.runner.RunWith
 import org.mockito.MockedStatic
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.robolectric.Shadows.shadowOf
 import sg.bigo.ads.BigoAdSdk
 import sg.bigo.ads.ConsentOptions
+import sg.bigo.ads.ad.banner.BigoAdView
 
 @RunWith(AndroidJUnit4::class)
 class BigoMediationAdapterTest {
@@ -215,6 +221,7 @@ class BigoMediationAdapterTest {
 
     mockBigoSdk.verify { BigoAdSdk.initialize(eq(context), any(), callbackCaptor.capture()) }
     callbackCaptor.firstValue.onInitialized()
+    shadowOf(Looper.getMainLooper()).idle()
     assertThat(initializationCompleteCallback).hasSucceeded()
     mockBigoSdk.verify {
       BigoAdSdk.setUserConsent(eq(context), eq(ConsentOptions.COPPA), eq(false))
@@ -242,6 +249,7 @@ class BigoMediationAdapterTest {
 
     mockBigoSdk.verify { BigoAdSdk.initialize(eq(context), any(), callbackCaptor.capture()) }
     callbackCaptor.firstValue.onInitialized()
+    shadowOf(Looper.getMainLooper()).idle()
     assertThat(initializationCompleteCallback).hasSucceeded()
     mockBigoSdk.verify {
       BigoAdSdk.setUserConsent(eq(context), eq(ConsentOptions.COPPA), eq(false))
@@ -270,6 +278,7 @@ class BigoMediationAdapterTest {
 
     mockBigoSdk.verify { BigoAdSdk.initialize(eq(context), any(), callbackCaptor.capture()) }
     callbackCaptor.firstValue.onInitialized()
+    shadowOf(Looper.getMainLooper()).idle()
     assertThat(initializationCompleteCallback).hasSucceeded()
     mockBigoSdk.verify {
       BigoAdSdk.setUserConsent(eq(context), eq(ConsentOptions.COPPA), eq(false))
@@ -400,6 +409,47 @@ class BigoMediationAdapterTest {
     assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
+  @Test
+  fun loadBannerAd_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationBannerAdConfiguration(context, adSize = AdSize.BANNER)
+    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize.BANNER), any())) doReturn
+      AdSize.BANNER
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadBannerAd(adConfiguration, bannerAdLoadCallback)
+
+    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
+  }
+
+  @Test
+  fun loadBannerAd_whenSdkNotInitialized_initializesThenLoadsAd() {
+    whenever(BigoAdSdk.isInitialized()) doReturn false
+    val mockBigoAdView = mock<BigoAdView>()
+    BigoFactory.delegate =
+      mock<SdkFactory> {
+        on { createBigoAdView(any()) } doReturn mockBigoAdView
+        on { createBannerAdRequest(anyOrNull(), any(), any(), anyOrNull()) } doReturn mock()
+      }
+    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize.BANNER), any())) doReturn
+      AdSize.BANNER
+    val adConfiguration =
+      createMediationBannerAdConfiguration(
+        context,
+        serverParameters = bundleOf(SLOT_ID_KEY to TEST_SLOT_ID, APP_ID_KEY to TEST_APP_ID),
+        adSize = AdSize.BANNER,
+      )
+    val initListenerCaptor = argumentCaptor<BigoAdSdk.InitListener>()
+
+    adapter.loadBannerAd(adConfiguration, bannerAdLoadCallback)
+
+    mockBigoSdk.verify { BigoAdSdk.initialize(eq(context), any(), initListenerCaptor.capture()) }
+    verify(mockBigoAdView, never()).loadAd(any(), any())
+    initListenerCaptor.firstValue.onInitialized()
+    shadowOf(Looper.getMainLooper()).idle()
+    verify(mockBigoAdView).loadAd(any(), any())
+  }
+
   // endregion
 
   // region Interstitial tests
@@ -412,6 +462,42 @@ class BigoMediationAdapterTest {
     adapter.loadRtbInterstitialAd(adConfiguration, interstitialAdLoadCallback)
 
     assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
+  }
+
+  @Test
+  fun loadInterstitialAd_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationInterstitialAdConfiguration(context)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadInterstitialAd(adConfiguration, interstitialAdLoadCallback)
+
+    assertThat(interstitialAdLoadCallback).hasFailedWith(expectedAdError)
+  }
+
+  @Test
+  fun loadInterstitialAd_whenSdkNotInitialized_initializesThenLoadsAd() {
+    whenever(BigoAdSdk.isInitialized()) doReturn false
+    val mockAdLoader = mock<BigoInterstitialAdLoaderWrapper>()
+    BigoFactory.delegate =
+      mock<SdkFactory> {
+        on { createInterstitialAdRequest(anyOrNull(), any(), anyOrNull()) } doReturn mock()
+        on { createInterstitialAdLoader() } doReturn mockAdLoader
+      }
+    val adConfiguration =
+      createMediationInterstitialAdConfiguration(
+        context,
+        serverParameters = bundleOf(SLOT_ID_KEY to TEST_SLOT_ID, APP_ID_KEY to TEST_APP_ID),
+      )
+    val initListenerCaptor = argumentCaptor<BigoAdSdk.InitListener>()
+
+    adapter.loadInterstitialAd(adConfiguration, interstitialAdLoadCallback)
+
+    mockBigoSdk.verify { BigoAdSdk.initialize(eq(context), any(), initListenerCaptor.capture()) }
+    verify(mockAdLoader, never()).loadAd(any())
+    initListenerCaptor.firstValue.onInitialized()
+    shadowOf(Looper.getMainLooper()).idle()
+    verify(mockAdLoader).loadAd(any())
   }
 
   // endregion
@@ -428,6 +514,42 @@ class BigoMediationAdapterTest {
     assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
+  @Test
+  fun loadRewardedAd_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationRewardedAdConfiguration(context)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRewardedAd(adConfiguration, rewardedAdLoadCallback)
+
+    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
+  }
+
+  @Test
+  fun loadRewardedAd_whenSdkNotInitialized_initializesThenLoadsAd() {
+    whenever(BigoAdSdk.isInitialized()) doReturn false
+    val mockAdLoader = mock<BigoRewardVideoAdLoaderWrapper>()
+    BigoFactory.delegate =
+      mock<SdkFactory> {
+        on { createRewardVideoAdRequest(anyOrNull(), any(), anyOrNull()) } doReturn mock()
+        on { createRewardVideoAdLoader() } doReturn mockAdLoader
+      }
+    val adConfiguration =
+      createMediationRewardedAdConfiguration(
+        context,
+        serverParameters = bundleOf(SLOT_ID_KEY to TEST_SLOT_ID, APP_ID_KEY to TEST_APP_ID),
+      )
+    val initListenerCaptor = argumentCaptor<BigoAdSdk.InitListener>()
+
+    adapter.loadRewardedAd(adConfiguration, rewardedAdLoadCallback)
+
+    mockBigoSdk.verify { BigoAdSdk.initialize(eq(context), any(), initListenerCaptor.capture()) }
+    verify(mockAdLoader, never()).loadAd(any())
+    initListenerCaptor.firstValue.onInitialized()
+    shadowOf(Looper.getMainLooper()).idle()
+    verify(mockAdLoader).loadAd(any())
+  }
+
   // endregion
 
   // region Rewarded Interstitial tests
@@ -440,6 +562,42 @@ class BigoMediationAdapterTest {
     adapter.loadRtbRewardedInterstitialAd(adConfiguration, rewardedInterstitialAdLoadCallback)
 
     assertThat(rewardedInterstitialAdLoadCallback).hasFailedWith(expectedAdError)
+  }
+
+  @Test
+  fun loadRewardedInterstitialAd_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationRewardedAdConfiguration(context)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadRewardedInterstitialAd(adConfiguration, rewardedInterstitialAdLoadCallback)
+
+    assertThat(rewardedInterstitialAdLoadCallback).hasFailedWith(expectedAdError)
+  }
+
+  @Test
+  fun loadRewardedInterstitialAd_whenSdkNotInitialized_initializesThenLoadsAd() {
+    whenever(BigoAdSdk.isInitialized()) doReturn false
+    val mockAdLoader = mock<BigoRewardVideoAdLoaderWrapper>()
+    BigoFactory.delegate =
+      mock<SdkFactory> {
+        on { createRewardVideoAdRequest(anyOrNull(), any(), anyOrNull()) } doReturn mock()
+        on { createRewardVideoAdLoader() } doReturn mockAdLoader
+      }
+    val adConfiguration =
+      createMediationRewardedAdConfiguration(
+        context,
+        serverParameters = bundleOf(SLOT_ID_KEY to TEST_SLOT_ID, APP_ID_KEY to TEST_APP_ID),
+      )
+    val initListenerCaptor = argumentCaptor<BigoAdSdk.InitListener>()
+
+    adapter.loadRewardedInterstitialAd(adConfiguration, rewardedInterstitialAdLoadCallback)
+
+    mockBigoSdk.verify { BigoAdSdk.initialize(eq(context), any(), initListenerCaptor.capture()) }
+    verify(mockAdLoader, never()).loadAd(any())
+    initListenerCaptor.firstValue.onInitialized()
+    shadowOf(Looper.getMainLooper()).idle()
+    verify(mockAdLoader).loadAd(any())
   }
 
   // endregion
@@ -470,6 +628,45 @@ class BigoMediationAdapterTest {
     assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
   }
 
+  @Test
+  fun loadNativeAdMapper_withEmptySlotId_invokesOnFailure() {
+    val adConfiguration = createMediationNativeAdConfiguration(context)
+    val expectedAdError =
+      AdError(ERROR_CODE_MISSING_SLOT_ID, ERROR_MSG_MISSING_SLOT_ID, ADAPTER_ERROR_DOMAIN)
+
+    adapter.loadNativeAdMapper(adConfiguration, nativeAdLoadCallback)
+
+    assertThat(nativeAdLoadCallback).hasFailedWith(expectedAdError)
+  }
+
+  @Test
+  fun loadNativeAdMapper_whenSdkNotInitialized_initializesThenLoadsAd() {
+    whenever(BigoAdSdk.isInitialized()) doReturn false
+    val mockAdLoader = mock<BigoNativeAdLoaderWrapper>()
+    BigoFactory.delegate =
+      mock<SdkFactory> {
+        on { createNativeAdRequest(anyOrNull(), any(), anyOrNull()) } doReturn mock()
+        on { createNativeAdLoader() } doReturn mockAdLoader
+      }
+    val adConfiguration =
+      createMediationNativeAdConfiguration(
+        context,
+        serverParameters = bundleOf(SLOT_ID_KEY to TEST_SLOT_ID, APP_ID_KEY to TEST_APP_ID),
+      )
+    val initListenerCaptor = argumentCaptor<BigoAdSdk.InitListener>()
+
+    adapter.loadNativeAdMapper(adConfiguration, nativeAdLoadCallback)
+
+    mockBigoSdk.verify { BigoAdSdk.initialize(eq(context), any(), initListenerCaptor.capture()) }
+    verify(mockAdLoader, never()).loadAd(any())
+    initListenerCaptor.firstValue.onInitialized()
+    shadowOf(Looper.getMainLooper()).idle()
+    verify(mockAdLoader).loadAd(any())
+  }
+
   // endregion
 
+  private companion object {
+    const val TEST_SLOT_ID = "testSlotId"
+  }
 }

@@ -48,6 +48,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import sg.bigo.ads.api.AdError as BigoAdError
 import sg.bigo.ads.api.AdOptionsView
 import sg.bigo.ads.api.AdTag
@@ -86,7 +87,31 @@ class BigoNativeAdTest {
         watermark = TEST_WATERMARK,
       )
     BigoFactory.delegate = mockBigoFactory
-    BigoNativeAd.newInstance(adConfiguration, adLoadCallback).onSuccess { bigoNativeAd = it }
+    BigoNativeAd.newInstance(adConfiguration, adLoadCallback, isRtb = true).onSuccess {
+      bigoNativeAd = it
+    }
+  }
+
+  @Test
+  fun loadAd_waterfall_createsAdRequestWithoutBidResponseAndWatermark() {
+    val waterfallAdRequest = mock<NativeAdRequest>()
+    whenever(mockBigoFactory.createNativeAdRequest(eq(null), eq(TEST_SLOT_ID), eq(null)))
+      .thenReturn(waterfallAdRequest)
+    val waterfallAdConfiguration =
+      createMediationNativeAdConfiguration(
+        context = context,
+        bidResponse = TEST_BID_RESPONSE,
+        serverParameters = bundleOf(SLOT_ID_KEY to TEST_SLOT_ID),
+        watermark = TEST_WATERMARK,
+      )
+    lateinit var waterfallAd: BigoNativeAd
+    BigoNativeAd.newInstance(waterfallAdConfiguration, adLoadCallback, isRtb = false).onSuccess {
+      waterfallAd = it
+    }
+
+    waterfallAd.loadAd(TEST_VERSION_STRING)
+
+    verify(mockNativeAdLoader).loadAd(waterfallAdRequest)
   }
 
   @Test
@@ -308,7 +333,7 @@ class BigoNativeAdTest {
         BigoMediationAdapter.ADAPTER_ERROR_DOMAIN,
       )
 
-    val result = BigoNativeAd.newInstance(adConfiguration, adLoadCallback)
+    val result = BigoNativeAd.newInstance(adConfiguration, adLoadCallback, isRtb = true)
 
     assertThat(result.isFailure).isTrue()
     assertThat(adLoadCallback).hasFailedWith(expectedAdError)
