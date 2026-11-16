@@ -77,7 +77,7 @@ class BigoUtilsTest {
   }
 
   @Test
-  fun mapAdSizeToBigoBannerSize_largeBanner_returnsBigoLargeBanner() {
+  fun mapAdSizeToBigoBannerSize_largeBanner_returnsBigoMobileLargeLeaderboard() {
     whenever(
       mockMediationUtils.findClosestSize(eq(context), eq(AdSize.LARGE_BANNER), any())
     ) doReturn AdSize.LARGE_BANNER
@@ -85,7 +85,7 @@ class BigoUtilsTest {
     val bigoAdSize =
       BigoUtils.mapAdSizeToBigoBannerSize(context, AdSize.LARGE_BANNER, mockMediationUtils)
 
-    assertThat(bigoAdSize).isEqualTo(sg.bigo.ads.api.AdSize.LARGE_BANNER)
+    assertThat(bigoAdSize).isEqualTo(sg.bigo.ads.api.AdSize.MOBILE_LARGE_LEADERBOARD)
   }
 
   @Test
