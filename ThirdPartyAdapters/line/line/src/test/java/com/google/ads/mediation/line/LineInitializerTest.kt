@@ -17,16 +17,19 @@ package com.google.ads.mediation.line
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.five_corp.ad.AdSlotConfig
 import com.five_corp.ad.FiveAdConfig
 import com.five_corp.ad.NeedChildDirectedTreatment
 import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.common.truth.Truth.assertThat
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -42,15 +45,25 @@ class LineInitializerTest {
   private val mockSdkWrapper = mock<SdkWrapper>()
   private val fiveAdConfig = FiveAdConfig(TEST_APP_ID)
   private val mockSdkFactory =
-    mock<SdkFactory> { on { createFiveAdConfig(TEST_APP_ID) } doReturn fiveAdConfig }
+    mock<SdkFactory> {
+      on { createFiveAdConfig(TEST_APP_ID) } doReturn fiveAdConfig
+      on { createAdSlotConfig(TEST_SLOT_ID) } doAnswer { AdSlotConfig(TEST_SLOT_ID) }
+    }
 
   @Before
   fun setUp() {
     LineSdkWrapper.delegate = mockSdkWrapper
     LineSdkFactory.delegate = mockSdkFactory
     LineInitializer.resetFiveAdConfig()
+    LineMediationAdapter.adapterVersionDelegate = null
     LineMediationAdapter.setTestMode(false)
     MobileAds.setRequestConfiguration(RequestConfiguration.Builder().build())
+  }
+
+  @After
+  fun tearDown() {
+    LineMediationAdapter.adapterVersionDelegate = null
+    LineSdkFactory.delegate = LineSdkFactory.defaultDelegate
   }
 
   @Test
@@ -208,7 +221,29 @@ class LineInitializerTest {
     verify(mockSdkFactory, times(2)).createFiveAdConfig(TEST_APP_ID)
   }
 
+  @Test
+  fun getAdSlotConfig_setsSlotIdAndDefaultMediationInfo() {
+    val result = LineInitializer.getAdSlotConfig(TEST_SLOT_ID)
+
+    assertThat(result.slotId).isEqualTo(TEST_SLOT_ID)
+    assertThat(result.mediationInfo?.name).isEqualTo("AdMob")
+    assertThat(result.mediationInfo?.version).isEqualTo(BuildConfig.ADAPTER_VERSION)
+  }
+
+  @Test
+  fun getAdSlotConfig_withAdapterVersionDelegate_setsDelegatedVersion() {
+    LineMediationAdapter.adapterVersionDelegate = TEST_ADAPTER_VERSION
+
+    val result = LineInitializer.getAdSlotConfig(TEST_SLOT_ID)
+
+    assertThat(result.slotId).isEqualTo(TEST_SLOT_ID)
+    assertThat(result.mediationInfo?.name).isEqualTo("AdMob")
+    assertThat(result.mediationInfo?.version).isEqualTo(TEST_ADAPTER_VERSION)
+  }
+
   private companion object {
     const val TEST_APP_ID = "testAppId"
+    const val TEST_SLOT_ID = "testSlotId"
+    const val TEST_ADAPTER_VERSION = "4.3.2.1"
   }
 }
