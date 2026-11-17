@@ -39,6 +39,7 @@ import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_CALL_TO_ACTI
 import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_HEADLINE
 import com.google.android.gms.ads.nativead.NativeAdAssetNames.ASSET_ICON
 import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertIs
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -120,7 +121,7 @@ class BigoNativeAdTest {
     assertThat(bigoNativeAd.advertiser).isEqualTo("testAdvertiser")
     assertThat(bigoNativeAd.hasVideoContent()).isFalse()
     assertThat(bigoNativeAd.mediaContentAspectRatio).isEqualTo(1.0f)
-    assertThat(bigoNativeAd.adChoicesContent).isInstanceOf(AdOptionsView::class.java)
+    assertIs<AdOptionsView>(bigoNativeAd.adChoicesContent)
     assertThat(bigoNativeAd.overrideClickHandling).isTrue()
     assertThat(bigoNativeAd.overrideImpressionRecording).isTrue()
   }
@@ -289,7 +290,7 @@ class BigoNativeAdTest {
 
     bigoNativeAd.onAdLoaded(mockNativeAd)
 
-    assertThat(bigoNativeAd.adChoicesContent).isInstanceOf(AdOptionsView::class.java)
+    assertIs<AdOptionsView>(bigoNativeAd.adChoicesContent)
   }
 
   @Test

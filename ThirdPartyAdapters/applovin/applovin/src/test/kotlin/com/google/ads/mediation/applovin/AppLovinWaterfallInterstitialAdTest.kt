@@ -20,6 +20,7 @@ import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
 import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertIs
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -185,8 +186,7 @@ class AppLovinWaterfallInterstitialAdTest {
 
   @Test
   fun appLovinWaterfallInterstitialAd_isASubclassOfAppLovinInterstitialRenderer() {
-    assertThat(appLovinMediationInterstitialAd)
-      .isInstanceOf(AppLovinInterstitialRenderer::class.java)
+    assertIs<AppLovinInterstitialRenderer>(appLovinMediationInterstitialAd)
   }
 
   companion object {

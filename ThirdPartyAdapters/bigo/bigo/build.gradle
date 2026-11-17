@@ -149,6 +149,7 @@ dependencies {
     testImplementation "com.google.truth:truth:1.4.5"
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:6.0.0'
     testImplementation 'org.robolectric:robolectric:4.9'
     testImplementation project(':adaptertestkit')

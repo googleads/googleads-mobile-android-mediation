@@ -17,7 +17,7 @@ import com.google.ads.mediation.adaptertestkit.FakeMediationInterstitialAdCallba
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
-import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertIs
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -100,8 +100,7 @@ class AppLovinRtbInterstitialRendererTest {
 
   @Test
   fun appLovinRtbInterstitialAd_isASubclassOfAppLovinInterstitialRenderer() {
-    assertThat(appLovinMediationInterstitialAd)
-      .isInstanceOf(AppLovinInterstitialRenderer::class.java)
+    assertIs<AppLovinInterstitialRenderer>(appLovinMediationInterstitialAd)
   }
 
   companion object {

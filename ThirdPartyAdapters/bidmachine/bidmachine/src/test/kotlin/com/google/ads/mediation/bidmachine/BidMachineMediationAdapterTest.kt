@@ -67,6 +67,7 @@ import io.bidmachine.InitializationCallback
 import io.bidmachine.interstitial.InterstitialAd
 import io.bidmachine.nativead.NativeAd
 import io.bidmachine.rewarded.RewardedAd
+import kotlin.test.assertIs
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -407,8 +408,7 @@ class BidMachineMediationAdapterTest {
     }
     val placementConfig = placementConfigCaptor.firstValue
     assertThat(placementConfig.placementId).isEqualTo(TEST_PLACEMENT_ID)
-    assertThat(placementConfig.adFormat)
-      .isInstanceOf(io.bidmachine.AdFormat.Interstitial::class.java)
+    assertIs<io.bidmachine.AdFormat.Interstitial>(placementConfig.adFormat)
     tokenCallbackCaptor.firstValue.onCollected(TEST_BID_RESPONSE)
     assertThat(signalCallbacks).hasSucceededWith(TEST_BID_RESPONSE)
   }
@@ -442,7 +442,7 @@ class BidMachineMediationAdapterTest {
     }
     val placementConfig = placementConfigCaptor.firstValue
     assertThat(placementConfig.placementId).isEqualTo(TEST_PLACEMENT_ID)
-    assertThat(placementConfig.adFormat).isInstanceOf(io.bidmachine.AdFormat.Rewarded::class.java)
+    assertIs<io.bidmachine.AdFormat.Rewarded>(placementConfig.adFormat)
     tokenCallbackCaptor.firstValue.onCollected(TEST_BID_RESPONSE)
     assertThat(signalCallbacks).hasSucceededWith(TEST_BID_RESPONSE)
   }
@@ -476,7 +476,7 @@ class BidMachineMediationAdapterTest {
     }
     val placementConfig = placementConfigCaptor.firstValue
     assertThat(placementConfig.placementId).isEqualTo(TEST_PLACEMENT_ID)
-    assertThat(placementConfig.adFormat).isInstanceOf(io.bidmachine.AdFormat.Native::class.java)
+    assertIs<io.bidmachine.AdFormat.Native>(placementConfig.adFormat)
     tokenCallbackCaptor.firstValue.onCollected(TEST_BID_RESPONSE)
     assertThat(signalCallbacks).hasSucceededWith(TEST_BID_RESPONSE)
   }
