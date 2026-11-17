@@ -15,7 +15,7 @@
 package com.google.ads.mediation.adaptertestkit
 
 import com.google.android.gms.ads.AdError
-import org.junit.Assert.assertThrows
+import kotlin.test.assertFailsWith
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -40,7 +40,7 @@ class FakeInitializationCompleteCallbackSubjectTest {
     val callback = FakeInitializationCompleteCallback()
     callback.onInitializationFailed("Init failed")
 
-    assertThrows(AssertionError::class.java) { assertThat(callback).hasSucceeded() }
+    assertFailsWith<AssertionError> { assertThat(callback).hasSucceeded() }
   }
 
   @Test
@@ -58,9 +58,7 @@ class FakeInitializationCompleteCallbackSubjectTest {
     val callback = FakeInitializationCompleteCallback()
     callback.onInitializationFailed("Init failed")
 
-    assertThrows(AssertionError::class.java) {
-      assertThat(callback).hasFailedWith("Different error")
-    }
+    assertFailsWith<AssertionError> { assertThat(callback).hasFailedWith("Different error") }
   }
 
   @Test
@@ -92,8 +90,8 @@ class FakeInitializationCompleteCallbackSubjectTest {
       )
     callback.onInitializationFailed(differentError)
 
-    assertThrows(AssertionError::class.java) { assertThat(callback).hasFailedWith(expectedAdError) }
-    assertThrows(AssertionError::class.java) {
+    assertFailsWith<AssertionError> { assertThat(callback).hasFailedWith(expectedAdError) }
+    assertFailsWith<AssertionError> {
       assertThat(callback).hasFailedWith(101, "com.google.ads.mediation")
     }
   }
@@ -103,7 +101,7 @@ class FakeInitializationCompleteCallbackSubjectTest {
     val callback = FakeInitializationCompleteCallback()
     callback.onInitializationFailed("Init failed")
 
-    assertThrows(AssertionError::class.java) { assertThat(callback).hasNotFailed() }
-    assertThrows(AssertionError::class.java) { assertThat(callback).hasNoFailure() }
+    assertFailsWith<AssertionError> { assertThat(callback).hasNotFailed() }
+    assertFailsWith<AssertionError> { assertThat(callback).hasNoFailure() }
   }
 }

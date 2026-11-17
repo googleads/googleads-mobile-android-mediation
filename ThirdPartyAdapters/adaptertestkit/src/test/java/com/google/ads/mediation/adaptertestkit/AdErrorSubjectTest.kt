@@ -15,7 +15,7 @@
 package com.google.ads.mediation.adaptertestkit
 
 import com.google.android.gms.ads.AdError
-import org.junit.Assert.assertThrows
+import kotlin.test.assertFailsWith
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -46,7 +46,7 @@ class AdErrorSubjectTest {
     val error1 = AdError(101, "Error message", "com.google.ads.mediation")
     val error2 = AdError(102, "Error message", "com.google.ads.mediation")
 
-    assertThrows(AssertionError::class.java) { assertThat(error1).isEqualTo(error2) }
+    assertFailsWith<AssertionError> { assertThat(error1).isEqualTo(error2) }
   }
 
   @Test
@@ -54,7 +54,7 @@ class AdErrorSubjectTest {
     val error1 = AdError(101, "Error message", "com.google.ads.mediation")
     val error2 = AdError(101, "Error message", "com.pangle.ads")
 
-    assertThrows(AssertionError::class.java) { assertThat(error1).isEqualTo(error2) }
+    assertFailsWith<AssertionError> { assertThat(error1).isEqualTo(error2) }
   }
 
   @Test
@@ -62,7 +62,7 @@ class AdErrorSubjectTest {
     val error1 = AdError(101, "Error message 1", "com.google.ads.mediation")
     val error2 = AdError(101, "Error message 2", "com.google.ads.mediation")
 
-    assertThrows(AssertionError::class.java) { assertThat(error1).isEqualTo(error2) }
+    assertFailsWith<AssertionError> { assertThat(error1).isEqualTo(error2) }
   }
 
   @Test
@@ -72,7 +72,7 @@ class AdErrorSubjectTest {
     val error1 = AdError(101, "Error message", "com.google.ads.mediation", cause1)
     val error2 = AdError(101, "Error message", "com.google.ads.mediation", cause2)
 
-    assertThrows(AssertionError::class.java) { assertThat(error1).isEqualTo(error2) }
+    assertFailsWith<AssertionError> { assertThat(error1).isEqualTo(error2) }
   }
 
   @Test
@@ -81,7 +81,7 @@ class AdErrorSubjectTest {
     val error1 = AdError(101, "Error message", "com.google.ads.mediation", cause)
     val error2 = AdError(101, "Error message", "com.google.ads.mediation")
 
-    assertThrows(AssertionError::class.java) { assertThat(error1).isEqualTo(error2) }
+    assertFailsWith<AssertionError> { assertThat(error1).isEqualTo(error2) }
   }
 
   @Test
@@ -96,21 +96,21 @@ class AdErrorSubjectTest {
     val nullError: AdError? = null
     val expected = AdError(101, "Error", "com.google.ads.mediation")
 
-    assertThrows(AssertionError::class.java) { assertThat(nullError).isEqualTo(expected) }
+    assertFailsWith<AssertionError> { assertThat(nullError).isEqualTo(expected) }
   }
 
   @Test
   fun isEqualTo_actualNonNullExpectedNull_fails() {
     val error = AdError(101, "Error", "com.google.ads.mediation")
 
-    assertThrows(AssertionError::class.java) { assertThat(error).isEqualTo(null) }
+    assertFailsWith<AssertionError> { assertThat(error).isEqualTo(null) }
   }
 
   @Test
   fun isEqualTo_differentType_fails() {
     val error = AdError(101, "Error", "com.google.ads.mediation")
 
-    assertThrows(AssertionError::class.java) { assertThat(error).isEqualTo("Not an AdError") }
+    assertFailsWith<AssertionError> { assertThat(error).isEqualTo("Not an AdError") }
   }
 
   @Test
@@ -124,7 +124,7 @@ class AdErrorSubjectTest {
   fun hasCode_mismatchingCode_fails() {
     val error = AdError(101, "Error message", "com.google.ads.mediation")
 
-    assertThrows(AssertionError::class.java) { assertThat(error).hasCode(102) }
+    assertFailsWith<AssertionError> { assertThat(error).hasCode(102) }
   }
 
   @Test
@@ -138,7 +138,7 @@ class AdErrorSubjectTest {
   fun hasDomain_mismatchingDomain_fails() {
     val error = AdError(101, "Error message", "com.google.ads.mediation")
 
-    assertThrows(AssertionError::class.java) { assertThat(error).hasDomain("com.other.domain") }
+    assertFailsWith<AssertionError> { assertThat(error).hasDomain("com.other.domain") }
   }
 
   @Test
@@ -152,7 +152,7 @@ class AdErrorSubjectTest {
   fun hasMessage_mismatchingMessage_fails() {
     val error = AdError(101, "Error message", "com.google.ads.mediation")
 
-    assertThrows(AssertionError::class.java) { assertThat(error).hasMessage("Different message") }
+    assertFailsWith<AssertionError> { assertThat(error).hasMessage("Different message") }
   }
 
   @Test
@@ -172,8 +172,8 @@ class AdErrorSubjectTest {
     assertThat(errorWithCause).hasCause(cause)
     assertThat(errorWithoutCause).hasNoCause()
 
-    assertThrows(AssertionError::class.java) { assertThat(errorWithCause).hasNoCause() }
-    assertThrows(AssertionError::class.java) { assertThat(errorWithoutCause).hasCause(cause) }
+    assertFailsWith<AssertionError> { assertThat(errorWithCause).hasNoCause() }
+    assertFailsWith<AssertionError> { assertThat(errorWithoutCause).hasCause(cause) }
   }
 
   @Test

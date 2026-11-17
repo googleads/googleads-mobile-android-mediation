@@ -17,7 +17,7 @@ package com.google.ads.mediation.adaptertestkit
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
-import org.junit.Assert.assertThrows
+import kotlin.test.assertFailsWith
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -65,11 +65,11 @@ class FakeMediationAdLoadCallbackSubjectTest {
     val differentError = AdError(102, "Different message", "com.google.ads.mediation")
     callback.onFailure(differentError)
 
-    assertThrows(AssertionError::class.java) { assertThat(callback).hasFailedWith(expectedError) }
-    assertThrows(AssertionError::class.java) {
+    assertFailsWith<AssertionError> { assertThat(callback).hasFailedWith(expectedError) }
+    assertFailsWith<AssertionError> {
       assertThat(callback).hasFailedWith(101, "com.google.ads.mediation")
     }
-    assertThrows(AssertionError::class.java) {
+    assertFailsWith<AssertionError> {
       assertThat(callback).hasFailedWith(101, "Error message", "com.google.ads.mediation")
     }
   }
@@ -80,8 +80,8 @@ class FakeMediationAdLoadCallbackSubjectTest {
       FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>(bannerAdCallback)
     callback.onSuccess(dummyAd)
 
-    assertThrows(AssertionError::class.java) { assertThat(callback).hasFailedWith(expectedError) }
-    assertThrows(AssertionError::class.java) { assertThat(callback).hasFailed() }
+    assertFailsWith<AssertionError> { assertThat(callback).hasFailedWith(expectedError) }
+    assertFailsWith<AssertionError> { assertThat(callback).hasFailed() }
   }
 
   @Test
@@ -101,7 +101,7 @@ class FakeMediationAdLoadCallbackSubjectTest {
   fun hasSucceeded_whenNotInvoked_fails() {
     val callback = FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>()
 
-    assertThrows(AssertionError::class.java) { assertThat(callback).hasSucceeded() }
+    assertFailsWith<AssertionError> { assertThat(callback).hasSucceeded() }
   }
 
   @Test
@@ -115,7 +115,7 @@ class FakeMediationAdLoadCallbackSubjectTest {
         override fun getView() = android.view.View(null)
       }
 
-    assertThrows(AssertionError::class.java) { assertThat(callback).hasSucceededWith(otherAd) }
+    assertFailsWith<AssertionError> { assertThat(callback).hasSucceededWith(otherAd) }
   }
 
   @Test
@@ -123,7 +123,7 @@ class FakeMediationAdLoadCallbackSubjectTest {
     val callback = FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>()
     callback.onFailure(expectedError)
 
-    assertThrows(AssertionError::class.java) { assertThat(callback).hasNotFailed() }
-    assertThrows(AssertionError::class.java) { assertThat(callback).hasNoFailure() }
+    assertFailsWith<AssertionError> { assertThat(callback).hasNotFailed() }
+    assertFailsWith<AssertionError> { assertThat(callback).hasNoFailure() }
   }
 }

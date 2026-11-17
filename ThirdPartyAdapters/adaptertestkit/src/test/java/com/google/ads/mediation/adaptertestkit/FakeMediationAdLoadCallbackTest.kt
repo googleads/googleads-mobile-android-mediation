@@ -18,7 +18,7 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assert.assertThrows
+import kotlin.test.assertFailsWith
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -70,8 +70,7 @@ class FakeMediationAdLoadCallbackTest {
         override fun getView() = android.view.View(null)
       }
 
-    val exception =
-      assertThrows(IllegalStateException::class.java) { loadCallback.onSuccess(bannerAd) }
+    val exception = assertFailsWith<IllegalStateException> { loadCallback.onSuccess(bannerAd) }
 
     assertThat(exception).hasMessageThat().contains("customCallback was not provided")
   }

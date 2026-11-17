@@ -34,4 +34,6 @@ dependencies {
   implementation "com.google.truth:truth:1.1.5"
   implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.1.10'
   implementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
+
+  testImplementation 'org.jetbrains.kotlin:kotlin-test'
 }

@@ -38,9 +38,9 @@ import com.inmobi.ads.InMobiBanner
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.eq
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
@@ -360,7 +360,7 @@ class InMobiMediationAdapterTest {
 
     verify(inMobiBannerWrapper).setEnableAutoRefresh(eq(false))
     verify(inMobiBannerWrapper).setAnimationType(eq(InMobiBanner.AnimationType.ANIMATION_OFF))
-    verify(inMobiBannerWrapper).setListener(any(InMobiWaterfallBannerAd::class.java))
+    verify(inMobiBannerWrapper).setListener(any<InMobiWaterfallBannerAd>())
     val frameLayoutParamsCaptor = argumentCaptor<FrameLayout.LayoutParams>()
     verify(inMobiAdViewHolder).setLayoutParams(frameLayoutParamsCaptor.capture())
     frameLayoutParamsCaptor.firstValue.apply {
@@ -393,7 +393,7 @@ class InMobiMediationAdapterTest {
 
     verify(inMobiBannerWrapper).setEnableAutoRefresh(eq(false))
     verify(inMobiBannerWrapper).setAnimationType(eq(InMobiBanner.AnimationType.ANIMATION_OFF))
-    verify(inMobiBannerWrapper).setListener(any(InMobiRtbBannerAd::class.java))
+    verify(inMobiBannerWrapper).setListener(any<InMobiRtbBannerAd>())
     val frameLayoutParamsCaptor = argumentCaptor<FrameLayout.LayoutParams>()
     verify(inMobiAdViewHolder).setLayoutParams(frameLayoutParamsCaptor.capture())
     frameLayoutParamsCaptor.firstValue.apply {

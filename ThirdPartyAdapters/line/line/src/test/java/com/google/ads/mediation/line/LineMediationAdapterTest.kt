@@ -61,7 +61,7 @@ import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assert.assertThrows
+import kotlin.test.assertFailsWith
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -263,7 +263,7 @@ class LineMediationAdapterTest {
     val mediationConfiguration = createMediationConfiguration(AdFormat.BANNER, serverParameters)
 
     val exception =
-      assertThrows(IllegalArgumentException::class.java) {
+      assertFailsWith<IllegalArgumentException> {
         lineMediationAdapter.initialize(
           context,
           initializationCompleteCallback,

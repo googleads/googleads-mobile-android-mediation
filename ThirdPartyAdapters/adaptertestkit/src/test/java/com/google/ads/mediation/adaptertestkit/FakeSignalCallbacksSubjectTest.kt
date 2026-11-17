@@ -15,7 +15,7 @@
 package com.google.ads.mediation.adaptertestkit
 
 import com.google.android.gms.ads.AdError
-import org.junit.Assert.assertThrows
+import kotlin.test.assertFailsWith
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -51,8 +51,8 @@ class FakeSignalCallbacksSubjectTest {
     val differentError = AdError(302, "Different message", "com.google.ads.mediation")
     callback.onFailure(differentError)
 
-    assertThrows(AssertionError::class.java) { assertThat(callback).hasFailedWith(expectedError) }
-    assertThrows(AssertionError::class.java) {
+    assertFailsWith<AssertionError> { assertThat(callback).hasFailedWith(expectedError) }
+    assertFailsWith<AssertionError> {
       assertThat(callback).hasFailedWith(301, "com.google.ads.mediation")
     }
   }
@@ -73,9 +73,7 @@ class FakeSignalCallbacksSubjectTest {
     val callback = FakeSignalCallbacks()
     callback.onSuccess("sample_signals_data")
 
-    assertThrows(AssertionError::class.java) {
-      assertThat(callback).hasSucceededWith("different_signals")
-    }
+    assertFailsWith<AssertionError> { assertThat(callback).hasSucceededWith("different_signals") }
   }
 
   @Test
@@ -83,7 +81,7 @@ class FakeSignalCallbacksSubjectTest {
     val callback = FakeSignalCallbacks()
     callback.onSuccess("sample_signals_data")
 
-    assertThrows(AssertionError::class.java) { assertThat(callback).hasFailed() }
-    assertThrows(AssertionError::class.java) { assertThat(callback).hasFailedWith(expectedError) }
+    assertFailsWith<AssertionError> { assertThat(callback).hasFailed() }
+    assertFailsWith<AssertionError> { assertThat(callback).hasFailedWith(expectedError) }
   }
 }
