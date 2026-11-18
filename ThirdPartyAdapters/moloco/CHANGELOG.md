@@ -4,9 +4,15 @@
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
 - Added error code `104: Moloco SDK failed to initialize`.
 
-#### Version 4.14.1.0 (In progress)
+#### Version 4.14.1.0
 - Updated how the Google Mobile Ads SDK `tagForUnderAgeOfConsent` and
 `tagForChildDirectedTreatment` parameters are forwarded to the Moloco SDK.
+- Verified compatibility with Moloco SDK 4.14.1.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.5.0.
+- Google Mobile Ads Next-Gen SDK version 1.6.0.
+- Moloco SDK version 4.14.1.
 
 #### Version 4.14.0.0
 - Verified compatibility with Moloco SDK 4.14.0.
