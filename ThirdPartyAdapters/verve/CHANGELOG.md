@@ -1,6 +1,6 @@
 ## Verve Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 3.10.0.0 (In progress)
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
 
 #### Version 3.9.3.0
