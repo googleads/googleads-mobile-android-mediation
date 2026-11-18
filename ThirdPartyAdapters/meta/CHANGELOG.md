@@ -1,6 +1,6 @@
 ## Meta Audience Network Android Mediation Adapter Changelog
 
-#### Next Version
+#### Version 6.22.1.0 (In progress)
 - Clean up native ad assets on load and mapping failure paths.
 - Override `NativeAdMapper.destroy()` for native ad lifecycle cleanup.
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
