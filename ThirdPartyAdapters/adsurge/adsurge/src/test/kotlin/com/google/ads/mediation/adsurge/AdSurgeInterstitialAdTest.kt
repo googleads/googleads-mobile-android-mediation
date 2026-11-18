@@ -199,7 +199,7 @@ class AdSurgeInterstitialAdTest {
   }
 
   @Test
-  fun onAdImpression_invokesReportAdImpression() {
+  fun onAdImpression_invokesOnAdOpenedAndReportAdImpression() {
     val interstitialAd =
       AdSurgeInterstitialAd(
         mediationAdLoadCallback = interstitialAdLoadCallback,
@@ -212,6 +212,7 @@ class AdSurgeInterstitialAdTest {
 
     interstitialAd.onAdImpression(fakeAd)
 
+    assertThat(interstitialAdCallback.isOpened).isTrue()
     assertThat(interstitialAdCallback.isImpressionReported).isTrue()
   }
 

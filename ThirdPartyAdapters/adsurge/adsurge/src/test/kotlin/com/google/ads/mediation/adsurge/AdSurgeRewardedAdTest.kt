@@ -199,7 +199,7 @@ class AdSurgeRewardedAdTest {
   }
 
   @Test
-  fun onAdImpression_invokesReportAdImpression() {
+  fun onAdImpression_invokesOnAdOpenedAndReportAdImpression() {
     val rewardedAd =
       AdSurgeRewardedAd(
         mediationAdLoadCallback = rewardedAdLoadCallback,
@@ -212,6 +212,7 @@ class AdSurgeRewardedAdTest {
 
     rewardedAd.onAdImpression(fakeAd)
 
+    assertThat(rewardedAdCallback.isOpened).isTrue()
     assertThat(rewardedAdCallback.isImpressionReported).isTrue()
   }
 

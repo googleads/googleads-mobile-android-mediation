@@ -73,7 +73,10 @@ internal constructor(
   }
 
   override fun onAdImpression(adSurgeAd: AdSurgeAd) {
-    rewardedAdCallback?.reportAdImpression()
+    rewardedAdCallback?.apply {
+      onAdOpened()
+      reportAdImpression()
+    }
   }
 
   override fun onAdClicked(adSurgeAd: AdSurgeAd) {
