@@ -38,6 +38,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import sg.bigo.ads.api.AdError as BigoAdError
 import sg.bigo.ads.api.SplashAd
 import sg.bigo.ads.api.SplashAdRequest
@@ -72,7 +73,31 @@ class BigoAppOpenAdTest {
         watermark = TEST_WATERMARK,
       )
     BigoFactory.delegate = mockBigoFactory
-    BigoAppOpenAd.newInstance(adConfiguration, adLoadCallback).onSuccess { bigoAppOpenAd = it }
+    BigoAppOpenAd.newInstance(adConfiguration, adLoadCallback, isRtb = true).onSuccess {
+      bigoAppOpenAd = it
+    }
+  }
+
+  @Test
+  fun loadAd_waterfall_createsAdRequestWithoutBidResponseAndWatermark() {
+    val waterfallAdRequest = mock<SplashAdRequest>()
+    whenever(mockBigoFactory.createSplashAdRequest(eq(null), eq(TEST_SLOT_ID), eq(null)))
+      .thenReturn(waterfallAdRequest)
+    val waterfallAdConfiguration =
+      createMediationAppOpenAdConfiguration(
+        context = context,
+        bidResponse = TEST_BID_RESPONSE,
+        serverParameters = bundleOf(SLOT_ID_KEY to TEST_SLOT_ID),
+        watermark = TEST_WATERMARK,
+      )
+    lateinit var waterfallAd: BigoAppOpenAd
+    BigoAppOpenAd.newInstance(waterfallAdConfiguration, adLoadCallback, isRtb = false).onSuccess {
+      waterfallAd = it
+    }
+
+    waterfallAd.loadAd(TEST_VERSION_STRING)
+
+    verify(mockSplashAdLoader).loadAd(waterfallAdRequest)
   }
 
   @Test
