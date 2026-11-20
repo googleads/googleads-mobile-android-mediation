@@ -1,8 +1,13 @@
 ## Bigo Android Mediation Adapter Changelog
 
-#### Version 6.2.0.1 (In progress)
+#### Version 6.2.0.1
 - Destroy Bigo banner ad objects when the ad is closed.
 - Fixed 320x100 banner requests to load Bigo's 320x100 banner size instead of 320x90.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.5.0.
+- Google Mobile Ads Next-Gen SDK version 1.7.0.
+- Bigo Ads SDK version 6.2.0.
 
 #### Version 6.2.0.0
 - Destroy Bigo ad objects when the ad is closed or untracked.
