@@ -1,5 +1,8 @@
 ## Unity Ads Android Mediation Adapter Changelog
 
+#### Next Version
+- Maps `AgeRestrictedTreatment` to Unity Ads SDK privacy settings.
+
 #### Version 4.22.0.0 (In progress)
 - Added `UnityMediationAdapter.setTestMode()` and `UnityMediationAdapter.isTestMode()` to allow enabling test mode on the Unity Ads SDK.
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.

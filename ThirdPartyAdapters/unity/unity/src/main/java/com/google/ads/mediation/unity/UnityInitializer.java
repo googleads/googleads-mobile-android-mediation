@@ -73,6 +73,8 @@ public class UnityInitializer {
    */
   public void initializeUnityAds(Context context, String gameId, IUnityAdsInitializationListener
       initializationListener) {
+    UnityAdsAdapterUtils.setUnityAdsPrivacy(
+        MobileAds.getRequestConfiguration(), unityAdsWrapper.getMetaData(context));
 
     if (unityAdsWrapper.isInitialized()) {
       // Unity Ads is already initialized.
