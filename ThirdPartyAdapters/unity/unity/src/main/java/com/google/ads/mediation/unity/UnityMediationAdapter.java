@@ -230,6 +230,7 @@ public class UnityMediationAdapter extends RtbAdapter {
       Log.w(TAG, "Unsupported ad format for Unity Ads: " + adFormat);
     }
 
+    unityInitializer.setMediationMetaData(rtbSignalData.getContext());
     IUnityAdsTokenListener listener = new RoutingTokenListener(signalCallbacks);
     if (unityAdFormat != null) {
       TokenConfiguration tokenConfiguration = new TokenConfiguration(unityAdFormat);

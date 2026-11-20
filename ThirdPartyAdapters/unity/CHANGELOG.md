@@ -3,6 +3,7 @@
 #### Next Version
 - Added `UnityMediationAdapter.setTestMode()` and `UnityMediationAdapter.isTestMode()` to allow enabling test mode on the Unity Ads SDK.
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+- Updated the adapter to write mediation metadata before collecting bidding signals and report the Google Mobile Ads SDK version in `MediationMetaData`.
 
 #### Version 4.21.0.0
 - Verified compatibility with Unity Ads SDK 4.21.0.
