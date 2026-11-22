@@ -1,0 +1,9 @@
+# proto-file: learning/gemini/_agents/cl_review_agent/agentic_review.proto
+# proto-message: learning.gemini.agents.cl_review_agent.AgenticReview
+
+conditional_capability_groups {
+  path_expression: ".../CHANGELOG.md"
+  path_expression: ".../build.gradle"
+  review_capability_skills: "ads/devrel/mobileads/_agents/skills/mediation_adapters_general_release_notes/SKILL.md"
+  review_capability_skills: "ads/devrel/mobileads/_agents/skills/mediation_adapters_android_release/SKILL.md"
+}
