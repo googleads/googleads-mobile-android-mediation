@@ -36,6 +36,7 @@ import com.facebook.ads.ExtraHints;
 import com.google.ads.mediation.facebook.FacebookMediationAdapter;
 import com.google.ads.mediation.facebook.MetaFactory;
 import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationBannerAd;
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback;
@@ -85,11 +86,21 @@ public class FacebookRtbBannerAd implements MediationBannerAd, AdListener {
           new ExtraHints.Builder().mediationData(adConfiguration.getWatermark()).build());
     }
 
+    AdSize pubRequestedSize = adConfiguration.getAdSize();
     Context context = adConfiguration.getContext();
-    FrameLayout.LayoutParams adViewLayoutParams = new FrameLayout.LayoutParams(
-        adConfiguration.getAdSize().getWidthInPixels(context), LayoutParams.WRAP_CONTENT);
+
+    FrameLayout.LayoutParams wrappedAdViewLayoutParams =
+        new FrameLayout.LayoutParams(
+            pubRequestedSize.getWidthInPixels(context),
+            pubRequestedSize.getHeightInPixels(context));
     wrappedAdView = new FrameLayout(context);
+    wrappedAdView.setLayoutParams(wrappedAdViewLayoutParams);
+
+    FrameLayout.LayoutParams adViewLayoutParams =
+        new FrameLayout.LayoutParams(
+            pubRequestedSize.getWidthInPixels(context), LayoutParams.WRAP_CONTENT);
     adView.setLayoutParams(adViewLayoutParams);
+
     wrappedAdView.addView(adView);
     adView.loadAd(
         adView.buildLoadAdConfig()
