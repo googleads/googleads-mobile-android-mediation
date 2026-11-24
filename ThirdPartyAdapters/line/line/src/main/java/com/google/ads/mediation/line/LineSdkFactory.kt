@@ -16,11 +16,8 @@ package com.google.ads.mediation.line
 
 import android.content.Context
 import com.five_corp.ad.AdLoader
+import com.five_corp.ad.AdSlotConfig
 import com.five_corp.ad.FiveAdConfig
-import com.five_corp.ad.FiveAdCustomLayout
-import com.five_corp.ad.FiveAdInterstitial
-import com.five_corp.ad.FiveAdNative
-import com.five_corp.ad.FiveAdVideoReward
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.ThreadPoolExecutor
@@ -40,29 +37,18 @@ object LineSdkFactory {
   private const val MAX_NUMBER_GENERIC_WORKERS = Integer.MAX_VALUE
   private val THREAD_KEEP_ALIVE_TIME = 10.seconds
 
-  /** Delegate used on unit tests to help mock calls to create [FiveAd] formats. */
-  internal var delegate: SdkFactory =
+  internal val defaultDelegate: SdkFactory =
     object : SdkFactory {
       override fun createFiveAdConfig(appId: String): FiveAdConfig = FiveAdConfig(appId)
 
-      override fun createFiveAdCustomLayout(
-        context: Context,
-        slotId: String,
-        width: Int,
-      ): FiveAdCustomLayout = FiveAdCustomLayout(context, slotId, width)
-
-      override fun createFiveAdInterstitial(context: Context, slotId: String): FiveAdInterstitial =
-        FiveAdInterstitial(context, slotId)
-
-      override fun createFiveVideoRewarded(context: Context, slotId: String): FiveAdVideoReward =
-        FiveAdVideoReward(context, slotId)
-
-      override fun createFiveAdNative(context: Context, slotId: String) =
-        FiveAdNative(context, slotId)
+      override fun createAdSlotConfig(slotId: String): AdSlotConfig = AdSlotConfig(slotId)
 
       override fun createAdLoader(context: Context, fiveAdConfig: FiveAdConfig): AdLoader? =
         AdLoader.forConfig(context, fiveAdConfig)
     }
+
+  /** Delegate used on unit tests to help mock calls to create [FiveAd] formats. */
+  internal var delegate: SdkFactory = defaultDelegate
 
   private fun newThreadFactory(poolName: String) =
     object : ThreadFactory {
@@ -88,13 +74,7 @@ object LineSdkFactory {
 interface SdkFactory {
   fun createFiveAdConfig(appId: String): FiveAdConfig
 
-  fun createFiveAdCustomLayout(context: Context, slotId: String, width: Int): FiveAdCustomLayout
-
-  fun createFiveAdInterstitial(context: Context, slotId: String): FiveAdInterstitial
-
-  fun createFiveVideoRewarded(context: Context, slotId: String): FiveAdVideoReward
-
-  fun createFiveAdNative(context: Context, slotId: String): FiveAdNative
+  fun createAdSlotConfig(slotId: String): AdSlotConfig
 
   fun createAdLoader(context: Context, fiveAdConfig: FiveAdConfig): AdLoader?
 }

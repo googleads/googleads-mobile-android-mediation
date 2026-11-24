@@ -62,11 +62,14 @@ import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
@@ -83,17 +86,24 @@ import org.robolectric.Robolectric
 @RunWith(AndroidJUnit4::class)
 class LineMediationAdapterTest {
 
+  private val mockMediationUtils =
+    mock<MediationUtilsWrapper> {
+      on { findClosestSize(any(), any(), any()) } doReturn AdSize.BANNER
+    }
+
   // Subject of tests
-  private var lineMediationAdapter = LineMediationAdapter()
+  private var lineMediationAdapter = LineMediationAdapter(mockMediationUtils)
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val activity: Activity = Robolectric.buildActivity(Activity::class.java).get()
   private val mockSdkWrapper = mock<SdkWrapper>()
+  private val mockAdLoader = mock<AdLoader>()
   private val fiveAdConfig = FiveAdConfig(TEST_APP_ID_1)
   private val mockFiveAdCustomLayout =
     mock<FiveAdCustomLayout> {
       on { logicalWidth } doReturn AdSize.BANNER.width
       on { logicalHeight } doReturn AdSize.BANNER.height
+      on { context } doReturn context
     }
   private val mockFiveAdInterstitial = mock<FiveAdInterstitial>()
   private val mockFiveAdVideoReward = mock<FiveAdVideoReward>()
@@ -102,13 +112,8 @@ class LineMediationAdapterTest {
     mock<SdkFactory> {
       on { createFiveAdConfig(TEST_APP_ID_1) } doReturn fiveAdConfig
       on { createFiveAdConfig(TEST_APP_ID_2) } doReturn FiveAdConfig(TEST_APP_ID_2)
-      on { createFiveAdCustomLayout(context, TEST_SLOT_ID, AdSize.BANNER.width) } doReturn
-        mockFiveAdCustomLayout
-      on { createFiveAdInterstitial(context, TEST_SLOT_ID) } doReturn mockFiveAdInterstitial
-      on { createFiveVideoRewarded(context, TEST_SLOT_ID) } doReturn mockFiveAdVideoReward
-      on { createFiveAdInterstitial(activity, TEST_SLOT_ID) } doReturn mockFiveAdInterstitial
-      on { createFiveVideoRewarded(activity, TEST_SLOT_ID) } doReturn mockFiveAdVideoReward
-      on { createFiveAdNative(context, TEST_SLOT_ID) } doReturn mockFiveAdNative
+      on { createAdLoader(any(), any()) } doReturn mockAdLoader
+      on { createAdSlotConfig(TEST_SLOT_ID) } doAnswer { AdSlotConfig(TEST_SLOT_ID) }
     }
   private val initializationCompleteCallback = FakeInitializationCompleteCallback()
   private val signalCallbacks = FakeSignalCallbacks()
@@ -134,6 +139,13 @@ class LineMediationAdapterTest {
     LineSdkWrapper.delegate = mockSdkWrapper
     LineSdkFactory.delegate = mockSdkFactory
     LineInitializer.resetFiveAdConfig()
+    LineMediationAdapter.adapterVersionDelegate = null
+  }
+
+  @After
+  fun tearDown() {
+    LineMediationAdapter.adapterVersionDelegate = null
+    LineSdkFactory.delegate = LineSdkFactory.defaultDelegate
   }
 
   // region Version Tests
@@ -171,6 +183,13 @@ class LineMediationAdapterTest {
     val sdkVersionInfo = lineMediationAdapter.sdkVersionInfo
 
     assertThat(sdkVersionInfo.toString()).isEqualTo(VersionInfo(0, 0, 0).toString())
+  }
+
+  @Test
+  fun sdkFactoryCreateAdSlotConfig_createsAdSlotConfigWithSlotId() {
+    val result = LineSdkFactory.defaultDelegate.createAdSlotConfig(TEST_SLOT_ID)
+
+    assertThat(result.slotId).isEqualTo(TEST_SLOT_ID)
   }
 
   // endregion
@@ -605,12 +624,24 @@ class LineMediationAdapterTest {
 
     lineMediationAdapter.loadBannerAd(mediationBannerAdConfiguration, bannerAdLoadCallback)
 
-    inOrder(mockSdkWrapper, mockFiveAdCustomLayout) {
+    val loadCallbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
+    inOrder(mockSdkWrapper, mockAdLoader) {
       verify(mockSdkWrapper).initialize(context, fiveAdConfig)
-      verify(mockFiveAdCustomLayout).setLoadListener(isA<LineBannerAd>())
-      verify(mockFiveAdCustomLayout).enableSound(false)
-      verify(mockFiveAdCustomLayout).loadAdAsync()
+      verify(mockAdLoader)
+        .loadBannerAd(
+          argThat<AdSlotConfig> {
+            slotId == TEST_SLOT_ID &&
+              mediationInfo?.name == "AdMob" &&
+              mediationInfo?.version == BuildConfig.ADAPTER_VERSION
+          },
+          eq(AdSize.BANNER.getWidthInPixels(context)),
+          loadCallbackCaptor.capture(),
+        )
     }
+    loadCallbackCaptor.firstValue.onLoad(mockFiveAdCustomLayout)
+    verify(mockFiveAdCustomLayout).enableSound(false)
+    verify(mockFiveAdCustomLayout).setEventListener(isA<LineBannerAd>())
+    assertThat(bannerAdLoadCallback).hasSucceeded()
   }
 
   @Test
@@ -626,7 +657,16 @@ class LineMediationAdapterTest {
 
     lineMediationAdapter.loadBannerAd(mediationBannerAdConfiguration, bannerAdLoadCallback)
 
+    val loadCallbackCaptor = argumentCaptor<AdLoader.LoadBannerAdCallback>()
+    verify(mockAdLoader)
+      .loadBannerAd(
+        any<AdSlotConfig>(),
+        eq(AdSize.BANNER.getWidthInPixels(context)),
+        loadCallbackCaptor.capture(),
+      )
+    loadCallbackCaptor.firstValue.onLoad(mockFiveAdCustomLayout)
     verify(mockFiveAdCustomLayout).enableSound(true)
+    assertThat(bannerAdLoadCallback).hasSucceeded()
   }
 
   @Test
@@ -840,12 +880,23 @@ class LineMediationAdapterTest {
       interstitialAdLoadCallback,
     )
 
-    inOrder(mockSdkWrapper, mockFiveAdInterstitial) {
+    val loadCallbackCaptor = argumentCaptor<AdLoader.LoadInterstitialAdCallback>()
+    inOrder(mockSdkWrapper, mockAdLoader) {
       verify(mockSdkWrapper).initialize(activity, fiveAdConfig)
-      verify(mockFiveAdInterstitial).setLoadListener(isA<LineInterstitialAd>())
-      verify(mockFiveAdInterstitial).enableSound(true)
-      verify(mockFiveAdInterstitial).loadAdAsync()
+      verify(mockAdLoader)
+        .loadInterstitialAd(
+          argThat<AdSlotConfig> {
+            slotId == TEST_SLOT_ID &&
+              mediationInfo?.name == "AdMob" &&
+              mediationInfo?.version == BuildConfig.ADAPTER_VERSION
+          },
+          loadCallbackCaptor.capture(),
+        )
     }
+    loadCallbackCaptor.firstValue.onLoad(mockFiveAdInterstitial)
+    verify(mockFiveAdInterstitial).enableSound(true)
+    verify(mockFiveAdInterstitial).setEventListener(isA<LineInterstitialAd>())
+    assertThat(interstitialAdLoadCallback).hasSucceeded()
   }
 
   @Test
@@ -860,12 +911,23 @@ class LineMediationAdapterTest {
       interstitialAdLoadCallback,
     )
 
-    inOrder(mockSdkWrapper, mockFiveAdInterstitial) {
+    val loadCallbackCaptor = argumentCaptor<AdLoader.LoadInterstitialAdCallback>()
+    inOrder(mockSdkWrapper, mockAdLoader) {
       verify(mockSdkWrapper).initialize(context, fiveAdConfig)
-      verify(mockFiveAdInterstitial).setLoadListener(isA<LineInterstitialAd>())
-      verify(mockFiveAdInterstitial).enableSound(true)
-      verify(mockFiveAdInterstitial).loadAdAsync()
+      verify(mockAdLoader)
+        .loadInterstitialAd(
+          argThat<AdSlotConfig> {
+            slotId == TEST_SLOT_ID &&
+              mediationInfo?.name == "AdMob" &&
+              mediationInfo?.version == BuildConfig.ADAPTER_VERSION
+          },
+          loadCallbackCaptor.capture(),
+        )
     }
+    loadCallbackCaptor.firstValue.onLoad(mockFiveAdInterstitial)
+    verify(mockFiveAdInterstitial).enableSound(true)
+    verify(mockFiveAdInterstitial).setEventListener(isA<LineInterstitialAd>())
+    assertThat(interstitialAdLoadCallback).hasSucceeded()
   }
 
   @Test
@@ -885,7 +947,11 @@ class LineMediationAdapterTest {
       interstitialAdLoadCallback,
     )
 
+    val loadCallbackCaptor = argumentCaptor<AdLoader.LoadInterstitialAdCallback>()
+    verify(mockAdLoader).loadInterstitialAd(any<AdSlotConfig>(), loadCallbackCaptor.capture())
+    loadCallbackCaptor.firstValue.onLoad(mockFiveAdInterstitial)
     verify(mockFiveAdInterstitial).enableSound(false)
+    assertThat(interstitialAdLoadCallback).hasSucceeded()
   }
 
   private fun createMediationInterstitialAdConfiguration(
@@ -1141,12 +1207,23 @@ class LineMediationAdapterTest {
 
     lineMediationAdapter.loadRewardedAd(mediationRewardedAdConfiguration, rewardedAdLoadCallback)
 
-    inOrder(mockSdkWrapper, mockFiveAdVideoReward) {
+    val loadCallbackCaptor = argumentCaptor<AdLoader.LoadRewardAdCallback>()
+    inOrder(mockSdkWrapper, mockAdLoader) {
       verify(mockSdkWrapper).initialize(activity, fiveAdConfig)
-      verify(mockFiveAdVideoReward).setLoadListener(isA<LineRewardedAd>())
-      verify(mockFiveAdVideoReward).enableSound(true)
-      verify(mockFiveAdVideoReward).loadAdAsync()
+      verify(mockAdLoader)
+        .loadRewardAd(
+          argThat<AdSlotConfig> {
+            slotId == TEST_SLOT_ID &&
+              mediationInfo?.name == "AdMob" &&
+              mediationInfo?.version == BuildConfig.ADAPTER_VERSION
+          },
+          loadCallbackCaptor.capture(),
+        )
     }
+    loadCallbackCaptor.firstValue.onLoad(mockFiveAdVideoReward)
+    verify(mockFiveAdVideoReward).enableSound(true)
+    verify(mockFiveAdVideoReward).setEventListener(isA<LineRewardedAd>())
+    assertThat(rewardedAdLoadCallback).hasSucceeded()
   }
 
   @Test
@@ -1158,12 +1235,23 @@ class LineMediationAdapterTest {
 
     lineMediationAdapter.loadRewardedAd(mediationRewardedAdConfiguration, rewardedAdLoadCallback)
 
-    inOrder(mockSdkWrapper, mockFiveAdVideoReward) {
+    val loadCallbackCaptor = argumentCaptor<AdLoader.LoadRewardAdCallback>()
+    inOrder(mockSdkWrapper, mockAdLoader) {
       verify(mockSdkWrapper).initialize(context, fiveAdConfig)
-      verify(mockFiveAdVideoReward).setLoadListener(isA<LineRewardedAd>())
-      verify(mockFiveAdVideoReward).enableSound(true)
-      verify(mockFiveAdVideoReward).loadAdAsync()
+      verify(mockAdLoader)
+        .loadRewardAd(
+          argThat<AdSlotConfig> {
+            slotId == TEST_SLOT_ID &&
+              mediationInfo?.name == "AdMob" &&
+              mediationInfo?.version == BuildConfig.ADAPTER_VERSION
+          },
+          loadCallbackCaptor.capture(),
+        )
     }
+    loadCallbackCaptor.firstValue.onLoad(mockFiveAdVideoReward)
+    verify(mockFiveAdVideoReward).enableSound(true)
+    verify(mockFiveAdVideoReward).setEventListener(isA<LineRewardedAd>())
+    assertThat(rewardedAdLoadCallback).hasSucceeded()
   }
 
   @Test
@@ -1180,12 +1268,11 @@ class LineMediationAdapterTest {
 
     lineMediationAdapter.loadRewardedAd(mediationRewardedAdConfiguration, rewardedAdLoadCallback)
 
-    inOrder(mockSdkWrapper, mockFiveAdVideoReward) {
-      verify(mockSdkWrapper).initialize(activity, fiveAdConfig)
-      verify(mockFiveAdVideoReward).setLoadListener(isA<LineRewardedAd>())
-      verify(mockFiveAdVideoReward).enableSound(false)
-      verify(mockFiveAdVideoReward).loadAdAsync()
-    }
+    val loadCallbackCaptor = argumentCaptor<AdLoader.LoadRewardAdCallback>()
+    verify(mockAdLoader).loadRewardAd(any<AdSlotConfig>(), loadCallbackCaptor.capture())
+    loadCallbackCaptor.firstValue.onLoad(mockFiveAdVideoReward)
+    verify(mockFiveAdVideoReward).enableSound(false)
+    assertThat(rewardedAdLoadCallback).hasSucceeded()
   }
 
   private fun createMediationRewardedAdConfiguration(
@@ -1426,6 +1513,9 @@ class LineMediationAdapterTest {
 
     lineMediationAdapter.loadNativeAdMapper(mediationNativeAdConfiguration, nativeAdLoadCallback)
 
+    val loadCallbackCaptor = argumentCaptor<AdLoader.LoadNativeAdCallback>()
+    verify(mockAdLoader).loadNativeAd(any<AdSlotConfig>(), eq(0), loadCallbackCaptor.capture())
+    loadCallbackCaptor.firstValue.onLoad(mockFiveAdNative)
     verify(mockFiveAdNative).enableSound(false)
   }
 
@@ -1438,10 +1528,18 @@ class LineMediationAdapterTest {
 
     lineMediationAdapter.loadNativeAdMapper(mediationNativeAdConfiguration, nativeAdLoadCallback)
 
-    inOrder(mockSdkWrapper, mockFiveAdNative) {
+    inOrder(mockSdkWrapper, mockAdLoader) {
       verify(mockSdkWrapper).initialize(context, fiveAdConfig)
-      verify(mockFiveAdNative).setLoadListener(isA<LineNativeAd>())
-      verify(mockFiveAdNative).loadAdAsync()
+      verify(mockAdLoader)
+        .loadNativeAd(
+          argThat<AdSlotConfig> {
+            slotId == TEST_SLOT_ID &&
+              mediationInfo?.name == "AdMob" &&
+              mediationInfo?.version == BuildConfig.ADAPTER_VERSION
+          },
+          eq(0),
+          any(),
+        )
     }
   }
 
