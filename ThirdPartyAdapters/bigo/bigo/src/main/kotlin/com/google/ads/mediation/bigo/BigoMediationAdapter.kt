@@ -146,8 +146,6 @@ constructor(val mediationUtils: MediationUtilsWrapper = MediationUtilsWrapper())
       Log.w(TAG, message)
     }
 
-    BigoUtils.configureBigoPrivacy(context)
-
     BigoUtils.initializeBigoSdk(context, appId) {
       initializationCompleteCallback.onInitializationSucceeded()
     }

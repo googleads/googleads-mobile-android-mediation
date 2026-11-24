@@ -15,6 +15,7 @@
 package com.google.ads.mediation.bigo
 
 import android.content.Context
+import android.os.Looper
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -70,6 +71,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.whenever
+import org.robolectric.Shadows.shadowOf
 import sg.bigo.ads.BigoAdSdk
 import sg.bigo.ads.ConsentOptions
 
@@ -215,6 +217,7 @@ class BigoMediationAdapterTest {
 
     mockBigoSdk.verify { BigoAdSdk.initialize(eq(context), any(), callbackCaptor.capture()) }
     callbackCaptor.firstValue.onInitialized()
+    shadowOf(Looper.getMainLooper()).idle()
     assertThat(initializationCompleteCallback).hasSucceeded()
     mockBigoSdk.verify {
       BigoAdSdk.setUserConsent(eq(context), eq(ConsentOptions.COPPA), eq(false))
@@ -242,6 +245,7 @@ class BigoMediationAdapterTest {
 
     mockBigoSdk.verify { BigoAdSdk.initialize(eq(context), any(), callbackCaptor.capture()) }
     callbackCaptor.firstValue.onInitialized()
+    shadowOf(Looper.getMainLooper()).idle()
     assertThat(initializationCompleteCallback).hasSucceeded()
     mockBigoSdk.verify {
       BigoAdSdk.setUserConsent(eq(context), eq(ConsentOptions.COPPA), eq(false))
@@ -270,6 +274,7 @@ class BigoMediationAdapterTest {
 
     mockBigoSdk.verify { BigoAdSdk.initialize(eq(context), any(), callbackCaptor.capture()) }
     callbackCaptor.firstValue.onInitialized()
+    shadowOf(Looper.getMainLooper()).idle()
     assertThat(initializationCompleteCallback).hasSucceeded()
     mockBigoSdk.verify {
       BigoAdSdk.setUserConsent(eq(context), eq(ConsentOptions.COPPA), eq(false))
