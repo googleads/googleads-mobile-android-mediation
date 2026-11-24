@@ -49,11 +49,11 @@ class BigoNativeAd
 private constructor(
   private val mediationNativeAdLoadCallback:
     MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
-  private val bidResponse: String,
+  private val bidResponse: String?,
   private val slotId: String,
   private val mediaView: MediaView,
   private val adOptionsView: AdOptionsView,
-  private val watermark: String,
+  private val watermark: String?,
 ) :
   NativeAdMapper(),
   AdLoadListener<NativeAd>,
@@ -195,16 +195,21 @@ private constructor(
   }
 
   companion object {
+    /**
+     * Creates a [BigoNativeAd]. Set [isRtb] to `true` for bidding ad loads and `false` for
+     * waterfall ad loads. Waterfall ad requests don't include a bid response or watermark.
+     */
     fun newInstance(
       mediationNativeAdConfiguration: MediationNativeAdConfiguration,
       mediationNativeAdLoadCallback:
         MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
+      isRtb: Boolean,
     ): Result<BigoNativeAd> {
       val context = mediationNativeAdConfiguration.context
       val serverParameters = mediationNativeAdConfiguration.serverParameters
-      val bidResponse = mediationNativeAdConfiguration.bidResponse
+      val bidResponse = mediationNativeAdConfiguration.bidResponse.takeIf { isRtb }
       val slotId = serverParameters.getString(SLOT_ID_KEY)
-      val watermark = mediationNativeAdConfiguration.watermark
+      val watermark = mediationNativeAdConfiguration.watermark.takeIf { isRtb }
 
       if (slotId.isNullOrEmpty()) {
         val gmaAdError =
