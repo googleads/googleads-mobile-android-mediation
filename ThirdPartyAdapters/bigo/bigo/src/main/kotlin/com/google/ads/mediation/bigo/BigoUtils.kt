@@ -15,6 +15,8 @@
 package com.google.ads.mediation.bigo
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils
 import com.google.android.gms.ads.AgeRestrictedTreatment
 import com.google.android.gms.ads.MobileAds
@@ -77,9 +79,16 @@ object BigoUtils {
     }
   }
 
-  /** Initializes the Bigo SDK with [appId] and invokes [onInitialized] once it's initialized. */
+  /**
+   * Applies COPPA privacy settings, initializes the Bigo SDK with [appId], and invokes
+   * [onInitialized] once it's initialized.
+   */
   fun initializeBigoSdk(context: Context, appId: String, onInitialized: () -> Unit) {
+    configureBigoPrivacy(context)
     val adConfig = AdConfig.Builder().setAppId(appId).build()
-    BigoAdSdk.initialize(context, adConfig) { onInitialized() }
+    BigoAdSdk.initialize(context, adConfig) {
+      // The Bigo SDK may invoke this callback off the main thread.
+      Handler(Looper.getMainLooper()).post { onInitialized() }
+    }
   }
 }

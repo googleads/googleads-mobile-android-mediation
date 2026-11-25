@@ -15,8 +15,10 @@
 package com.google.ads.mediation.bigo
 
 import android.content.Context
+import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.ads.mediation.adaptertestkit.AdapterTestKitConstants.TEST_APP_ID
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
@@ -28,13 +30,16 @@ import org.junit.runner.RunWith
 import org.mockito.MockedStatic
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.whenever
+import org.robolectric.Shadows.shadowOf
 import sg.bigo.ads.BigoAdSdk
 import sg.bigo.ads.ConsentOptions
+import sg.bigo.ads.api.AdConfig
 
 @RunWith(AndroidJUnit4::class)
 class BigoUtilsTest {
@@ -179,6 +184,35 @@ class BigoUtilsTest {
       { BigoAdSdk.setUserConsent(eq(context), eq(ConsentOptions.COPPA), any()) },
       never(),
     )
+  }
+
+  // endregion
+
+  // region initializeBigoSdk tests
+  @Test
+  fun initializeBigoSdk_appliesPrivacyAndInvokesOnInitializedOnMainThread() {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+        .build()
+    )
+    val adConfigCaptor = argumentCaptor<AdConfig>()
+    val initListenerCaptor = argumentCaptor<BigoAdSdk.InitListener>()
+    var isInitialized = false
+
+    BigoUtils.initializeBigoSdk(context, TEST_APP_ID) { isInitialized = true }
+
+    mockBigoSdk.verify {
+      BigoAdSdk.setUserConsent(eq(context), eq(ConsentOptions.COPPA), eq(false))
+    }
+    mockBigoSdk.verify {
+      BigoAdSdk.initialize(eq(context), adConfigCaptor.capture(), initListenerCaptor.capture())
+    }
+    assertThat(adConfigCaptor.firstValue.appKey).isEqualTo(TEST_APP_ID)
+    assertThat(isInitialized).isFalse()
+    initListenerCaptor.firstValue.onInitialized()
+    shadowOf(Looper.getMainLooper()).idle()
+    assertThat(isInitialized).isTrue()
   }
 
   // endregion
