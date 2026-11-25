@@ -1,5 +1,7 @@
 ## AdSurge Android Mediation Adapter Changelog
 
+#### Version 2.0.2.0 (In progress)
+
 #### Version 2.0.1.0
 
 - Initial release.

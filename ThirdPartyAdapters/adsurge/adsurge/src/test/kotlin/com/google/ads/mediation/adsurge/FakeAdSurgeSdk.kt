@@ -163,6 +163,8 @@ class FakeAdSurgeAd : AdSurgeAd() {
 
   override fun getRevenue(): Double = 0.0
 
+  override fun getEcpm(): Double = 0.0
+
   override fun getCreativeId(): String = "test_creative_id"
 
   override fun sendWinNotification(
