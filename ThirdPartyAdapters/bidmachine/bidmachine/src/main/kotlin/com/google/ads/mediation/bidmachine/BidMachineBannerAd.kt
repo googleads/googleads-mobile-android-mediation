@@ -17,28 +17,23 @@ package com.google.ads.mediation.bidmachine
 import android.content.Context
 import android.view.View
 import androidx.annotation.VisibleForTesting
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_AD_REQUEST_EXPIRED
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_INVALID_AD_SIZE
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_AD_REQUEST_EXPIRED
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_INVALID_AD_SIZE
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.PLACEMENT_ID_KEY
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.WATERMARK_KEY
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.createPlacement
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationBannerAd
 import com.google.android.gms.ads.mediation.MediationBannerAdCallback
 import com.google.android.gms.ads.mediation.MediationBannerAdConfiguration
-import io.bidmachine.AdPlacementConfig
-import io.bidmachine.BannerAdSize
-import io.bidmachine.RendererConfiguration
-import io.bidmachine.banner.BannerListener
-import io.bidmachine.banner.BannerRequest
-import io.bidmachine.banner.BannerView
-import io.bidmachine.models.AuctionResult
-import io.bidmachine.utils.BMError
+import io.bidmachine.AdLoadCallback
+import io.bidmachine.BMError
+import io.bidmachine.BidMachineInstance
+import io.bidmachine.format.bannerad.BannerListener
+import io.bidmachine.format.bannerad.BannerView
+import io.bidmachine.model.BannerAdSize
+import io.bidmachine.model.Placement
 
 /**
  * Used to load BidMachine banner ads and mediate callbacks between Google Mobile Ads SDK and
@@ -50,147 +45,86 @@ internal constructor(
     MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   private val bidResponse: String,
   private val watermark: String,
-  @get:VisibleForTesting internal val adPlacementConfig: AdPlacementConfig,
-) : MediationBannerAd, BannerRequest.AdRequestListener, BannerListener {
+  @get:VisibleForTesting internal val placement: Placement?,
+  @get:VisibleForTesting internal val bannerAdSize: BannerAdSize,
+) : MediationBannerAd, AdLoadCallback<BannerView>, BannerListener {
   private var bannerAdCallback: MediationBannerAdCallback? = null
-  @VisibleForTesting internal var bannerRequestBuilder = BannerRequest.Builder(adPlacementConfig)
   private lateinit var adView: BannerView
 
-  fun loadWaterfallAd(bannerView: BannerView, context: Context) {
-    val bannerRequest = bannerRequestBuilder.setListener(this).build()
-    loadAdOnBannerView(bannerView, bannerRequest, context)
+  fun loadWaterfallAd(bidMachineInstance: BidMachineInstance) {
+    bidMachineInstance.loadBanner(placement, bannerAdSize, this)
   }
 
-  fun loadRtbAd(bannerView: BannerView, context: Context) {
-    val bannerRequest = bannerRequestBuilder.setBidPayload(bidResponse).setListener(this).build()
-    loadAdOnBannerView(bannerView, bannerRequest, context)
-  }
-
-  private fun loadAdOnBannerView(
-    bannerView: BannerView,
-    bannerRequest: BannerRequest,
-    context: Context,
-  ) {
-    adView = bannerView
-    adView.setListener(this)
-    bannerRequest.request(context)
+  fun loadRtbAd(bidMachineInstance: BidMachineInstance) {
+    bidMachineInstance.loadBanner(bidResponse, bannerAdSize, this)
   }
 
   override fun getView(): View = adView
 
-  override fun onRequestSuccess(bannerRequest: BannerRequest, auctionResult: AuctionResult) {
-    if (bannerRequest.isExpired) {
-      val adError =
-        AdError(ERROR_CODE_AD_REQUEST_EXPIRED, ERROR_MSG_AD_REQUEST_EXPIRED, ADAPTER_ERROR_DOMAIN)
-      mediationAdLoadCallback.onFailure(adError)
-      bannerRequest.destroy()
-      return
-    }
-    adView.setRendererConfiguration(RendererConfiguration(mapOf(WATERMARK_KEY to watermark)))
-    adView.load(bannerRequest)
-  }
-
-  override fun onRequestFailed(bannerRequest: BannerRequest, bMError: BMError) {
-    val adError = AdError(bMError.code, bMError.message, SDK_ERROR_DOMAIN)
-    mediationAdLoadCallback.onFailure(adError)
-    bannerRequest.destroy()
-  }
-
-  override fun onRequestExpired(bannerRequest: BannerRequest) {
-    val adError =
-      AdError(ERROR_CODE_AD_REQUEST_EXPIRED, ERROR_MSG_AD_REQUEST_EXPIRED, ADAPTER_ERROR_DOMAIN)
-    mediationAdLoadCallback.onFailure(adError)
-    bannerRequest.destroy()
-  }
-
-  override fun onAdLoaded(bannerView: BannerView) {
+  override fun onAdLoaded(ad: BannerView) {
+    adView = ad
+    adView.setExtras(mapOf(WATERMARK_KEY to watermark))
+    adView.setListener(this)
     bannerAdCallback = mediationAdLoadCallback.onSuccess(this)
   }
 
-  override fun onAdLoadFailed(bannerView: BannerView, bMError: BMError) {
-    val adError = AdError(bMError.code, bMError.message, SDK_ERROR_DOMAIN)
+  override fun onAdLoadFailed(bmError: BMError) {
+    val adError = AdError(bmError.code, bmError.message, SDK_ERROR_DOMAIN)
     mediationAdLoadCallback.onFailure(adError)
-    adView.destroy()
   }
 
-  override fun onAdImpression(bannerView: BannerView) {
-    bannerAdCallback?.reportAdImpression()
-  }
-
-  override fun onAdShowFailed(bannerView: BannerView, bMError: BMError) {
+  override fun onAdPresented(ad: BannerView) {
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  override fun onAdClicked(bannerView: BannerView) {
+  override fun onAdImpression(ad: BannerView) {
+    bannerAdCallback?.reportAdImpression()
+  }
+
+  override fun onAdShowFailed(ad: BannerView, bmError: BMError) {
+    // Google Mobile Ads SDK doesn't have a matching event.
+  }
+
+  override fun onAdClicked(ad: BannerView) {
     bannerAdCallback?.reportAdClicked()
     bannerAdCallback?.onAdOpened()
     bannerAdCallback?.onAdLeftApplication()
   }
 
-  override fun onAdExpired(bannerView: BannerView) {
+  override fun onAdExpired(ad: BannerView) {
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
   companion object {
-    fun mapAdSizeToBidMachineBannerAdSize(
-      context: Context,
-      adSize: AdSize,
-      isRtb: Boolean,
-      mediationUtils: MediationUtilsWrapper,
-    ): BannerAdSize? {
-      // List of banner ad sizes supported by BidMachine.
-      val supportedSizes = listOf(AdSize.BANNER, AdSize.MEDIUM_RECTANGLE, AdSize.LEADERBOARD)
-      // Find the supported size that is closest to the publisher-requested size.
-      val closestSupportedSize = mediationUtils.findClosestSize(context, adSize, supportedSizes)
-      return when (closestSupportedSize) {
+    fun mapAdSizeToBidMachineBannerAdSize(context: Context, adSize: AdSize): BannerAdSize {
+      return when (adSize) {
         AdSize.BANNER -> BannerAdSize.Banner
         AdSize.MEDIUM_RECTANGLE -> BannerAdSize.MediumRectangle
         AdSize.LEADERBOARD -> BannerAdSize.Leaderboard
-        else ->
-          if (isRtb) {
-            // In the case of RTB, if we cannot map the publisher-requested ad size to a
-            // BidMachine-supported ad size, just default to regular banner size and let BidMachine
-            // SDK load the ad using its rendering data (aka bid response).
-            BannerAdSize.Banner
-          } else {
-            // In the case of Waterfall, if we cannot map the publisher-requested ad size to a
-            // BidMachine-supported ad size, return null here so that the load request fails.
-            null
-          }
+        else -> {
+          val displayMetrics = context.resources.displayMetrics
+          val width =
+            if (adSize.width > 0) adSize.width
+            else (displayMetrics.widthPixels / displayMetrics.density).toInt()
+          BannerAdSize.adaptive(width, adSize.height.coerceAtLeast(0))
+        }
       }
     }
 
     fun newInstance(
       mediationBannerAdConfiguration: MediationBannerAdConfiguration,
-      mediationAdLoadCallback:
-        MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
-      // Indicates whether it is a Real-time Bidding (RTB) load request or a Waterfall load request.
-      isRtb: Boolean,
-      mediationUtils: MediationUtilsWrapper,
+      mediationAdLoadCallback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>
     ): Result<BidMachineBannerAd> {
       val adSize = mediationBannerAdConfiguration.adSize
       val bidResponse = mediationBannerAdConfiguration.bidResponse
       val watermark = mediationBannerAdConfiguration.watermark
-      val placementId = mediationBannerAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY)
-
+      val placement =
+        createPlacement(mediationBannerAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY))
       val bannerAdSize =
-        mapAdSizeToBidMachineBannerAdSize(
-          mediationBannerAdConfiguration.context,
-          adSize,
-          isRtb,
-          mediationUtils,
-        )
-      if (bannerAdSize == null) {
-        val adError =
-          AdError(ERROR_CODE_INVALID_AD_SIZE, ERROR_MSG_INVALID_AD_SIZE, ADAPTER_ERROR_DOMAIN)
-        mediationAdLoadCallback.onFailure(adError)
-        return Result.failure(NoSuchElementException(adError.message))
-      }
-      val adPlacementConfig =
-        AdPlacementConfig.bannerBuilder(bannerAdSize).withPlacementId(placementId).build()
+        mapAdSizeToBidMachineBannerAdSize(mediationBannerAdConfiguration.context, adSize)
 
       return Result.success(
-        BidMachineBannerAd(mediationAdLoadCallback, bidResponse, watermark, adPlacementConfig)
+        BidMachineBannerAd(mediationAdLoadCallback, bidResponse, watermark, placement, bannerAdSize)
       )
     }
   }

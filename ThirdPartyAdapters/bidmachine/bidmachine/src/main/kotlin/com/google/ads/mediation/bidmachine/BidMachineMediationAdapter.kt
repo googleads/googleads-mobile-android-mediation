@@ -17,12 +17,11 @@ package com.google.ads.mediation.bidmachine
 import android.content.Context
 import android.util.Log
 import androidx.annotation.VisibleForTesting
-import com.google.ads.mediation.bidmachine.BidMachineBannerAd.Companion.mapAdSizeToBidMachineBannerAdSize
 import com.google.ads.mediation.common.AgeRestrictedTreatmentUtils
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
-import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AgeRestrictedTreatment
+import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.MobileAds.getRequestConfiguration
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.ads.VersionInfo
@@ -44,12 +43,14 @@ import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbAdapter
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.android.gms.ads.mediation.rtb.SignalCallbacks
-import io.bidmachine.AdPlacementConfig
+import io.bidmachine.BMError
 import io.bidmachine.BidMachine
-import io.bidmachine.banner.BannerView
-import io.bidmachine.interstitial.InterstitialAd
-import io.bidmachine.nativead.NativeAd
-import io.bidmachine.rewarded.RewardedAd
+import io.bidmachine.BidMachineInstance
+import io.bidmachine.BidTokenCallback
+import io.bidmachine.model.BidMachineConfiguration
+import io.bidmachine.model.ConsentData
+import io.bidmachine.model.MediationInfo
+import io.bidmachine.model.Placement
 
 /**
  * BidMachine Adapter for GMA SDK used to initialize and load ads from the BidMachine SDK. This
@@ -145,70 +146,73 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
 
     configureBidMachinePrivacy()
 
-    BidMachine.initialize(context, sourceIdForInit) {
-      initializationCompleteCallback.onInitializationSucceeded()
-    }
+    val mediationInfo =
+      MediationInfo(MEDIATION_NAME, getGmaSdkVersion(), BuildConfig.ADAPTER_VERSION)
+    bidMachineInstance =
+      BidMachine.initialize(context, sourceIdForInit, BidMachineConfiguration(mediationInfo))
+    initializationCompleteCallback.onInitializationSucceeded()
+  }
+
+  private fun getGmaSdkVersion(): String {
+    val versionInfo = MobileAds.getVersion()
+    return "${versionInfo.majorVersion}.${versionInfo.minorVersion}.${versionInfo.microVersion}"
   }
 
   override fun collectSignals(signalData: RtbSignalData, callback: SignalCallbacks) {
-    if (signalData.configurations.isEmpty()) {
+    val bidMachineInstance = bidMachineInstance
+    if (bidMachineInstance == null) {
+      callback.onFailure(createSdkNotInitializedError())
+      return
+    }
+    val supportedConfigurations = signalData.configurations.filter {
+      it.format in SUPPORTED_AD_FORMATS
+    }
+    if (supportedConfigurations.isEmpty()) {
       val adError =
         AdError(
-          ERROR_CODE_EMPTY_SIGNAL_CONFIGURATIONS,
-          ERROR_MSG_EMPTY_SIGNAL_CONFIGURATIONS,
+          ERROR_CODE_NO_SUPPORTED_SIGNAL_CONFIGURATIONS,
+          ERROR_MSG_NO_SUPPORTED_SIGNAL_CONFIGURATIONS,
           ADAPTER_ERROR_DOMAIN,
         )
       callback.onFailure(adError)
       return
     }
-    val adPlacementConfigBuilder =
-      createAdPlacementConfigBuilder(
-        signalData.context,
-        signalData.configurations[0].format,
-        signalData.adSize,
-      )
-    if (adPlacementConfigBuilder == null) {
-      val adError =
-        AdError(ERROR_CODE_INVALID_AD_FORMAT, ERROR_MSG_INVALID_AD_FORMAT, ADAPTER_ERROR_DOMAIN)
-      callback.onFailure(adError)
-      return
+    val placements = supportedConfigurations.mapNotNull {
+      createPlacement(it.serverParameters.getString(PLACEMENT_ID_KEY))
     }
-    adPlacementConfigBuilder.withPlacementId(
-      signalData.configurations[0].serverParameters.getString(PLACEMENT_ID_KEY)
+    bidMachineInstance.collectToken(
+      placements,
+      object : BidTokenCallback {
+        override fun onCollected(bidToken: String) {
+          callback.onSuccess(bidToken)
+        }
+
+        override fun onCollectionFailed(bmError: BMError) {
+          callback.onFailure(AdError(bmError.code, bmError.message, SDK_ERROR_DOMAIN))
+        }
+      },
     )
-    BidMachine.getBidToken(signalData.context, adPlacementConfigBuilder.build()) { bidToken ->
-      callback.onSuccess(bidToken)
-    }
   }
 
   override fun loadBannerAd(
     mediationBannerAdConfiguration: MediationBannerAdConfiguration,
     callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   ) {
-    BidMachineBannerAd.newInstance(
-        mediationBannerAdConfiguration,
-        callback,
-        isRtb = false,
-        mediationUtils,
-      )
-      .onSuccess {
-        bannerAd = it
-        val bannerView = BannerView(mediationBannerAdConfiguration.context)
-        bannerAd.loadWaterfallAd(bannerView, mediationBannerAdConfiguration.context)
-      }
+    val bidMachineInstance = getBidMachineInstanceOrFail(callback) ?: return
+    BidMachineBannerAd.newInstance(mediationBannerAdConfiguration, callback).onSuccess {
+      bannerAd = it
+      bannerAd.loadWaterfallAd(bidMachineInstance)
+    }
   }
 
   override fun loadInterstitialAd(
     mediationInterstitialAdConfiguration: MediationInterstitialAdConfiguration,
     callback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   ) {
+    val bidMachineInstance = getBidMachineInstanceOrFail(callback) ?: return
     BidMachineInterstitialAd.newInstance(mediationInterstitialAdConfiguration, callback).onSuccess {
       interstitialAd = it
-      val bidMachineInterstitialAd = InterstitialAd(mediationInterstitialAdConfiguration.context)
-      interstitialAd.loadWaterfallAd(
-        bidMachineInterstitialAd,
-        mediationInterstitialAdConfiguration.context,
-      )
+      interstitialAd.loadWaterfallAd(bidMachineInstance)
     }
   }
 
@@ -216,10 +220,10 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
     mediationRewardedAdConfiguration: MediationRewardedAdConfiguration,
     callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   ) {
+    val bidMachineInstance = getBidMachineInstanceOrFail(callback) ?: return
     BidMachineRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
       rewardedAd = it
-      val bidMachineRewardedAd = RewardedAd(mediationRewardedAdConfiguration.context)
-      rewardedAd.loadWaterfallAd(bidMachineRewardedAd, mediationRewardedAdConfiguration.context)
+      rewardedAd.loadWaterfallAd(bidMachineInstance)
     }
   }
 
@@ -227,10 +231,10 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
     mediationNativeAdConfiguration: MediationNativeAdConfiguration,
     callback: MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
   ) {
+    val bidMachineInstance = getBidMachineInstanceOrFail(callback) ?: return
     BidMachineNativeAd.newInstance(mediationNativeAdConfiguration, callback).onSuccess {
       nativeAd = it
-      val bidMachineNativeAd = NativeAd(mediationNativeAdConfiguration.context)
-      nativeAd.loadWaterfallAd(bidMachineNativeAd)
+      nativeAd.loadWaterfallAd(bidMachineInstance)
     }
   }
 
@@ -238,30 +242,21 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
     mediationBannerAdConfiguration: MediationBannerAdConfiguration,
     callback: MediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>,
   ) {
-    BidMachineBannerAd.newInstance(
-        mediationBannerAdConfiguration,
-        callback,
-        isRtb = true,
-        mediationUtils,
-      )
-      .onSuccess {
-        bannerAd = it
-        val bannerView = BannerView(mediationBannerAdConfiguration.context)
-        bannerAd.loadRtbAd(bannerView, mediationBannerAdConfiguration.context)
-      }
+    val bidMachineInstance = getBidMachineInstanceOrFail(callback) ?: return
+    BidMachineBannerAd.newInstance(mediationBannerAdConfiguration, callback).onSuccess {
+      bannerAd = it
+      bannerAd.loadRtbAd(bidMachineInstance)
+    }
   }
 
   override fun loadRtbInterstitialAd(
     mediationInterstitialAdConfiguration: MediationInterstitialAdConfiguration,
     callback: MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   ) {
+    val bidMachineInstance = getBidMachineInstanceOrFail(callback) ?: return
     BidMachineInterstitialAd.newInstance(mediationInterstitialAdConfiguration, callback).onSuccess {
       interstitialAd = it
-      val bidMachineInterstitialAd = InterstitialAd(mediationInterstitialAdConfiguration.context)
-      interstitialAd.loadRtbAd(
-        bidMachineInterstitialAd,
-        mediationInterstitialAdConfiguration.context,
-      )
+      interstitialAd.loadRtbAd(bidMachineInstance)
     }
   }
 
@@ -269,10 +264,10 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
     mediationRewardedAdConfiguration: MediationRewardedAdConfiguration,
     callback: MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   ) {
+    val bidMachineInstance = getBidMachineInstanceOrFail(callback) ?: return
     BidMachineRewardedAd.newInstance(mediationRewardedAdConfiguration, callback).onSuccess {
       rewardedAd = it
-      val bidMachineRewardedAd = RewardedAd(mediationRewardedAdConfiguration.context)
-      rewardedAd.loadRtbAd(bidMachineRewardedAd, mediationRewardedAdConfiguration.context)
+      rewardedAd.loadRtbAd(bidMachineInstance)
     }
   }
 
@@ -280,31 +275,25 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
     mediationNativeAdConfiguration: MediationNativeAdConfiguration,
     callback: MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
   ) {
+    val bidMachineInstance = getBidMachineInstanceOrFail(callback) ?: return
     BidMachineNativeAd.newInstance(mediationNativeAdConfiguration, callback).onSuccess {
       nativeAd = it
-      val bidMachineNativeAd = NativeAd(mediationNativeAdConfiguration.context)
-      nativeAd.loadRtbAd(bidMachineNativeAd)
+      nativeAd.loadRtbAd(bidMachineInstance)
     }
   }
 
-  private fun createAdPlacementConfigBuilder(
-    context: Context,
-    adFormat: AdFormat,
-    adSize: AdSize?,
-  ): AdPlacementConfig.Builder? {
-    return when (adFormat) {
-      AdFormat.BANNER -> {
-        adSize ?: return null
-        val bannerAdSize =
-          mapAdSizeToBidMachineBannerAdSize(context, adSize, true, mediationUtils) ?: return null
-        AdPlacementConfig.bannerBuilder(bannerAdSize)
-      }
-      AdFormat.INTERSTITIAL -> AdPlacementConfig.interstitialBuilder()
-      AdFormat.REWARDED -> AdPlacementConfig.rewardedBuilder()
-      AdFormat.NATIVE -> AdPlacementConfig.nativeBuilder()
-      else -> null
+  private fun getBidMachineInstanceOrFail(
+    callback: MediationAdLoadCallback<*, *>
+  ): BidMachineInstance? {
+    val bidMachineInstance = bidMachineInstance
+    if (bidMachineInstance == null) {
+      callback.onFailure(createSdkNotInitializedError())
     }
+    return bidMachineInstance
   }
+
+  private fun createSdkNotInitializedError(): AdError =
+    AdError(ERROR_CODE_SDK_NOT_INITIALIZED, ERROR_MSG_SDK_NOT_INITIALIZED, ADAPTER_ERROR_DOMAIN)
 
   private fun configureBidMachinePrivacy() {
     val tagForChildDirected = getRequestConfiguration().tagForChildDirectedTreatment
@@ -312,46 +301,50 @@ constructor(private val mediationUtils: MediationUtilsWrapper = MediationUtilsWr
     val isAgeRestrictedTreatmentChild =
       AgeRestrictedTreatmentUtils.runtimeGmaSdkSupportsChildAgeRestrictedTreatment() &&
         getRequestConfiguration().ageRestrictedTreatment == AgeRestrictedTreatment.CHILD
-    if (
-      tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
-        tagForUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE ||
-        isAgeRestrictedTreatmentChild
-    ) {
-      BidMachine.setCoppa(true)
-    } else if (
-      tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE ||
-        tagForUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE
-    ) {
-      BidMachine.setCoppa(false)
-    }
+    val coppa =
+      if (
+        tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE ||
+          tagForUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE ||
+          isAgeRestrictedTreatmentChild
+      ) {
+        true
+      } else if (
+        tagForChildDirected == RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE ||
+          tagForUnderAgeOfConsent == RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE
+      ) {
+        false
+      } else {
+        return
+      }
+    BidMachine.setConsentData(ConsentData.Builder().setCoppa(coppa).build())
   }
 
   internal companion object {
     private val TAG = BidMachineMediationAdapter::class.simpleName
     @VisibleForTesting var bidMachineSdkVersionDelegate: String? = null
     @VisibleForTesting var adapterVersionDelegate: String? = null
+    // The BidMachine SDK instance is shared by all the adapter instances.
+    @VisibleForTesting var bidMachineInstance: BidMachineInstance? = null
+    @VisibleForTesting const val MEDIATION_NAME = "google"
+    private val SUPPORTED_AD_FORMATS =
+      setOf(AdFormat.BANNER, AdFormat.INTERSTITIAL, AdFormat.REWARDED, AdFormat.NATIVE)
+
+    /** Returns the BidMachine placement for the [placementId], or `null` if it's missing. */
+    fun createPlacement(placementId: String?): Placement? =
+      if (placementId.isNullOrEmpty()) null else Placement(placementId)
     @VisibleForTesting const val SOURCE_ID_KEY = "source_id"
     const val PLACEMENT_ID_KEY = "placement_id"
     const val ADAPTER_ERROR_DOMAIN = "com.google.ads.mediation.bidmachine"
     const val SDK_ERROR_DOMAIN = "io.bidmachine"
     const val WATERMARK_KEY = "google_watermark"
     @VisibleForTesting const val ERROR_MSG_MISSING_SOURCE_ID = "Source Id is missing or empty"
-    const val ERROR_CODE_NO_PLACEMENT_ID = 100
-    const val ERROR_MSG_NO_PLACEMENT_ID = "Invalid or empty placement id received."
-    const val ERROR_CODE_EMPTY_SIGNAL_CONFIGURATIONS = 101
-    const val ERROR_MSG_EMPTY_SIGNAL_CONFIGURATIONS =
-      "Error during signal collection: No Signal Data Configuration found."
-    const val ERROR_CODE_INVALID_AD_FORMAT = 102
-    const val ERROR_MSG_INVALID_AD_FORMAT = "Invalid Ad Format received during signal collection."
-    const val ERROR_CODE_INVALID_AD_SIZE = 103
-    const val ERROR_MSG_INVALID_AD_SIZE =
-      "Requested ad size could not be mapped to bidmachine.BannerSize"
-    const val ERROR_CODE_AD_REQUEST_EXPIRED = 104
-    const val ERROR_MSG_AD_REQUEST_EXPIRED = "Loaded BidMachine ad request has expired."
+    const val ERROR_CODE_NO_SUPPORTED_SIGNAL_CONFIGURATIONS = 101
+    const val ERROR_MSG_NO_SUPPORTED_SIGNAL_CONFIGURATIONS =
+      "Error during signal collection: No supported Signal Data Configuration found."
     const val ERROR_CODE_COULD_NOT_SHOW_FULLSCREEN_AD = 105
     const val ERROR_MSG_COULD_NOT_SHOW_FULLSCREEN_AD = "Fullscreen ad could not be shown."
-    const val ERROR_CODE_EMPTY_NATIVE_AD_DATA = 106
-    const val ERROR_MSG_EMPTY_NATIVE_AD_DATA = "Native Ad Data received was null."
     const val ERROR_CODE_MISSING_SOURCE_ID = 107
+    const val ERROR_CODE_SDK_NOT_INITIALIZED = 108
+    const val ERROR_MSG_SDK_NOT_INITIALIZED = "BidMachine SDK is not initialized."
   }
 }

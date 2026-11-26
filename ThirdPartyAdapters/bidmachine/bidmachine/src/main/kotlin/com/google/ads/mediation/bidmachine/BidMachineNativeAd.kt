@@ -14,34 +14,28 @@
 
 package com.google.ads.mediation.bidmachine
 
-import android.content.Context
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.VisibleForTesting
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_AD_REQUEST_EXPIRED
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_EMPTY_NATIVE_AD_DATA
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_AD_REQUEST_EXPIRED
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_EMPTY_NATIVE_AD_DATA
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.PLACEMENT_ID_KEY
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.WATERMARK_KEY
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.createPlacement
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration
 import com.google.android.gms.ads.mediation.NativeAdMapper
-import io.bidmachine.AdPlacementConfig
-import io.bidmachine.RendererConfiguration
-import io.bidmachine.models.AuctionResult
-import io.bidmachine.nativead.NativeAd
-import io.bidmachine.nativead.NativeListener
-import io.bidmachine.nativead.NativePublicData
-import io.bidmachine.nativead.NativeRequest
-import io.bidmachine.nativead.view.NativeMediaView
-import io.bidmachine.utils.BMError
+import io.bidmachine.Ad
+import io.bidmachine.AdLoadCallback
+import io.bidmachine.BMError
+import io.bidmachine.BidMachineInstance
+import io.bidmachine.format.nativead.NativeAd
+import io.bidmachine.format.nativead.NativeClickableView
+import io.bidmachine.format.nativead.NativeListener
+import io.bidmachine.model.Placement
 
 /**
  * Used to load BidMachine native ads and mediate callbacks between Google Mobile Ads SDK and
@@ -49,77 +43,34 @@ import io.bidmachine.utils.BMError
  */
 class BidMachineNativeAd
 private constructor(
-  private val context: Context,
   private val mediationNativeAdLoadCallback:
     MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
   private val bidResponse: String,
   private val watermark: String,
-  @get:VisibleForTesting internal val adPlacementConfig: AdPlacementConfig,
-) : NativeAdMapper(), NativeRequest.AdRequestListener, NativeListener {
+  @get:VisibleForTesting internal val placement: Placement?,
+) : NativeAdMapper(), AdLoadCallback<NativeAd>, NativeListener {
   private var nativeAdCallback: MediationNativeAdCallback? = null
-  @VisibleForTesting internal var nativeRequestBuilder = NativeRequest.Builder(adPlacementConfig)
-  private lateinit var bidMachineNativeAd: NativeAd
-  private var bidMachineMediaView: NativeMediaView? = null
+  private var bidMachineNativeAd: NativeAd? = null
 
-  fun loadWaterfallAd(nativeAd: NativeAd) {
-    val nativeRequest = nativeRequestBuilder.setListener(this).build()
-    loadAd(nativeAd, nativeRequest)
+  fun loadWaterfallAd(bidMachineInstance: BidMachineInstance) {
+    bidMachineInstance.loadNative(placement, this)
   }
 
-  fun loadRtbAd(nativeAd: NativeAd) {
-    val nativeRequest = nativeRequestBuilder.setBidPayload(bidResponse).setListener(this).build()
-    loadAd(nativeAd, nativeRequest)
+  fun loadRtbAd(bidMachineInstance: BidMachineInstance) {
+    bidMachineInstance.loadNative(bidResponse, this)
   }
 
-  private fun loadAd(nativeAd: NativeAd, nativeRequest: NativeRequest) {
-    bidMachineNativeAd = nativeAd
-    bidMachineNativeAd.setListener(this)
-    nativeRequest.request(context)
-  }
-
-  override fun onRequestSuccess(nativeRequest: NativeRequest, auctionResult: AuctionResult) {
-    if (nativeRequest.isExpired) {
-      val adError =
-        AdError(ERROR_CODE_AD_REQUEST_EXPIRED, ERROR_MSG_AD_REQUEST_EXPIRED, ADAPTER_ERROR_DOMAIN)
-      mediationNativeAdLoadCallback.onFailure(adError)
-      nativeRequest.destroy()
-      return
-    }
-    bidMachineNativeAd.setRendererConfiguration(
-      RendererConfiguration(mapOf(WATERMARK_KEY to watermark))
-    )
-    bidMachineNativeAd.load(nativeRequest)
-  }
-
-  override fun onRequestFailed(nativeRequest: NativeRequest, bMError: BMError) {
-    val adError = AdError(bMError.code, bMError.message, SDK_ERROR_DOMAIN)
-    mediationNativeAdLoadCallback.onFailure(adError)
-    nativeRequest.destroy()
-  }
-
-  override fun onRequestExpired(nativeRequest: NativeRequest) {
-    val adError =
-      AdError(ERROR_CODE_AD_REQUEST_EXPIRED, ERROR_MSG_AD_REQUEST_EXPIRED, ADAPTER_ERROR_DOMAIN)
-    mediationNativeAdLoadCallback.onFailure(adError)
-    nativeRequest.destroy()
-  }
-
-  override fun onAdLoaded(nativeAd: NativeAd) {
-    val adData = bidMachineNativeAd.adData
-    if (adData == null) {
-      val adError =
-        AdError(
-          ERROR_CODE_EMPTY_NATIVE_AD_DATA,
-          ERROR_MSG_EMPTY_NATIVE_AD_DATA,
-          ADAPTER_ERROR_DOMAIN,
-        )
-      mediationNativeAdLoadCallback.onFailure(adError)
-      return
-    }
-    mapNativeAd(adData)
-    bidMachineMediaView = NativeMediaView(context)
-    bidMachineMediaView?.let { setMediaView(it) }
+  override fun onAdLoaded(ad: NativeAd) {
+    bidMachineNativeAd = ad
+    setWatermark(ad)
+    ad.setListener(this)
+    mapNativeAd(ad)
     nativeAdCallback = mediationNativeAdLoadCallback.onSuccess(this)
+  }
+
+  override fun onAdLoadFailed(bmError: BMError) {
+    val adError = AdError(bmError.code, bmError.message, SDK_ERROR_DOMAIN)
+    mediationNativeAdLoadCallback.onFailure(adError)
   }
 
   override fun trackViews(
@@ -127,44 +78,65 @@ private constructor(
     clickableAssetViews: Map<String, View>,
     nonClickableAssetViews: Map<String, View>,
   ) {
-    bidMachineNativeAd.registerView(
+    bidMachineNativeAd?.bind(
       container as ViewGroup,
-      adChoicesContent,
-      bidMachineMediaView,
-      clickableAssetViews.values.toSet(),
+      clickableAssetViews.values.map { NativeClickableView(it) },
     )
   }
 
-  override fun onAdLoadFailed(nativeAd: NativeAd, bMError: BMError) {
-    val adError = AdError(bMError.code, bMError.message, SDK_ERROR_DOMAIN)
-    mediationNativeAdLoadCallback.onFailure(adError)
-    bidMachineNativeAd.destroy()
+  override fun untrackView(view: View) {
+    bidMachineNativeAd?.unbind()
   }
 
-  override fun onAdImpression(nativeAd: NativeAd) {
-    nativeAdCallback?.reportAdImpression()
+  override fun destroy() {
+    val nativeAd = bidMachineNativeAd
+    bidMachineNativeAd = null
+    nativeAdCallback = null
+    nativeAd?.setListener(null)
+    nativeAd?.destroy()
   }
 
-  override fun onAdShowFailed(nativeAd: NativeAd, bMError: BMError) {
+  override fun onAdPresented(ad: NativeAd) {
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  override fun onAdClicked(nativeAd: NativeAd) {
+  override fun onAdImpression(ad: NativeAd) {
+    nativeAdCallback?.reportAdImpression()
+  }
+
+  override fun onAdShowFailed(ad: NativeAd, bmError: BMError) {
+    // Google Mobile Ads SDK doesn't have a matching event.
+  }
+
+  override fun onAdClicked(ad: NativeAd) {
     nativeAdCallback?.reportAdClicked()
     nativeAdCallback?.onAdOpened()
     nativeAdCallback?.onAdLeftApplication()
   }
 
-  override fun onAdExpired(nativeAd: NativeAd) {
+  override fun onAdExpired(ad: NativeAd) {
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  private fun mapNativeAd(adData: NativePublicData) {
-    headline = adData.title
-    body = adData.description
-    callToAction = adData.callToAction
-    icon = NativeAdImage(adData.icon?.image, adData.icon?.localUri)
-    starRating = adData.rating.toDouble()
+  private fun mapNativeAd(nativeAd: NativeAd) {
+    nativeAd.getTitle()?.let { headline = it }
+    nativeAd.getBody()?.let { body = it }
+    nativeAd.getCallToAction()?.let { callToAction = it }
+    nativeAd.getAdvertiser()?.let { advertiser = it }
+    nativeAd.getStarRating()?.let { starRating = it }
+    nativeAd.getIcon()?.let { icon = NativeAdImage(it.getImage(), it.getLocalUri()) }
+    nativeAd.getMainImage()?.let {
+      images = listOf(NativeAdImage(it.getImage(), it.getLocalUri()))
+    }
+    setMediaView(nativeAd.getMediaView())
+    setHasVideoContent(nativeAd.hasVideoContent())
+    adChoicesContent = nativeAd.getAdChoiceView()
+    overrideClickHandling = true
+    overrideImpressionRecording = true
+  }
+
+  private fun setWatermark(ad: Ad) {
+    ad.setExtras(mapOf(WATERMARK_KEY to watermark))
   }
 
   internal class NativeAdImage(
@@ -185,20 +157,13 @@ private constructor(
       mediationNativeAdLoadCallback:
         MediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>,
     ): Result<BidMachineNativeAd> {
-      val context = mediationNativeAdConfiguration.context
       val bidResponse = mediationNativeAdConfiguration.bidResponse
       val watermark = mediationNativeAdConfiguration.watermark
-      val placementId = mediationNativeAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY)
-      val adPlacementConfig = AdPlacementConfig.nativeBuilder().withPlacementId(placementId).build()
+      val placement =
+        createPlacement(mediationNativeAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY))
 
       return Result.success(
-        BidMachineNativeAd(
-          context,
-          mediationNativeAdLoadCallback,
-          bidResponse,
-          watermark,
-          adPlacementConfig,
-        )
+        BidMachineNativeAd(mediationNativeAdLoadCallback, bidResponse, watermark, placement)
       )
     }
   }
