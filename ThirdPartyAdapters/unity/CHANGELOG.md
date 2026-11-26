@@ -3,10 +3,16 @@
 #### Next Version
 - Maps `AgeRestrictedTreatment` to Unity Ads SDK privacy settings.
 
-#### Version 4.22.0.0 (In progress)
+#### Version 4.22.0.0
 - Added `UnityMediationAdapter.setTestMode()` and `UnityMediationAdapter.isTestMode()` to allow enabling test mode on the Unity Ads SDK.
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
 - Updated the adapter to write mediation metadata before collecting bidding signals and report the Google Mobile Ads SDK version in `MediationMetaData`.
+- Verified compatibility with Unity Ads SDK 4.22.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.5.0.
+- Google Mobile Ads Next-Gen SDK version 1.7.0.
+- Unity Ads SDK version 4.22.0.
 
 #### Version 4.21.0.0
 - Verified compatibility with Unity Ads SDK 4.21.0.
