@@ -32,15 +32,15 @@ import com.google.ads.mediation.adaptertestkit.createMediationInterstitialAdConf
 import com.google.ads.mediation.adaptertestkit.createMediationNativeAdConfiguration
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_EMPTY_SIGNAL_CONFIGURATIONS
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_INVALID_AD_FORMAT
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_INVALID_AD_SIZE
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_MISSING_SOURCE_ID
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_EMPTY_SIGNAL_CONFIGURATIONS
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_INVALID_AD_FORMAT
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_INVALID_AD_SIZE
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_NO_SUPPORTED_SIGNAL_CONFIGURATIONS
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_SDK_NOT_INITIALIZED
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_MISSING_SOURCE_ID
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_NO_SUPPORTED_SIGNAL_CONFIGURATIONS
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_SDK_NOT_INITIALIZED
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.MEDIATION_NAME
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.PLACEMENT_ID_KEY
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SOURCE_ID_KEY
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdFormat
@@ -59,31 +59,27 @@ import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.NativeAdMapper
 import com.google.android.gms.ads.mediation.rtb.RtbSignalData
 import com.google.common.truth.Truth.assertThat
-import io.bidmachine.AdPlacementConfig
-import io.bidmachine.BannerAdSize
 import io.bidmachine.BidMachine
+import io.bidmachine.BidMachineInstance
 import io.bidmachine.BidTokenCallback
-import io.bidmachine.InitializationCallback
-import io.bidmachine.interstitial.InterstitialAd
-import io.bidmachine.nativead.NativeAd
-import io.bidmachine.rewarded.RewardedAd
-import kotlin.test.assertIs
+import io.bidmachine.model.BannerAdSize
+import io.bidmachine.model.BidMachineConfiguration
+import io.bidmachine.model.ConsentData
+import io.bidmachine.model.Placement
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.MockedStatic
-import org.mockito.Mockito.mockConstruction
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
-import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.verifyNoInteractions
 
 @RunWith(AndroidJUnit4::class)
 class BidMachineMediationAdapterTest {
@@ -92,6 +88,7 @@ class BidMachineMediationAdapterTest {
   private lateinit var mockBidMachine: MockedStatic<BidMachine>
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
+  private val mockBidMachineInstance = mock<BidMachineInstance>()
   private val initializationCompleteCallback = FakeInitializationCompleteCallback()
   private val bannerAdLoadCallback =
     FakeMediationAdLoadCallback<MediationBannerAd, MediationBannerAdCallback>()
@@ -101,19 +98,25 @@ class BidMachineMediationAdapterTest {
     FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>()
   private val nativeAdLoadCallback =
     FakeMediationAdLoadCallback<NativeAdMapper, MediationNativeAdCallback>()
-  private val mediationUtils = mock<MediationUtilsWrapper>()
 
   @Before
   fun setUp() {
     mockBidMachine = mockStatic(BidMachine::class.java)
-    adapter = BidMachineMediationAdapter(mediationUtils = mediationUtils)
+    mockBidMachine
+      .`when`<BidMachineInstance> {
+        BidMachine.initialize(any(), any(), anyOrNull<BidMachineConfiguration>())
+      }
+      .thenReturn(mockBidMachineInstance)
+    adapter = BidMachineMediationAdapter()
     BidMachineMediationAdapter.bidMachineSdkVersionDelegate = null
     BidMachineMediationAdapter.adapterVersionDelegate = null
+    BidMachineMediationAdapter.bidMachineInstance = null
     MobileAds.setRequestConfiguration(RequestConfiguration.Builder().build())
   }
 
   @After
   fun tearDown() {
+    BidMachineMediationAdapter.bidMachineInstance = null
     mockBidMachine.close()
   }
 
@@ -163,6 +166,10 @@ class BidMachineMediationAdapterTest {
     val expectedAdError =
       AdError(ERROR_CODE_MISSING_SOURCE_ID, ERROR_MSG_MISSING_SOURCE_ID, ADAPTER_ERROR_DOMAIN)
     assertThat(initializationCompleteCallback).hasFailedWith(expectedAdError)
+    mockBidMachine.verify(
+      { BidMachine.initialize(any(), any(), anyOrNull<BidMachineConfiguration>()) },
+      never(),
+    )
   }
 
   @Test
@@ -190,576 +197,535 @@ class BidMachineMediationAdapterTest {
   }
 
   @Test
-  fun initialize_invokesOnInitializationSucceeded() {
-    val mediationConfiguration =
-      MediationConfiguration(
-        AdFormat.BANNER,
-        /* serverParameters= */ bundleOf(SOURCE_ID_KEY to TEST_SOURCE_ID),
-      )
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder()
-        .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
-        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
-        .build()
+  fun initialize_initializesBidMachineWithMediationInfoAndInvokesOnInitializationSucceeded() {
+    val configurationCaptor = argumentCaptor<BidMachineConfiguration>()
+
+    adapter.initialize(
+      context,
+      initializationCompleteCallback,
+      listOf(createSourceIdConfiguration(TEST_SOURCE_ID)),
     )
-    val callbackCaptor = argumentCaptor<InitializationCallback>()
 
-    adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
-
-    mockBidMachine.verify { BidMachine.setCoppa(eq(true)) }
     mockBidMachine.verify {
-      BidMachine.initialize(eq(context), eq(TEST_SOURCE_ID), callbackCaptor.capture())
+      BidMachine.initialize(eq(context), eq(TEST_SOURCE_ID), configurationCaptor.capture())
     }
-    callbackCaptor.firstValue.onInitialized()
+    val mediationInfo = configurationCaptor.firstValue.mediationInfo
+    assertThat(mediationInfo).isNotNull()
+    assertThat(mediationInfo?.name).isEqualTo(MEDIATION_NAME)
+    assertThat(mediationInfo?.adapterVersion).isEqualTo(BuildConfig.ADAPTER_VERSION)
+    assertThat(BidMachineMediationAdapter.bidMachineInstance).isSameInstanceAs(mockBidMachineInstance)
     assertThat(initializationCompleteCallback).hasSucceeded()
   }
 
   @Test
-  fun initialize_tagForChildTrue_setBidMachineCoppaToTrue() {
-    val mediationConfiguration =
-      MediationConfiguration(
-        AdFormat.BANNER,
-        /* serverParameters= */ bundleOf(SOURCE_ID_KEY to TEST_SOURCE_ID),
-      )
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder()
-        .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
-        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
-        .build()
+  fun initialize_withMultipleSourceIds_initializesBidMachineWithTheFirstOne() {
+    adapter.initialize(
+      context,
+      initializationCompleteCallback,
+      listOf(
+        MediationConfiguration(AdFormat.BANNER, bundleOf()),
+        createSourceIdConfiguration(TEST_SOURCE_ID),
+        createSourceIdConfiguration("anotherSourceId"),
+      ),
     )
 
-    adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
-
-    mockBidMachine.verify { BidMachine.setCoppa(eq(true)) }
+    mockBidMachine.verify {
+      BidMachine.initialize(eq(context), eq(TEST_SOURCE_ID), anyOrNull<BidMachineConfiguration>())
+    }
+    mockBidMachine.verify(
+      {
+        BidMachine.initialize(
+          any(),
+          eq("anotherSourceId"),
+          anyOrNull<BidMachineConfiguration>(),
+        )
+      },
+      never(),
+    )
+    assertThat(initializationCompleteCallback).hasSucceeded()
   }
 
   @Test
-  fun initialize_tagForUnderAgeTrue_setBidMachineCoppaToTrue() {
-    val mediationConfiguration =
-      MediationConfiguration(
-        AdFormat.BANNER,
-        /* serverParameters= */ bundleOf(SOURCE_ID_KEY to TEST_SOURCE_ID),
-      )
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder()
-        .setTagForChildDirectedTreatment(
-          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
-        )
-        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
-        .build()
+  fun initialize_tagForChildTrue_setsBidMachineCoppaToTrue() {
+    setRequestConfiguration(
+      tagForChildDirectedTreatment = RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE
     )
 
-    adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+    adapter.initialize(
+      context,
+      initializationCompleteCallback,
+      listOf(createSourceIdConfiguration(TEST_SOURCE_ID)),
+    )
 
-    mockBidMachine.verify { BidMachine.setCoppa(eq(true)) }
+    mockBidMachine.verify { BidMachine.setConsentData(eq(ConsentData(coppa = true))) }
   }
 
   @Test
-  fun initialize_ageRestrictedTreatmentChild_setBidMachineCoppaToTrue() {
-    val mediationConfiguration =
-      MediationConfiguration(
-        AdFormat.BANNER,
-        /* serverParameters= */ bundleOf(SOURCE_ID_KEY to TEST_SOURCE_ID),
-      )
+  fun initialize_tagForUnderAgeTrue_setsBidMachineCoppaToTrue() {
+    setRequestConfiguration(
+      tagForUnderAgeOfConsent = RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE
+    )
+
+    adapter.initialize(
+      context,
+      initializationCompleteCallback,
+      listOf(createSourceIdConfiguration(TEST_SOURCE_ID)),
+    )
+
+    mockBidMachine.verify { BidMachine.setConsentData(eq(ConsentData(coppa = true))) }
+  }
+
+  @Test
+  fun initialize_ageRestrictedTreatmentChild_setsBidMachineCoppaToTrue() {
     MobileAds.setRequestConfiguration(
       RequestConfiguration.Builder()
-        .setTagForChildDirectedTreatment(
-          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
-        )
-        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
         .setAgeRestrictedTreatment(AgeRestrictedTreatment.CHILD)
         .build()
     )
 
-    adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+    adapter.initialize(
+      context,
+      initializationCompleteCallback,
+      listOf(createSourceIdConfiguration(TEST_SOURCE_ID)),
+    )
 
-    mockBidMachine.verify { BidMachine.setCoppa(eq(true)) }
+    mockBidMachine.verify { BidMachine.setConsentData(eq(ConsentData(coppa = true))) }
   }
 
   @Test
-  fun initialize_tagForChildFalse_setBidMachineCoppaToFalse() {
-    val mediationConfiguration =
-      MediationConfiguration(
-        AdFormat.BANNER,
-        /* serverParameters= */ bundleOf(SOURCE_ID_KEY to TEST_SOURCE_ID),
-      )
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder()
-        .setTagForChildDirectedTreatment(
-          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
-        )
-        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
-        .build()
+  fun initialize_tagForChildFalse_setsBidMachineCoppaToFalse() {
+    setRequestConfiguration(
+      tagForChildDirectedTreatment = RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
     )
 
-    adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+    adapter.initialize(
+      context,
+      initializationCompleteCallback,
+      listOf(createSourceIdConfiguration(TEST_SOURCE_ID)),
+    )
 
-    mockBidMachine.verify { BidMachine.setCoppa(eq(false)) }
+    mockBidMachine.verify { BidMachine.setConsentData(eq(ConsentData(coppa = false))) }
   }
 
   @Test
-  fun initialize_tagForUnderAgeFalse_setBidMachineCoppaToFalse() {
-    val mediationConfiguration =
-      MediationConfiguration(
-        AdFormat.BANNER,
-        /* serverParameters= */ bundleOf(SOURCE_ID_KEY to TEST_SOURCE_ID),
-      )
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder()
-        .setTagForChildDirectedTreatment(
-          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
-        )
-        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE)
-        .build()
+  fun initialize_tagForUnderAgeFalse_setsBidMachineCoppaToFalse() {
+    setRequestConfiguration(
+      tagForUnderAgeOfConsent = RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE
     )
 
-    adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
+    adapter.initialize(
+      context,
+      initializationCompleteCallback,
+      listOf(createSourceIdConfiguration(TEST_SOURCE_ID)),
+    )
 
-    mockBidMachine.verify { BidMachine.setCoppa(eq(false)) }
+    mockBidMachine.verify { BidMachine.setConsentData(eq(ConsentData(coppa = false))) }
   }
 
   @Test
-  fun initialize_tagForChildAndUnderAgeUnspecified_neverSetsBidMachineCoppa() {
-    val mediationConfiguration =
-      MediationConfiguration(
-        AdFormat.BANNER,
-        /* serverParameters= */ bundleOf(SOURCE_ID_KEY to TEST_SOURCE_ID),
-      )
-    MobileAds.setRequestConfiguration(
-      RequestConfiguration.Builder()
-        .setTagForChildDirectedTreatment(
-          RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED
-        )
-        .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED)
-        .build()
+  fun initialize_tagForChildAndUnderAgeUnspecified_neverSetsBidMachineConsentData() {
+    setRequestConfiguration()
+
+    adapter.initialize(
+      context,
+      initializationCompleteCallback,
+      listOf(createSourceIdConfiguration(TEST_SOURCE_ID)),
     )
 
-    adapter.initialize(context, initializationCompleteCallback, listOf(mediationConfiguration))
-
-    mockBidMachine.verify({ BidMachine.setCoppa(any()) }, never())
+    mockBidMachine.verify({ BidMachine.setConsentData(anyOrNull()) }, never())
+    assertThat(initializationCompleteCallback).hasSucceeded()
   }
 
   // endregion
 
   // region collectSignals tests
   @Test
-  fun collectSignals_forBannerFormat_invokesGetBidToken() {
-    val configuration =
-      createMediationConfiguration(
-        AdFormat.BANNER,
-        /* serverParameters= */ bundleOf(PLACEMENT_ID_KEY to TEST_PLACEMENT_ID),
-      )
-    val signalData =
-      RtbSignalData(
-        context,
-        /* configurations = */ listOf(configuration),
-        /* networkExtras = */ bundleOf(),
-        /* adSize = */ AdSize.BANNER,
-      )
-    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize.BANNER), any())) doReturn
-      AdSize.BANNER
+  fun collectSignals_beforeInitialization_invokesOnFailure() {
     val signalCallbacks = FakeSignalCallbacks()
-    val placementConfigCaptor = argumentCaptor<AdPlacementConfig>()
-    val tokenCallbackCaptor = argumentCaptor<BidTokenCallback>()
 
-    adapter.collectSignals(signalData, signalCallbacks)
+    adapter.collectSignals(
+      createSignalData(createMediationConfiguration(AdFormat.BANNER, placementIdParams())),
+      signalCallbacks,
+    )
 
-    mockBidMachine.verify {
-      BidMachine.getBidToken(
-        eq(context),
-        placementConfigCaptor.capture(),
-        tokenCallbackCaptor.capture(),
-      )
-    }
-    val placementConfig = placementConfigCaptor.firstValue
-    assertThat(placementConfig.placementId).isEqualTo(TEST_PLACEMENT_ID)
-    assertThat((placementConfig.adFormat as io.bidmachine.AdFormat.Banner).bannerAdSize)
-      .isEqualTo(BannerAdSize.Banner)
-    tokenCallbackCaptor.firstValue.onCollected(TEST_BID_RESPONSE)
-    assertThat(signalCallbacks).hasSucceededWith(TEST_BID_RESPONSE)
+    assertThat(signalCallbacks).hasFailedWith(sdkNotInitializedError())
   }
 
   @Test
-  fun collectSignals_forInterstitialFormat_invokesGetBidToken() {
-    val configuration =
-      createMediationConfiguration(
-        AdFormat.INTERSTITIAL,
-        /* serverParameters= */ bundleOf(PLACEMENT_ID_KEY to TEST_PLACEMENT_ID),
-      )
-    val signalData =
-      RtbSignalData(
-        context,
-        /* configurations = */ listOf(configuration),
-        /* networkExtras = */ bundleOf(),
-        /* adSize = */ null,
-      )
-    val signalCallbacks = FakeSignalCallbacks()
-    val placementConfigCaptor = argumentCaptor<AdPlacementConfig>()
-    val tokenCallbackCaptor = argumentCaptor<BidTokenCallback>()
-
-    adapter.collectSignals(signalData, signalCallbacks)
-
-    mockBidMachine.verify {
-      BidMachine.getBidToken(
-        eq(context),
-        placementConfigCaptor.capture(),
-        tokenCallbackCaptor.capture(),
-      )
-    }
-    val placementConfig = placementConfigCaptor.firstValue
-    assertThat(placementConfig.placementId).isEqualTo(TEST_PLACEMENT_ID)
-    assertIs<io.bidmachine.AdFormat.Interstitial>(placementConfig.adFormat)
-    tokenCallbackCaptor.firstValue.onCollected(TEST_BID_RESPONSE)
-    assertThat(signalCallbacks).hasSucceededWith(TEST_BID_RESPONSE)
+  fun collectSignals_forBannerFormat_collectsTokenForPlacement() {
+    assertCollectSignalsSucceeds(AdFormat.BANNER)
   }
 
   @Test
-  fun collectSignals_forRewardedFormat_invokesGetBidToken() {
-    val configuration =
-      createMediationConfiguration(
-        AdFormat.REWARDED,
-        /* serverParameters= */ bundleOf(PLACEMENT_ID_KEY to TEST_PLACEMENT_ID),
-      )
-    val signalData =
-      RtbSignalData(
-        context,
-        /* configurations = */ listOf(configuration),
-        /* networkExtras = */ bundleOf(),
-        /* adSize = */ null,
-      )
-    val signalCallbacks = FakeSignalCallbacks()
-    val placementConfigCaptor = argumentCaptor<AdPlacementConfig>()
-    val tokenCallbackCaptor = argumentCaptor<BidTokenCallback>()
-
-    adapter.collectSignals(signalData, signalCallbacks)
-
-    mockBidMachine.verify {
-      BidMachine.getBidToken(
-        eq(context),
-        placementConfigCaptor.capture(),
-        tokenCallbackCaptor.capture(),
-      )
-    }
-    val placementConfig = placementConfigCaptor.firstValue
-    assertThat(placementConfig.placementId).isEqualTo(TEST_PLACEMENT_ID)
-    assertIs<io.bidmachine.AdFormat.Rewarded>(placementConfig.adFormat)
-    tokenCallbackCaptor.firstValue.onCollected(TEST_BID_RESPONSE)
-    assertThat(signalCallbacks).hasSucceededWith(TEST_BID_RESPONSE)
+  fun collectSignals_forInterstitialFormat_collectsTokenForPlacement() {
+    assertCollectSignalsSucceeds(AdFormat.INTERSTITIAL)
   }
 
   @Test
-  fun collectSignals_forNativeFormat_invokesGetBidToken() {
-    val configuration =
-      createMediationConfiguration(
-        AdFormat.NATIVE,
-        /* serverParameters= */ bundleOf(PLACEMENT_ID_KEY to TEST_PLACEMENT_ID),
-      )
-    val signalData =
-      RtbSignalData(
-        context,
-        /* configurations = */ listOf(configuration),
-        /* networkExtras = */ bundleOf(),
-        /* adSize = */ null,
-      )
+  fun collectSignals_forRewardedFormat_collectsTokenForPlacement() {
+    assertCollectSignalsSucceeds(AdFormat.REWARDED)
+  }
+
+  @Test
+  fun collectSignals_forNativeFormat_collectsTokenForPlacement() {
+    assertCollectSignalsSucceeds(AdFormat.NATIVE)
+  }
+
+  @Test
+  fun collectSignals_withoutPlacementId_collectsTokenWithoutPlacements() {
+    BidMachineMediationAdapter.bidMachineInstance = mockBidMachineInstance
+    val placementsCaptor = argumentCaptor<List<Placement>>()
+
+    adapter.collectSignals(
+      createSignalData(createMediationConfiguration(AdFormat.BANNER, bundleOf())),
+      FakeSignalCallbacks(),
+    )
+
+    verify(mockBidMachineInstance).collectToken(placementsCaptor.capture(), any())
+    assertThat(placementsCaptor.firstValue).isEmpty()
+  }
+
+  @Test
+  fun collectSignals_withSupportedAndUnsupportedFormats_collectsTokenForSupportedOnly() {
+    BidMachineMediationAdapter.bidMachineInstance = mockBidMachineInstance
+    val placementsCaptor = argumentCaptor<List<Placement>>()
+
+    adapter.collectSignals(
+      createSignalData(
+        createMediationConfiguration(AdFormat.APP_OPEN_AD, bundleOf(PLACEMENT_ID_KEY to "appOpen")),
+        createMediationConfiguration(AdFormat.REWARDED, placementIdParams()),
+      ),
+      FakeSignalCallbacks(),
+    )
+
+    verify(mockBidMachineInstance).collectToken(placementsCaptor.capture(), any())
+    assertThat(placementsCaptor.firstValue.map { it.id }).containsExactly(TEST_PLACEMENT_ID)
+  }
+
+  @Test
+  fun collectSignals_onCollectionFailed_invokesOnFailure() {
+    BidMachineMediationAdapter.bidMachineInstance = mockBidMachineInstance
     val signalCallbacks = FakeSignalCallbacks()
-    val placementConfigCaptor = argumentCaptor<AdPlacementConfig>()
     val tokenCallbackCaptor = argumentCaptor<BidTokenCallback>()
+    val bmError = createBMError()
 
-    adapter.collectSignals(signalData, signalCallbacks)
+    adapter.collectSignals(
+      createSignalData(createMediationConfiguration(AdFormat.BANNER, placementIdParams())),
+      signalCallbacks,
+    )
+    verify(mockBidMachineInstance).collectToken(any(), tokenCallbackCaptor.capture())
+    tokenCallbackCaptor.firstValue.onCollectionFailed(bmError)
 
-    mockBidMachine.verify {
-      BidMachine.getBidToken(
-        eq(context),
-        placementConfigCaptor.capture(),
-        tokenCallbackCaptor.capture(),
-      )
-    }
-    val placementConfig = placementConfigCaptor.firstValue
-    assertThat(placementConfig.placementId).isEqualTo(TEST_PLACEMENT_ID)
-    assertIs<io.bidmachine.AdFormat.Native>(placementConfig.adFormat)
-    tokenCallbackCaptor.firstValue.onCollected(TEST_BID_RESPONSE)
-    assertThat(signalCallbacks).hasSucceededWith(TEST_BID_RESPONSE)
+    assertThat(signalCallbacks)
+      .hasFailedWith(AdError(bmError.code, bmError.message, SDK_ERROR_DOMAIN))
   }
 
   @Test
   fun collectSignals_withEmptyConfigurations_invokesOnFailure() {
-    val signalData =
-      RtbSignalData(
-        context,
-        /* configurations = */ listOf<MediationConfiguration>(),
-        /* networkExtras = */ bundleOf(),
-        /* adSize = */ null,
-      )
+    BidMachineMediationAdapter.bidMachineInstance = mockBidMachineInstance
     val signalCallbacks = FakeSignalCallbacks()
-    val expectedAdError =
-      AdError(
-        ERROR_CODE_EMPTY_SIGNAL_CONFIGURATIONS,
-        ERROR_MSG_EMPTY_SIGNAL_CONFIGURATIONS,
-        ADAPTER_ERROR_DOMAIN,
-      )
 
-    adapter.collectSignals(signalData, signalCallbacks)
+    adapter.collectSignals(createSignalData(), signalCallbacks)
 
-    assertThat(signalCallbacks).hasFailedWith(expectedAdError)
+    assertThat(signalCallbacks).hasFailedWith(noSupportedSignalConfigurationsError())
+    verifyNoInteractions(mockBidMachineInstance)
   }
 
   @Test
   fun collectSignals_withUnsupportedAdFormat_invokesOnFailure() {
-    val configuration =
-      createMediationConfiguration(AdFormat.APP_OPEN_AD, /* serverParameters= */ bundleOf())
-    val signalData =
-      RtbSignalData(
-        context,
-        /* configurations = */ listOf<MediationConfiguration>(configuration),
-        /* networkExtras = */ bundleOf(),
-        /* adSize = */ null,
-      )
+    BidMachineMediationAdapter.bidMachineInstance = mockBidMachineInstance
     val signalCallbacks = FakeSignalCallbacks()
-    val expectedAdError =
-      AdError(ERROR_CODE_INVALID_AD_FORMAT, ERROR_MSG_INVALID_AD_FORMAT, ADAPTER_ERROR_DOMAIN)
 
-    adapter.collectSignals(signalData, signalCallbacks)
+    adapter.collectSignals(
+      createSignalData(createMediationConfiguration(AdFormat.APP_OPEN_AD, bundleOf())),
+      signalCallbacks,
+    )
 
-    assertThat(signalCallbacks).hasFailedWith(expectedAdError)
+    assertThat(signalCallbacks).hasFailedWith(noSupportedSignalConfigurationsError())
+    verifyNoInteractions(mockBidMachineInstance)
   }
 
   // endregion
 
-  // region banner tests
+  // region Banner tests
   @Test
-  fun loadWaterfallBannerAd_withRequestedSizeCloseToRegularBanner_bannerAdObjectIsInitializedWithRegularBannerSize() {
-    val bannerAdConfiguration =
-      createMediationBannerAdConfiguration(context, adSize = AdSize(330, 60))
-    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize(330, 60)), any())) doReturn
-      AdSize.BANNER
+  fun loadBannerAd_beforeInitialization_invokesOnFailure() {
+    adapter.loadBannerAd(
+      createMediationBannerAdConfiguration(context, serverParameters = placementIdParams()),
+      bannerAdLoadCallback,
+    )
 
-    adapter.loadBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
-
-    // Check that the bannerAd object is initialized.
-    assertThat(adapter.bannerAd).isNotNull()
-    assertThat(
-        (adapter.bannerAd.adPlacementConfig.adFormat as io.bidmachine.AdFormat.Banner).bannerAdSize
-      )
-      .isEqualTo(BannerAdSize.Banner)
+    assertThat(bannerAdLoadCallback).hasFailedWith(sdkNotInitializedError())
   }
 
   @Test
-  fun loadWaterfallBannerAd_withRequestedSizeCloseToMediumRectangle_bannerAdObjectIsInitializedWithMediumRectangleSize() {
-    val bannerAdConfiguration =
-      createMediationBannerAdConfiguration(context, adSize = AdSize(310, 260))
-    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize(310, 260)), any())) doReturn
-      AdSize.MEDIUM_RECTANGLE
+  fun loadBannerAd_loadsBannerWithPlacement() {
+    BidMachineMediationAdapter.bidMachineInstance = mockBidMachineInstance
+    val placementCaptor = argumentCaptor<Placement>()
 
-    adapter.loadBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
+    adapter.loadBannerAd(
+      createMediationBannerAdConfiguration(
+        context,
+        adSize = AdSize.MEDIUM_RECTANGLE,
+        serverParameters = placementIdParams(),
+      ),
+      bannerAdLoadCallback,
+    )
 
-    // Check that the bannerAd object is initialized.
-    assertThat(adapter.bannerAd).isNotNull()
-    assertThat(
-        (adapter.bannerAd.adPlacementConfig.adFormat as io.bidmachine.AdFormat.Banner).bannerAdSize
+    verify(mockBidMachineInstance)
+      .loadBanner(
+        placementCaptor.capture(),
+        eq(BannerAdSize.MediumRectangle),
+        eq(adapter.bannerAd),
       )
-      .isEqualTo(BannerAdSize.MediumRectangle)
+    assertThat(placementCaptor.firstValue.id).isEqualTo(TEST_PLACEMENT_ID)
   }
 
   @Test
-  fun loadWaterfallBannerAd_withRequestedSizeCloseToLeaderboard_bannerAdObjectIsInitializedWithLeaderboardSize() {
-    val bannerAdConfiguration =
-      createMediationBannerAdConfiguration(context, adSize = AdSize(740, 100))
-    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize(740, 100)), any())) doReturn
-      AdSize.LEADERBOARD
+  fun loadRtbBannerAd_beforeInitialization_invokesOnFailure() {
+    adapter.loadRtbBannerAd(
+      createMediationBannerAdConfiguration(context, bidResponse = TEST_BID_RESPONSE),
+      bannerAdLoadCallback,
+    )
 
-    adapter.loadBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
-
-    // Check that the bannerAd object is initialized.
-    assertThat(adapter.bannerAd).isNotNull()
-    assertThat(
-        (adapter.bannerAd.adPlacementConfig.adFormat as io.bidmachine.AdFormat.Banner).bannerAdSize
-      )
-      .isEqualTo(BannerAdSize.Leaderboard)
+    assertThat(bannerAdLoadCallback).hasFailedWith(sdkNotInitializedError())
   }
 
   @Test
-  fun loadWaterfallBannerAd_withRequestedSizeNotCloseToAnyBidMachineSupportedSize_invokesOnFailure() {
-    // Ad size of 320x100 will fail the height check when comparing to supported BidMachine banner
-    // sizes.
-    val bannerAdConfiguration =
-      createMediationBannerAdConfiguration(context, adSize = AdSize(320, 100))
-    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize(330, 60)), any())) doReturn null
-    val expectedAdError =
-      AdError(ERROR_CODE_INVALID_AD_SIZE, ERROR_MSG_INVALID_AD_SIZE, ADAPTER_ERROR_DOMAIN)
+  fun loadRtbBannerAd_loadsBannerWithBidResponse() {
+    BidMachineMediationAdapter.bidMachineInstance = mockBidMachineInstance
 
-    adapter.loadBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
+    adapter.loadRtbBannerAd(
+      createMediationBannerAdConfiguration(
+        context,
+        bidResponse = TEST_BID_RESPONSE,
+        adSize = AdSize.LEADERBOARD,
+      ),
+      bannerAdLoadCallback,
+    )
 
-    assertThat(bannerAdLoadCallback).hasFailedWith(expectedAdError)
-  }
-
-  @Test
-  fun loadRtbBannerAd_withRequestedSizeCloseToRegularBanner_bannerAdObjectIsInitializedWithRegularBannerSize() {
-    val bannerAdConfiguration =
-      createMediationBannerAdConfiguration(context, adSize = AdSize(330, 60))
-    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize(330, 60)), any())) doReturn
-      AdSize.BANNER
-
-    adapter.loadRtbBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
-
-    // Check that the bannerAd object is initialized.
-    assertThat(adapter.bannerAd).isNotNull()
-    assertThat(
-        (adapter.bannerAd.adPlacementConfig.adFormat as io.bidmachine.AdFormat.Banner).bannerAdSize
-      )
-      .isEqualTo(BannerAdSize.Banner)
-  }
-
-  @Test
-  fun loadRtbBannerAd_withRequestedSizeCloseToMediumRectangle_bannerAdObjectIsInitializedWithMediumRectangleSize() {
-    val bannerAdConfiguration =
-      createMediationBannerAdConfiguration(context, adSize = AdSize(310, 260))
-    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize(310, 260)), any())) doReturn
-      AdSize.MEDIUM_RECTANGLE
-
-    adapter.loadRtbBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
-
-    // Check that the bannerAd object is initialized.
-    assertThat(adapter.bannerAd).isNotNull()
-    assertThat(
-        (adapter.bannerAd.adPlacementConfig.adFormat as io.bidmachine.AdFormat.Banner).bannerAdSize
-      )
-      .isEqualTo(BannerAdSize.MediumRectangle)
-  }
-
-  @Test
-  fun loadRtbBannerAd_withRequestedSizeCloseToLeaderboard_bannerAdObjectIsInitializedWithLeaderboardSize() {
-    val bannerAdConfiguration =
-      createMediationBannerAdConfiguration(context, adSize = AdSize(740, 100))
-    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize(740, 100)), any())) doReturn
-      AdSize.LEADERBOARD
-
-    adapter.loadRtbBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
-
-    // Check that the bannerAd object is initialized.
-    assertThat(adapter.bannerAd).isNotNull()
-    assertThat(
-        (adapter.bannerAd.adPlacementConfig.adFormat as io.bidmachine.AdFormat.Banner).bannerAdSize
-      )
-      .isEqualTo(BannerAdSize.Leaderboard)
-  }
-
-  @Test
-  fun loadRtbBannerAd_withRequestedSizeNotCloseToAnyBidMachineSupportedSize_bannerAdObjectIsInitializedWithRegularBannerSize() {
-    // Ad size of 320x100 will fail the height check when comparing to supported BidMachine banner
-    // sizes.
-    val bannerAdConfiguration =
-      createMediationBannerAdConfiguration(context, adSize = AdSize(320, 100))
-    whenever(mediationUtils.findClosestSize(eq(context), eq(AdSize(330, 60)), any())) doReturn null
-
-    adapter.loadRtbBannerAd(bannerAdConfiguration, bannerAdLoadCallback)
-
-    // Check that the bannerAd object is initialized.
-    assertThat(adapter.bannerAd).isNotNull()
-    assertThat(
-        (adapter.bannerAd.adPlacementConfig.adFormat as io.bidmachine.AdFormat.Banner).bannerAdSize
-      )
-      .isEqualTo(BannerAdSize.Banner)
+    verify(mockBidMachineInstance)
+      .loadBanner(eq(TEST_BID_RESPONSE), eq(BannerAdSize.Leaderboard), eq(adapter.bannerAd))
   }
 
   // endregion
 
   // region Interstitial tests
   @Test
-  fun loadInterstitialAd_waterfall_delegatesToBidMachineInterstitialAd() {
-    val interstitialAdConfiguration =
-      createMediationInterstitialAdConfiguration(
-        context = context,
-        serverParameters = bundleOf(PLACEMENT_ID_KEY to TEST_PLACEMENT_ID),
-      )
-    mockConstruction(InterstitialAd::class.java).use { mockInterstitialAd ->
-      adapter.loadInterstitialAd(interstitialAdConfiguration, interstitialAdLoadCallback)
+  fun loadInterstitialAd_beforeInitialization_invokesOnFailure() {
+    adapter.loadInterstitialAd(
+      createMediationInterstitialAdConfiguration(context, serverParameters = placementIdParams()),
+      interstitialAdLoadCallback,
+    )
 
-      assertThat(mockInterstitialAd.constructed()).hasSize(1)
-    }
+    assertThat(interstitialAdLoadCallback).hasFailedWith(sdkNotInitializedError())
   }
 
   @Test
-  fun loadRtbInterstitialAd_delegatesToBidMachineInterstitialAd() {
-    val interstitialAdConfiguration =
-      createMediationInterstitialAdConfiguration(
-        context = context,
-        bidResponse = TEST_BID_RESPONSE,
-        serverParameters = bundleOf(PLACEMENT_ID_KEY to TEST_PLACEMENT_ID),
-      )
-    mockConstruction(InterstitialAd::class.java).use { mockInterstitialAd ->
-      adapter.loadRtbInterstitialAd(interstitialAdConfiguration, interstitialAdLoadCallback)
+  fun loadInterstitialAd_loadsInterstitialWithPlacement() {
+    BidMachineMediationAdapter.bidMachineInstance = mockBidMachineInstance
+    val placementCaptor = argumentCaptor<Placement>()
 
-      assertThat(mockInterstitialAd.constructed()).hasSize(1)
-    }
+    adapter.loadInterstitialAd(
+      createMediationInterstitialAdConfiguration(context, serverParameters = placementIdParams()),
+      interstitialAdLoadCallback,
+    )
+
+    verify(mockBidMachineInstance).loadInterstitial(placementCaptor.capture(), any())
+    assertThat(placementCaptor.firstValue.id).isEqualTo(TEST_PLACEMENT_ID)
+  }
+
+  @Test
+  fun loadRtbInterstitialAd_beforeInitialization_invokesOnFailure() {
+    adapter.loadRtbInterstitialAd(
+      createMediationInterstitialAdConfiguration(context, bidResponse = TEST_BID_RESPONSE),
+      interstitialAdLoadCallback,
+    )
+
+    assertThat(interstitialAdLoadCallback).hasFailedWith(sdkNotInitializedError())
+  }
+
+  @Test
+  fun loadRtbInterstitialAd_loadsInterstitialWithBidResponse() {
+    BidMachineMediationAdapter.bidMachineInstance = mockBidMachineInstance
+
+    adapter.loadRtbInterstitialAd(
+      createMediationInterstitialAdConfiguration(context, bidResponse = TEST_BID_RESPONSE),
+      interstitialAdLoadCallback,
+    )
+
+    verify(mockBidMachineInstance).loadInterstitial(eq(TEST_BID_RESPONSE), any())
   }
 
   // endregion
 
   // region Rewarded tests
   @Test
-  fun loadRewardedAd_waterfall_delegatesToBidMachineRewardedAd() {
-    val rewardedAdConfiguration =
-      createMediationRewardedAdConfiguration(
-        context = context,
-        serverParameters = bundleOf(PLACEMENT_ID_KEY to TEST_PLACEMENT_ID),
-      )
-    mockConstruction(RewardedAd::class.java).use { mockRewardedAd ->
-      adapter.loadRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
+  fun loadRewardedAd_beforeInitialization_invokesOnFailure() {
+    adapter.loadRewardedAd(
+      createMediationRewardedAdConfiguration(context, serverParameters = placementIdParams()),
+      rewardedAdLoadCallback,
+    )
 
-      assertThat(mockRewardedAd.constructed()).hasSize(1)
-    }
+    assertThat(rewardedAdLoadCallback).hasFailedWith(sdkNotInitializedError())
   }
 
   @Test
-  fun loadRtbRewardedAd_delegatesToBidMachineRewardedAd() {
-    val rewardedAdConfiguration =
-      createMediationRewardedAdConfiguration(
-        context = context,
-        bidResponse = TEST_BID_RESPONSE,
-        serverParameters = bundleOf(PLACEMENT_ID_KEY to TEST_PLACEMENT_ID),
-      )
-    mockConstruction(RewardedAd::class.java).use { mockRewardedAd ->
-      adapter.loadRtbRewardedAd(rewardedAdConfiguration, rewardedAdLoadCallback)
+  fun loadRewardedAd_loadsRewardedWithPlacement() {
+    BidMachineMediationAdapter.bidMachineInstance = mockBidMachineInstance
+    val placementCaptor = argumentCaptor<Placement>()
 
-      assertThat(mockRewardedAd.constructed()).hasSize(1)
-    }
+    adapter.loadRewardedAd(
+      createMediationRewardedAdConfiguration(context, serverParameters = placementIdParams()),
+      rewardedAdLoadCallback,
+    )
+
+    verify(mockBidMachineInstance).loadRewarded(placementCaptor.capture(), any())
+    assertThat(placementCaptor.firstValue.id).isEqualTo(TEST_PLACEMENT_ID)
+  }
+
+  @Test
+  fun loadRtbRewardedAd_beforeInitialization_invokesOnFailure() {
+    adapter.loadRtbRewardedAd(
+      createMediationRewardedAdConfiguration(context, bidResponse = TEST_BID_RESPONSE),
+      rewardedAdLoadCallback,
+    )
+
+    assertThat(rewardedAdLoadCallback).hasFailedWith(sdkNotInitializedError())
+  }
+
+  @Test
+  fun loadRtbRewardedAd_loadsRewardedWithBidResponse() {
+    BidMachineMediationAdapter.bidMachineInstance = mockBidMachineInstance
+
+    adapter.loadRtbRewardedAd(
+      createMediationRewardedAdConfiguration(context, bidResponse = TEST_BID_RESPONSE),
+      rewardedAdLoadCallback,
+    )
+
+    verify(mockBidMachineInstance).loadRewarded(eq(TEST_BID_RESPONSE), any())
   }
 
   // endregion
 
   // region Native tests
   @Test
-  fun loadNativeAdMapper_waterfall_delegatesToBidMachineNativeAd() {
-    val nativeAdConfiguration =
-      createMediationNativeAdConfiguration(
-        context = context,
-        serverParameters = bundleOf(PLACEMENT_ID_KEY to TEST_PLACEMENT_ID),
-      )
-    mockConstruction(NativeAd::class.java).use { mockNativeAd ->
-      adapter.loadNativeAdMapper(nativeAdConfiguration, nativeAdLoadCallback)
+  fun loadNativeAdMapper_beforeInitialization_invokesOnFailure() {
+    adapter.loadNativeAdMapper(
+      createMediationNativeAdConfiguration(context, serverParameters = placementIdParams()),
+      nativeAdLoadCallback,
+    )
 
-      assertThat(mockNativeAd.constructed()).hasSize(1)
-      verify(mockNativeAd.constructed().first()).setListener(any())
-    }
+    assertThat(nativeAdLoadCallback).hasFailedWith(sdkNotInitializedError())
   }
 
   @Test
-  fun loadRtbNativeAdMapper_delegatesToBidMachineNativeAd() {
-    val nativeAdConfiguration =
-      createMediationNativeAdConfiguration(
-        context = context,
-        bidResponse = TEST_BID_RESPONSE,
-        serverParameters = bundleOf(PLACEMENT_ID_KEY to TEST_PLACEMENT_ID),
-      )
-    mockConstruction(NativeAd::class.java).use { mockNativeAd ->
-      adapter.loadRtbNativeAdMapper(nativeAdConfiguration, nativeAdLoadCallback)
+  fun loadNativeAdMapper_loadsNativeWithPlacement() {
+    BidMachineMediationAdapter.bidMachineInstance = mockBidMachineInstance
+    val placementCaptor = argumentCaptor<Placement>()
 
-      assertThat(mockNativeAd.constructed()).hasSize(1)
-      verify(mockNativeAd.constructed().first()).setListener(any())
-    }
+    adapter.loadNativeAdMapper(
+      createMediationNativeAdConfiguration(context, serverParameters = placementIdParams()),
+      nativeAdLoadCallback,
+    )
+
+    verify(mockBidMachineInstance).loadNative(placementCaptor.capture(), any())
+    assertThat(placementCaptor.firstValue.id).isEqualTo(TEST_PLACEMENT_ID)
+  }
+
+  @Test
+  fun loadRtbNativeAdMapper_beforeInitialization_invokesOnFailure() {
+    adapter.loadRtbNativeAdMapper(
+      createMediationNativeAdConfiguration(context, bidResponse = TEST_BID_RESPONSE),
+      nativeAdLoadCallback,
+    )
+
+    assertThat(nativeAdLoadCallback).hasFailedWith(sdkNotInitializedError())
+  }
+
+  @Test
+  fun loadRtbNativeAdMapper_loadsNativeWithBidResponse() {
+    BidMachineMediationAdapter.bidMachineInstance = mockBidMachineInstance
+
+    adapter.loadRtbNativeAdMapper(
+      createMediationNativeAdConfiguration(context, bidResponse = TEST_BID_RESPONSE),
+      nativeAdLoadCallback,
+    )
+
+    verify(mockBidMachineInstance).loadNative(eq(TEST_BID_RESPONSE), any())
   }
 
   // endregion
+
+  // region createPlacement tests
+  @Test
+  fun createPlacement_withPlacementId_returnsPlacement() {
+    val placement = BidMachineMediationAdapter.createPlacement(TEST_PLACEMENT_ID)
+
+    assertThat(placement?.id).isEqualTo(TEST_PLACEMENT_ID)
+  }
+
+  @Test
+  fun createPlacement_withNullOrEmptyPlacementId_returnsNull() {
+    assertThat(BidMachineMediationAdapter.createPlacement(null)).isNull()
+    assertThat(BidMachineMediationAdapter.createPlacement("")).isNull()
+  }
+
+  // endregion
+
+  private fun assertCollectSignalsSucceeds(adFormat: AdFormat) {
+    BidMachineMediationAdapter.bidMachineInstance = mockBidMachineInstance
+    val signalCallbacks = FakeSignalCallbacks()
+    val placementsCaptor = argumentCaptor<List<Placement>>()
+    val tokenCallbackCaptor = argumentCaptor<BidTokenCallback>()
+
+    adapter.collectSignals(
+      createSignalData(createMediationConfiguration(adFormat, placementIdParams())),
+      signalCallbacks,
+    )
+
+    verify(mockBidMachineInstance)
+      .collectToken(placementsCaptor.capture(), tokenCallbackCaptor.capture())
+    assertThat(placementsCaptor.firstValue.map { it.id }).containsExactly(TEST_PLACEMENT_ID)
+    tokenCallbackCaptor.firstValue.onCollected(TEST_BID_RESPONSE)
+    assertThat(signalCallbacks).hasSucceededWith(TEST_BID_RESPONSE)
+  }
+
+  private fun createSignalData(vararg configurations: MediationConfiguration) =
+    RtbSignalData(
+      context,
+      /* configurations = */ configurations.toList(),
+      /* networkExtras = */ bundleOf(),
+      /* adSize = */ null,
+    )
+
+  private fun createSourceIdConfiguration(sourceId: String) =
+    MediationConfiguration(AdFormat.BANNER, bundleOf(SOURCE_ID_KEY to sourceId))
+
+  private fun placementIdParams() = bundleOf(PLACEMENT_ID_KEY to TEST_PLACEMENT_ID)
+
+  private fun setRequestConfiguration(
+    tagForChildDirectedTreatment: Int =
+      RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_UNSPECIFIED,
+    tagForUnderAgeOfConsent: Int = RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_UNSPECIFIED,
+  ) {
+    MobileAds.setRequestConfiguration(
+      RequestConfiguration.Builder()
+        .setTagForChildDirectedTreatment(tagForChildDirectedTreatment)
+        .setTagForUnderAgeOfConsent(tagForUnderAgeOfConsent)
+        .build()
+    )
+  }
+
+  private fun sdkNotInitializedError() =
+    AdError(ERROR_CODE_SDK_NOT_INITIALIZED, ERROR_MSG_SDK_NOT_INITIALIZED, ADAPTER_ERROR_DOMAIN)
+
+  private fun noSupportedSignalConfigurationsError() =
+    AdError(
+      ERROR_CODE_NO_SUPPORTED_SIGNAL_CONFIGURATIONS,
+      ERROR_MSG_NO_SUPPORTED_SIGNAL_CONFIGURATIONS,
+      ADAPTER_ERROR_DOMAIN,
+    )
 
   private companion object {
     const val TEST_SOURCE_ID = "testSourceId"

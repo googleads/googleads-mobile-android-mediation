@@ -15,6 +15,7 @@
 package com.google.ads.mediation.bidmachine
 
 import android.content.Context
+import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -25,37 +26,30 @@ import com.google.ads.mediation.adaptertestkit.FakeMediationAdLoadCallback
 import com.google.ads.mediation.adaptertestkit.FakeMediationRewardedAdCallback
 import com.google.ads.mediation.adaptertestkit.assertThat
 import com.google.ads.mediation.adaptertestkit.createMediationRewardedAdConfiguration
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_AD_REQUEST_EXPIRED
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_COULD_NOT_SHOW_FULLSCREEN_AD
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_AD_REQUEST_EXPIRED
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_COULD_NOT_SHOW_FULLSCREEN_AD
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.PLACEMENT_ID_KEY
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.WATERMARK_KEY
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.common.truth.Truth.assertThat
-import io.bidmachine.RendererConfiguration
-import io.bidmachine.rewarded.RewardedAd
-import io.bidmachine.rewarded.RewardedRequest
-import io.bidmachine.utils.BMError
-import org.junit.Before
+import io.bidmachine.Ad
+import io.bidmachine.BidMachineInstance
+import io.bidmachine.format.rewardedad.RewardedAd
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.same
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class BidMachineRewardedAdTest {
-  // Subject of testing.
-  private lateinit var bidMachineRewardedAd: BidMachineRewardedAd
 
   private val context = ApplicationProvider.getApplicationContext<Context>()
   private val rewardedAdCallback = FakeMediationRewardedAdCallback()
@@ -63,166 +57,122 @@ class BidMachineRewardedAdTest {
     FakeMediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>(
       rewardedAdCallback
     )
-  private val mockRewardedRequest = mock<RewardedRequest> { on { isExpired } doReturn false }
-  private val mockRewardedAd = mock<RewardedAd> { on { canShow() } doReturn true }
+  private val mockBidMachineInstance = mock<BidMachineInstance>()
+  private val mockRewardedAd = mock<RewardedAd>()
 
-  @Before
-  fun setUp() {
-    val serverParams = bundleOf(PLACEMENT_ID_KEY to TEST_PLACEMENT_ID)
-    val adConfiguration =
-      createMediationRewardedAdConfiguration(
-        context = context,
-        bidResponse = TEST_BID_RESPONSE,
-        serverParameters = serverParams,
-        watermark = TEST_WATERMARK,
-      )
-    BidMachineRewardedAd.newInstance(adConfiguration, rewardedAdLoadCallback).onSuccess {
-      bidMachineRewardedAd = it
-    }
+  // Subject of testing.
+  private val bidMachineRewardedAd: BidMachineRewardedAd = createRewardedAd()
+
+  // region newInstance tests
+  @Test
+  fun newInstance_createsPlacementWithPlacementId() {
+    assertThat(bidMachineRewardedAd.placement?.id).isEqualTo(TEST_PLACEMENT_ID)
   }
 
   @Test
-  fun newInstance_correctlyCreatesAdPlacementConfig() {
-    assertThat(bidMachineRewardedAd.adPlacementConfig.placementId).isEqualTo(TEST_PLACEMENT_ID)
+  fun newInstance_withoutPlacementId_createsNoPlacement() {
+    assertThat(createRewardedAd(serverParameters = bundleOf()).placement).isNull()
+  }
+
+  // endregion
+
+  // region load tests
+  @Test
+  fun loadWaterfallAd_loadsRewardedWithPlacement() {
+    bidMachineRewardedAd.loadWaterfallAd(mockBidMachineInstance)
+
+    verify(mockBidMachineInstance)
+      .loadRewarded(same(bidMachineRewardedAd.placement), same(bidMachineRewardedAd))
   }
 
   @Test
-  fun loadWaterfallAd_invokesBidMachineRequest() {
-    val mockRewardedRequestBuilder =
-      mock<RewardedRequest.Builder> {
-        on { setListener(any()) } doReturn it
-        on { build() } doReturn mockRewardedRequest
-      }
-    bidMachineRewardedAd.rewardedRequestBuilder = mockRewardedRequestBuilder
+  fun loadRtbAd_loadsRewardedWithBidResponse() {
+    bidMachineRewardedAd.loadRtbAd(mockBidMachineInstance)
 
-    bidMachineRewardedAd.loadWaterfallAd(mockRewardedAd, context)
-
-    verify(mockRewardedRequestBuilder, never()).setBidPayload(any())
-    verify(mockRewardedRequestBuilder).setListener(eq(bidMachineRewardedAd))
-    verify(mockRewardedRequest).request(eq(context))
+    verify(mockBidMachineInstance).loadRewarded(eq(TEST_BID_RESPONSE), same(bidMachineRewardedAd))
   }
 
+  // endregion
+
+  // region AdLoadCallback tests
   @Test
-  fun loadRtbAd_invokesBidMachineRequest() {
-    val mockRewardedRequestBuilder =
-      mock<RewardedRequest.Builder> {
-        on { setBidPayload(eq(TEST_BID_RESPONSE)) } doReturn it
-        on { setListener(any()) } doReturn it
-        on { build() } doReturn mockRewardedRequest
-      }
-    bidMachineRewardedAd.rewardedRequestBuilder = mockRewardedRequestBuilder
-
-    bidMachineRewardedAd.loadRtbAd(mockRewardedAd, context)
-
-    verify(mockRewardedRequestBuilder).setBidPayload(eq(TEST_BID_RESPONSE))
-    verify(mockRewardedRequestBuilder).setListener(eq(bidMachineRewardedAd))
-    verify(mockRewardedRequest).request(eq(context))
-  }
-
-  @Test
-  fun showAd_whenCanShowIsTrue_invokesShow() {
-    bidMachineRewardedAd.loadRtbAd(mockRewardedAd, context)
-
-    bidMachineRewardedAd.showAd(context)
-
-    verify(mockRewardedAd).show()
-  }
-
-  @Test
-  fun showAd_whenCanShowIsFalse_invokesOnAdFailedToShowWithError105() {
-    whenever(mockRewardedAd.canShow()) doReturn false
-    val expectedAdError =
-      AdError(
-        ERROR_CODE_COULD_NOT_SHOW_FULLSCREEN_AD,
-        ERROR_MSG_COULD_NOT_SHOW_FULLSCREEN_AD,
-        SDK_ERROR_DOMAIN,
-      )
-    bidMachineRewardedAd.loadRtbAd(mockRewardedAd, context)
+  fun onAdLoaded_setsWatermarkAndListenerAndInvokesOnSuccess() {
     bidMachineRewardedAd.onAdLoaded(mockRewardedAd)
 
-    bidMachineRewardedAd.showAd(context)
-
-    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
-    assertThat(rewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
-    verify(mockRewardedAd, never()).show()
-  }
-
-  @Test
-  fun onRequestSuccess_invokesLoad() {
-    bidMachineRewardedAd.loadRtbAd(mockRewardedAd, context)
-    val rendererConfigCaptor = argumentCaptor<RendererConfiguration>()
-
-    bidMachineRewardedAd.onRequestSuccess(mockRewardedRequest, mock())
-
-    verify(mockRewardedAd).setRendererConfiguration(rendererConfigCaptor.capture())
-    assertThat(rendererConfigCaptor.firstValue.getWatermark()).isEqualTo(TEST_WATERMARK)
-    verify(mockRewardedAd).setListener(eq(bidMachineRewardedAd))
-    verify(mockRewardedAd).load(mockRewardedRequest)
-  }
-
-  @Test
-  fun onRequestSuccess_withExpiredAdRequest_invokesOnFailure() {
-    whenever(mockRewardedRequest.isExpired) doReturn true
-    val expectedAdError =
-      AdError(ERROR_CODE_AD_REQUEST_EXPIRED, ERROR_MSG_AD_REQUEST_EXPIRED, ADAPTER_ERROR_DOMAIN)
-    bidMachineRewardedAd.loadRtbAd(mockRewardedAd, context)
-
-    bidMachineRewardedAd.onRequestSuccess(mockRewardedRequest, mock())
-
-    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
-    verify(mockRewardedRequest).destroy()
-    verify(mockRewardedAd, never()).load(mockRewardedRequest)
-  }
-
-  @Test
-  fun onRequestFailed_invokesOnFailure() {
-    val bMError = BMError.BMServerNoFill
-    val expectedAdError = AdError(bMError.code, bMError.message, SDK_ERROR_DOMAIN)
-
-    bidMachineRewardedAd.onRequestFailed(mockRewardedRequest, bMError)
-
-    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
-    verify(mockRewardedRequest).destroy()
-  }
-
-  @Test
-  fun onRequestExpired_invokesOnFailure() {
-    val expectedAdError =
-      AdError(ERROR_CODE_AD_REQUEST_EXPIRED, ERROR_MSG_AD_REQUEST_EXPIRED, ADAPTER_ERROR_DOMAIN)
-
-    bidMachineRewardedAd.onRequestExpired(mockRewardedRequest)
-
-    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
-    verify(mockRewardedRequest).destroy()
-  }
-
-  @Test
-  fun onAdLoaded_invokesOnSuccess() {
-    bidMachineRewardedAd.onAdLoaded(mockRewardedAd)
-
+    verify(mockRewardedAd as Ad).setExtras(eq(mapOf(WATERMARK_KEY to TEST_WATERMARK)))
+    verify(mockRewardedAd).setListener(same(bidMachineRewardedAd))
     assertThat(rewardedAdLoadCallback).hasSucceededWith(bidMachineRewardedAd)
   }
 
   @Test
   fun onAdLoadFailed_invokesOnFailure() {
-    val bMError = BMError.AlreadyShown
-    val expectedAdError = AdError(bMError.code, bMError.message, SDK_ERROR_DOMAIN)
-    bidMachineRewardedAd.loadRtbAd(mockRewardedAd, context)
+    val bmError = createBMError()
 
-    bidMachineRewardedAd.onAdLoadFailed(mockRewardedAd, bMError)
+    bidMachineRewardedAd.onAdLoadFailed(bmError)
 
-    assertThat(rewardedAdLoadCallback).hasFailedWith(expectedAdError)
-    verify(mockRewardedAd).destroy()
+    assertThat(rewardedAdLoadCallback)
+      .hasFailedWith(AdError(bmError.code, bmError.message, SDK_ERROR_DOMAIN))
+  }
+
+  // endregion
+
+  // region showAd tests
+  @Test
+  fun showAd_whenAdCanBeShown_showsRewarded() {
+    whenever((mockRewardedAd as Ad).canShow()) doReturn true
+    bidMachineRewardedAd.onAdLoaded(mockRewardedAd)
+
+    bidMachineRewardedAd.showAd(context)
+
+    verify(mockRewardedAd).show()
+    assertThat(rewardedAdCallback.isFailedToShow).isFalse()
   }
 
   @Test
-  fun onAdImpression_invokesReportAdImpression() {
+  fun showAd_whenAdCanNotBeShown_invokesOnAdFailedToShow() {
+    whenever((mockRewardedAd as Ad).canShow()) doReturn false
+    bidMachineRewardedAd.onAdLoaded(mockRewardedAd)
+
+    bidMachineRewardedAd.showAd(context)
+
+    verify(mockRewardedAd, never()).show()
+    assertThat(rewardedAdCallback.adFailedToShowError?.code)
+      .isEqualTo(ERROR_CODE_COULD_NOT_SHOW_FULLSCREEN_AD)
+    assertThat(rewardedAdCallback.adFailedToShowError?.message)
+      .isEqualTo(ERROR_MSG_COULD_NOT_SHOW_FULLSCREEN_AD)
+  }
+
+  @Test
+  fun showAd_beforeLoad_doesNotThrow() {
+    bidMachineRewardedAd.showAd(context)
+
+    assertThat(rewardedAdCallback.isFailedToShow).isFalse()
+  }
+
+  // endregion
+
+  // region RewardedListener tests
+  @Test
+  fun onAdImpression_invokesReportAdImpressionAndOnAdOpened() {
     bidMachineRewardedAd.onAdLoaded(mockRewardedAd)
 
     bidMachineRewardedAd.onAdImpression(mockRewardedAd)
 
     assertThat(rewardedAdCallback.isImpressionReported).isTrue()
     assertThat(rewardedAdCallback.isOpened).isTrue()
+  }
+
+  @Test
+  fun onAdShowFailed_invokesOnAdFailedToShow() {
+    val bmError = createBMError()
+    bidMachineRewardedAd.onAdLoaded(mockRewardedAd)
+
+    bidMachineRewardedAd.onAdShowFailed(mockRewardedAd, bmError)
+
+    val adError = rewardedAdCallback.adFailedToShowError
+    assertThat(adError?.code).isEqualTo(bmError.code)
+    assertThat(adError?.message).isEqualTo(bmError.message)
+    assertThat(adError?.domain).isEqualTo(SDK_ERROR_DOMAIN)
   }
 
   @Test
@@ -235,37 +185,47 @@ class BidMachineRewardedAdTest {
   }
 
   @Test
-  fun onAdShowFailed_invokesOnAdShowFailed() {
-    val bMError = BMError.InternalUnknownError
-    val expectedAdError = AdError(bMError.code, bMError.message, SDK_ERROR_DOMAIN)
-    bidMachineRewardedAd.onAdLoaded(mockRewardedAd)
-
-    bidMachineRewardedAd.onAdShowFailed(mockRewardedAd, bMError)
-
-    assertThat(rewardedAdCallback.isFailedToShow).isTrue()
-    assertThat(rewardedAdCallback.adFailedToShowError).isEqualTo(expectedAdError)
-  }
-
-  @Test
-  fun onAdClosed_invokesOnAdClosed() {
-    bidMachineRewardedAd.onAdLoaded(mockRewardedAd)
-
-    bidMachineRewardedAd.onAdClosed(mockRewardedAd, /* finished= */ true)
-
-    assertThat(rewardedAdCallback.isClosed).isTrue()
-  }
-
-  @Test
-  fun onAdExpired_throwsNoException() {
-    bidMachineRewardedAd.onAdExpired(mockRewardedAd)
-  }
-
-  @Test
   fun onAdRewarded_invokesOnUserEarnedReward() {
     bidMachineRewardedAd.onAdLoaded(mockRewardedAd)
 
     bidMachineRewardedAd.onAdRewarded(mockRewardedAd)
 
     assertThat(rewardedAdCallback.isUserEarnedReward).isTrue()
+  }
+
+  @Test
+  fun onAdClosed_invokesOnAdClosed() {
+    bidMachineRewardedAd.onAdLoaded(mockRewardedAd)
+
+    bidMachineRewardedAd.onAdClosed(mockRewardedAd)
+
+    assertThat(rewardedAdCallback.isClosed).isTrue()
+  }
+
+  @Test
+  fun onAdPresentedAndExpired_doNotInvokeCallbacks() {
+    bidMachineRewardedAd.onAdLoaded(mockRewardedAd)
+
+    bidMachineRewardedAd.onAdPresented(mockRewardedAd)
+    bidMachineRewardedAd.onAdExpired(mockRewardedAd)
+
+    assertThat(rewardedAdCallback.isOpened).isFalse()
+    assertThat(rewardedAdCallback.isClosed).isFalse()
+    assertThat(rewardedAdCallback.isFailedToShow).isFalse()
+  }
+
+  // endregion
+
+  private fun createRewardedAd(
+    serverParameters: Bundle = bundleOf(PLACEMENT_ID_KEY to TEST_PLACEMENT_ID)
+  ): BidMachineRewardedAd {
+    val adConfiguration =
+      createMediationRewardedAdConfiguration(
+        context = context,
+        bidResponse = TEST_BID_RESPONSE,
+        serverParameters = serverParameters,
+        watermark = TEST_WATERMARK,
+      )
+    return BidMachineRewardedAd.newInstance(adConfiguration, rewardedAdLoadCallback).getOrThrow()
   }
 }

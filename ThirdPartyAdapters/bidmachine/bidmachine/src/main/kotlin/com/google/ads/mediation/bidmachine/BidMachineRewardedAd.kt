@@ -16,26 +16,24 @@ package com.google.ads.mediation.bidmachine
 
 import android.content.Context
 import androidx.annotation.VisibleForTesting
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_AD_REQUEST_EXPIRED
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_COULD_NOT_SHOW_FULLSCREEN_AD
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_AD_REQUEST_EXPIRED
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_COULD_NOT_SHOW_FULLSCREEN_AD
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.PLACEMENT_ID_KEY
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.WATERMARK_KEY
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.createPlacement
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAd
 import com.google.android.gms.ads.mediation.MediationRewardedAdCallback
 import com.google.android.gms.ads.mediation.MediationRewardedAdConfiguration
-import io.bidmachine.AdPlacementConfig
-import io.bidmachine.RendererConfiguration
-import io.bidmachine.models.AuctionResult
-import io.bidmachine.rewarded.RewardedAd
-import io.bidmachine.rewarded.RewardedListener
-import io.bidmachine.rewarded.RewardedRequest
-import io.bidmachine.utils.BMError
+import io.bidmachine.Ad
+import io.bidmachine.AdLoadCallback
+import io.bidmachine.BMError
+import io.bidmachine.BidMachineInstance
+import io.bidmachine.format.rewardedad.RewardedAd
+import io.bidmachine.format.rewardedad.RewardedListener
+import io.bidmachine.model.Placement
 
 /**
  * Used to load BidMachine rewarded ads and mediate callbacks between Google Mobile Ads SDK and
@@ -47,31 +45,22 @@ private constructor(
     MediationAdLoadCallback<MediationRewardedAd, MediationRewardedAdCallback>,
   private val bidResponse: String,
   private val watermark: String,
-  @get:VisibleForTesting internal val adPlacementConfig: AdPlacementConfig,
-) : MediationRewardedAd, RewardedRequest.AdRequestListener, RewardedListener {
-  @VisibleForTesting
-  internal var rewardedRequestBuilder = RewardedRequest.Builder(adPlacementConfig)
-  private lateinit var bidMachineRewardedAd: RewardedAd
+  @get:VisibleForTesting internal val placement: Placement?,
+) : MediationRewardedAd, AdLoadCallback<RewardedAd>, RewardedListener {
+  private var bidMachineRewardedAd: RewardedAd? = null
   private var rewardedAdCallback: MediationRewardedAdCallback? = null
 
-  fun loadWaterfallAd(rewardedAd: RewardedAd, context: Context) {
-    val rewardedRequest = rewardedRequestBuilder.setListener(this).build()
-    loadAd(rewardedAd, rewardedRequest, context)
+  fun loadWaterfallAd(bidMachineInstance: BidMachineInstance) {
+    bidMachineInstance.loadRewarded(placement, this)
   }
 
-  fun loadRtbAd(rewardedAd: RewardedAd, context: Context) {
-    val rewardedRequest =
-      rewardedRequestBuilder.setBidPayload(bidResponse).setListener(this).build()
-    loadAd(rewardedAd, rewardedRequest, context)
-  }
-
-  private fun loadAd(rewardedAd: RewardedAd, rewardedRequest: RewardedRequest, context: Context) {
-    bidMachineRewardedAd = rewardedAd
-    rewardedRequest.request(context)
+  fun loadRtbAd(bidMachineInstance: BidMachineInstance) {
+    bidMachineInstance.loadRewarded(bidResponse, this)
   }
 
   override fun showAd(context: Context) {
-    if (!bidMachineRewardedAd.canShow()) {
+    val rewardedAd = bidMachineRewardedAd
+    if (rewardedAd == null || !canShow(rewardedAd)) {
       val adError =
         AdError(
           ERROR_CODE_COULD_NOT_SHOW_FULLSCREEN_AD,
@@ -82,71 +71,55 @@ private constructor(
       return
     }
 
-    bidMachineRewardedAd.show()
+    rewardedAd.show()
   }
 
-  override fun onRequestSuccess(rewardedRequest: RewardedRequest, auctionResult: AuctionResult) {
-    if (rewardedRequest.isExpired) {
-      val adError =
-        AdError(ERROR_CODE_AD_REQUEST_EXPIRED, ERROR_MSG_AD_REQUEST_EXPIRED, ADAPTER_ERROR_DOMAIN)
-      mediationAdLoadCallback.onFailure(adError)
-      rewardedRequest.destroy()
-      return
-    }
-    bidMachineRewardedAd.setRendererConfiguration(
-      RendererConfiguration(mapOf(WATERMARK_KEY to watermark))
-    )
-    bidMachineRewardedAd.setListener(this)
-    bidMachineRewardedAd.load(rewardedRequest)
-  }
-
-  override fun onRequestFailed(rewardedRequest: RewardedRequest, bMError: BMError) {
-    val adError = AdError(bMError.code, bMError.message, SDK_ERROR_DOMAIN)
-    mediationAdLoadCallback.onFailure(adError)
-    rewardedRequest.destroy()
-  }
-
-  override fun onRequestExpired(rewardedRequest: RewardedRequest) {
-    val adError =
-      AdError(ERROR_CODE_AD_REQUEST_EXPIRED, ERROR_MSG_AD_REQUEST_EXPIRED, ADAPTER_ERROR_DOMAIN)
-    mediationAdLoadCallback.onFailure(adError)
-    rewardedRequest.destroy()
-  }
-
-  override fun onAdLoaded(rewardedAd: RewardedAd) {
+  override fun onAdLoaded(ad: RewardedAd) {
+    bidMachineRewardedAd = ad
+    setWatermark(ad)
+    ad.setListener(this)
     rewardedAdCallback = mediationAdLoadCallback.onSuccess(this)
   }
 
-  override fun onAdLoadFailed(rewardedAd: RewardedAd, bMError: BMError) {
-    val adError = AdError(bMError.code, bMError.message, SDK_ERROR_DOMAIN)
+  override fun onAdLoadFailed(bmError: BMError) {
+    val adError = AdError(bmError.code, bmError.message, SDK_ERROR_DOMAIN)
     mediationAdLoadCallback.onFailure(adError)
-    rewardedAd.destroy()
   }
 
-  override fun onAdImpression(rewardedAd: RewardedAd) {
+  override fun onAdPresented(ad: RewardedAd) {
+    // Google Mobile Ads SDK doesn't have a matching event.
+  }
+
+  override fun onAdImpression(ad: RewardedAd) {
     rewardedAdCallback?.reportAdImpression()
     rewardedAdCallback?.onAdOpened()
   }
 
-  override fun onAdShowFailed(rewardedAd: RewardedAd, bMError: BMError) {
-    val adError = AdError(bMError.code, bMError.message, SDK_ERROR_DOMAIN)
+  override fun onAdShowFailed(ad: RewardedAd, bmError: BMError) {
+    val adError = AdError(bmError.code, bmError.message, SDK_ERROR_DOMAIN)
     rewardedAdCallback?.onAdFailedToShow(adError)
   }
 
-  override fun onAdClicked(rewardedAd: RewardedAd) {
+  override fun onAdClicked(ad: RewardedAd) {
     rewardedAdCallback?.reportAdClicked()
   }
 
-  override fun onAdExpired(rewardedAd: RewardedAd) {
+  override fun onAdExpired(ad: RewardedAd) {
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  override fun onAdClosed(rewardedAd: RewardedAd, finished: Boolean) {
+  override fun onAdClosed(ad: RewardedAd) {
     rewardedAdCallback?.onAdClosed()
   }
 
-  override fun onAdRewarded(rewardedAd: RewardedAd) {
+  override fun onAdRewarded(ad: RewardedAd) {
     rewardedAdCallback?.onUserEarnedReward()
+  }
+
+  private fun canShow(ad: Ad): Boolean = ad.canShow()
+
+  private fun setWatermark(ad: Ad) {
+    ad.setExtras(mapOf(WATERMARK_KEY to watermark))
   }
 
   companion object {
@@ -157,13 +130,13 @@ private constructor(
     ): Result<BidMachineRewardedAd> {
       val bidResponse = mediationRewardedAdConfiguration.bidResponse
       val watermark = mediationRewardedAdConfiguration.watermark
-      val placementId =
-        mediationRewardedAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY)
-      val adPlacementConfig =
-        AdPlacementConfig.rewardedBuilder().withPlacementId(placementId).build()
+      val placement =
+        createPlacement(
+          mediationRewardedAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY)
+        )
 
       return Result.success(
-        BidMachineRewardedAd(mediationAdLoadCallback, bidResponse, watermark, adPlacementConfig)
+        BidMachineRewardedAd(mediationAdLoadCallback, bidResponse, watermark, placement)
       )
     }
   }

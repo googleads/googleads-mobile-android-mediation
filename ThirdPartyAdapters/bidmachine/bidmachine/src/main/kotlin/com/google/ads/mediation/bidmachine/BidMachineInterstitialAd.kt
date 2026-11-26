@@ -16,26 +16,24 @@ package com.google.ads.mediation.bidmachine
 
 import android.content.Context
 import androidx.annotation.VisibleForTesting
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ADAPTER_ERROR_DOMAIN
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_AD_REQUEST_EXPIRED
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_CODE_COULD_NOT_SHOW_FULLSCREEN_AD
-import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_AD_REQUEST_EXPIRED
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.ERROR_MSG_COULD_NOT_SHOW_FULLSCREEN_AD
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.PLACEMENT_ID_KEY
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.SDK_ERROR_DOMAIN
 import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.WATERMARK_KEY
+import com.google.ads.mediation.bidmachine.BidMachineMediationAdapter.Companion.createPlacement
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAd
 import com.google.android.gms.ads.mediation.MediationInterstitialAdCallback
 import com.google.android.gms.ads.mediation.MediationInterstitialAdConfiguration
-import io.bidmachine.AdPlacementConfig
-import io.bidmachine.RendererConfiguration
-import io.bidmachine.interstitial.InterstitialAd
-import io.bidmachine.interstitial.InterstitialListener
-import io.bidmachine.interstitial.InterstitialRequest
-import io.bidmachine.models.AuctionResult
-import io.bidmachine.utils.BMError
+import io.bidmachine.Ad
+import io.bidmachine.AdLoadCallback
+import io.bidmachine.BMError
+import io.bidmachine.BidMachineInstance
+import io.bidmachine.format.interstitialad.InterstitialAd
+import io.bidmachine.format.interstitialad.InterstitialListener
+import io.bidmachine.model.Placement
 
 /**
  * Used to load BidMachine interstitial ads and mediate callbacks between Google Mobile Ads SDK and
@@ -47,35 +45,22 @@ private constructor(
     MediationAdLoadCallback<MediationInterstitialAd, MediationInterstitialAdCallback>,
   private val bidResponse: String,
   private val watermark: String,
-  @get:VisibleForTesting internal val adPlacementConfig: AdPlacementConfig,
-) : MediationInterstitialAd, InterstitialRequest.AdRequestListener, InterstitialListener {
-  @VisibleForTesting
-  internal var interstitialRequestBuilder = InterstitialRequest.Builder(adPlacementConfig)
-  private lateinit var bidMachineInterstitialAd: InterstitialAd
+  @get:VisibleForTesting internal val placement: Placement?,
+) : MediationInterstitialAd, AdLoadCallback<InterstitialAd>, InterstitialListener {
+  private var bidMachineInterstitialAd: InterstitialAd? = null
   private var interstitialAdCallback: MediationInterstitialAdCallback? = null
 
-  fun loadWaterfallAd(interstitialAd: InterstitialAd, context: Context) {
-    val interstitialRequest = interstitialRequestBuilder.setListener(this).build()
-    loadAd(interstitialAd, interstitialRequest, context)
+  fun loadWaterfallAd(bidMachineInstance: BidMachineInstance) {
+    bidMachineInstance.loadInterstitial(placement, this)
   }
 
-  fun loadRtbAd(interstitialAd: InterstitialAd, context: Context) {
-    val interstitialRequest =
-      interstitialRequestBuilder.setBidPayload(bidResponse).setListener(this).build()
-    loadAd(interstitialAd, interstitialRequest, context)
-  }
-
-  private fun loadAd(
-    interstitialAd: InterstitialAd,
-    interstitialRequest: InterstitialRequest,
-    context: Context,
-  ) {
-    bidMachineInterstitialAd = interstitialAd
-    interstitialRequest.request(context)
+  fun loadRtbAd(bidMachineInstance: BidMachineInstance) {
+    bidMachineInstance.loadInterstitial(bidResponse, this)
   }
 
   override fun showAd(context: Context) {
-    if (!bidMachineInterstitialAd.canShow()) {
+    val interstitialAd = bidMachineInterstitialAd
+    if (interstitialAd == null || !canShow(interstitialAd)) {
       val adError =
         AdError(
           ERROR_CODE_COULD_NOT_SHOW_FULLSCREEN_AD,
@@ -86,70 +71,51 @@ private constructor(
       return
     }
 
-    bidMachineInterstitialAd.show()
+    interstitialAd.show()
   }
 
-  override fun onRequestSuccess(
-    interstitialRequest: InterstitialRequest,
-    auctionResult: AuctionResult,
-  ) {
-    if (interstitialRequest.isExpired) {
-      val adError =
-        AdError(ERROR_CODE_AD_REQUEST_EXPIRED, ERROR_MSG_AD_REQUEST_EXPIRED, ADAPTER_ERROR_DOMAIN)
-      mediationAdLoadCallback.onFailure(adError)
-      interstitialRequest.destroy()
-      return
-    }
-    bidMachineInterstitialAd.setRendererConfiguration(
-      RendererConfiguration(mapOf(WATERMARK_KEY to watermark))
-    )
-    bidMachineInterstitialAd.setListener(this)
-    bidMachineInterstitialAd.load(interstitialRequest)
-  }
-
-  override fun onRequestFailed(interstitialRequest: InterstitialRequest, bMError: BMError) {
-    val adError = AdError(bMError.code, bMError.message, SDK_ERROR_DOMAIN)
-    mediationAdLoadCallback.onFailure(adError)
-    interstitialRequest.destroy()
-  }
-
-  override fun onRequestExpired(interstitialRequest: InterstitialRequest) {
-    val adError =
-      AdError(ERROR_CODE_AD_REQUEST_EXPIRED, ERROR_MSG_AD_REQUEST_EXPIRED, ADAPTER_ERROR_DOMAIN)
-    mediationAdLoadCallback.onFailure(adError)
-    interstitialRequest.destroy()
-  }
-
-  override fun onAdLoaded(interstitialAd: InterstitialAd) {
+  override fun onAdLoaded(ad: InterstitialAd) {
+    bidMachineInterstitialAd = ad
+    setWatermark(ad)
+    ad.setListener(this)
     interstitialAdCallback = mediationAdLoadCallback.onSuccess(this)
   }
 
-  override fun onAdLoadFailed(interstitialAd: InterstitialAd, bMError: BMError) {
-    val adError = AdError(bMError.code, bMError.message, SDK_ERROR_DOMAIN)
+  override fun onAdLoadFailed(bmError: BMError) {
+    val adError = AdError(bmError.code, bmError.message, SDK_ERROR_DOMAIN)
     mediationAdLoadCallback.onFailure(adError)
-    interstitialAd.destroy()
   }
 
-  override fun onAdImpression(interstitialAd: InterstitialAd) {
+  override fun onAdPresented(ad: InterstitialAd) {
+    // Google Mobile Ads SDK doesn't have a matching event.
+  }
+
+  override fun onAdImpression(ad: InterstitialAd) {
     interstitialAdCallback?.reportAdImpression()
     interstitialAdCallback?.onAdOpened()
   }
 
-  override fun onAdShowFailed(interstitialAd: InterstitialAd, bMError: BMError) {
-    val adError = AdError(bMError.code, bMError.message, SDK_ERROR_DOMAIN)
+  override fun onAdShowFailed(ad: InterstitialAd, bmError: BMError) {
+    val adError = AdError(bmError.code, bmError.message, SDK_ERROR_DOMAIN)
     interstitialAdCallback?.onAdFailedToShow(adError)
   }
 
-  override fun onAdClicked(interstitialAd: InterstitialAd) {
+  override fun onAdClicked(ad: InterstitialAd) {
     interstitialAdCallback?.reportAdClicked()
   }
 
-  override fun onAdExpired(interstitialAd: InterstitialAd) {
+  override fun onAdExpired(ad: InterstitialAd) {
     // Google Mobile Ads SDK doesn't have a matching event.
   }
 
-  override fun onAdClosed(interstitialAd: InterstitialAd, finished: Boolean) {
+  override fun onAdClosed(ad: InterstitialAd) {
     interstitialAdCallback?.onAdClosed()
+  }
+
+  private fun canShow(ad: Ad): Boolean = ad.canShow()
+
+  private fun setWatermark(ad: Ad) {
+    ad.setExtras(mapOf(WATERMARK_KEY to watermark))
   }
 
   companion object {
@@ -160,13 +126,13 @@ private constructor(
     ): Result<BidMachineInterstitialAd> {
       val bidResponse = mediationInterstitialAdConfiguration.bidResponse
       val watermark = mediationInterstitialAdConfiguration.watermark
-      val placementId =
-        mediationInterstitialAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY)
-      val adPlacementConfig =
-        AdPlacementConfig.interstitialBuilder().withPlacementId(placementId).build()
+      val placement =
+        createPlacement(
+          mediationInterstitialAdConfiguration.serverParameters.getString(PLACEMENT_ID_KEY)
+        )
 
       return Result.success(
-        BidMachineInterstitialAd(mediationAdLoadCallback, bidResponse, watermark, adPlacementConfig)
+        BidMachineInterstitialAd(mediationAdLoadCallback, bidResponse, watermark, placement)
       )
     }
   }
