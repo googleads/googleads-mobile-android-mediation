@@ -1,5 +1,9 @@
 ## AppLovin Android Mediation Adapter Changelog
 
+#### Next Version
+
+- The published artifacts now include Gradle Module Metadata (`.module` file).
+
 #### Version 13.7.0.0
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
 - Verified compatibility with AppLovin SDK 13.7.0.

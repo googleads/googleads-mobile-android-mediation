@@ -57,23 +57,42 @@ android {
         languageVersion = "1.9"
         apiVersion = "1.9"
     }
+    publishing {
+        // Expose the release variant as a software component so that the
+        // publication includes Gradle Module Metadata (.module file).
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
 }
 
 dependencies {
-    implementation 'com.applovin:applovin-sdk:13.7.0'
-    implementation 'androidx.annotation:annotation:1.5.0'
-    implementation 'com.google.ads.mediation:common:1.1.0'
+    // Use "api" to declare direct dependencies to maintain continuity with how
+    // pom.xml was constructed before we started using AGP's
+    // `from components.release` to build pom.xml. Note: We may switch to using
+    // "implementation" to declare direct dependencies when bumping up the GMA
+    // SDK depedency to its next major version.
+    api 'com.applovin:applovin-sdk:13.7.0'
+    api 'androidx.annotation:annotation:1.5.0'
+    api 'com.google.ads.mediation:common:1.1.0'
     // Check for a 'useNextGenGma' flag passed via command line
     if (project.hasProperty('useNextGenGma')) {
         implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.6.0'
     } else {
-        implementation 'com.google.android.gms:play-services-ads:25.5.0'
+        api 'com.google.android.gms:play-services-ads:25.5.0'
+
+        // When building with the GMA Legacy SDK, add a dependency constraint on
+        // the GMA Next-Gen SDK so that Next-Gen users are forced to use the
+        // version of Next-Gen SDK that adapters are tested with.
+        constraints {
+            implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.6.0'
+        }
     }
 
     // Explicitly pin Kotlin stdlib to 1.9.0. This matches the min Kotlin
     // version supported by the GMA NextGen SDK. Don't upgrade this version
     // unless GMA NextGen SDK upgrades its min Kotlin version.
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.0'
+    api 'org.jetbrains.kotlin:kotlin-stdlib:1.9.0'
 
     testImplementation "org.jacoco:org.jacoco.core:$jacocoVersion"
     testImplementation 'androidx.core:core-ktx:1.8.0'
@@ -104,13 +123,12 @@ publishing {
             artifactId = project.name
             version = stringVersion
 
-            // Add the aar artifact to publication.
-            artifact("$buildDir/outputs/aar/${project.name}-release.aar") {
-                builtBy build
+            // Publish the release component. This adds the aar and sources jar
+            // artifacts, generates the pom dependencies and constraints, and
+            // publishes Gradle Module Metadata.
+            afterEvaluate {
+                from components.release
             }
-
-            // Add the sources jar artifact to the publication.
-            artifact(sourcesJar)
 
             // Generate the pom file.
             pom {
@@ -128,25 +146,6 @@ publishing {
                     }
                 }
             }
-
-            // Add the required dependencies to the generated `pom.xml` file.
-            pom.withXml {
-                final dependenciesNode = asNode().appendNode('dependencies')
-                configurations.implementation.allDependencies.each {
-                    // Exclude filetree dependencies.
-                    if (it.name != 'unspecified') {
-                        println("Adding dependency: " + it.group + ":" + it.name + ":" + it.version)
-
-                        final dependencyNode = dependenciesNode.appendNode('dependency')
-                        dependencyNode.appendNode('groupId', it.group)
-                        dependencyNode.appendNode('artifactId', it.name)
-                        dependencyNode.appendNode('version', it.version)
-                        if (it.artifacts.size() > 0) {
-                            dependencyNode.appendNode('type', it.artifacts[0].type)
-                        }
-                    }
-                }
-            }
         }
     }
 }
@@ -157,7 +156,8 @@ publishing {
 task copyArtifactsForDistribution(type: Copy) {
     from "$buildDir/outputs/aar/${project.name}-release.aar",
             "$buildDir/libs/${project.name}-sources.jar",
-            "$buildDir/publications/adapterPublications/pom-default.xml"
+            "$buildDir/publications/adapterPublications/pom-default.xml",
+            "$buildDir/publications/adapterPublications/module.json"
     into "$buildDir/distribution"
 }
 
@@ -169,6 +169,7 @@ task packageDistribution(type: Zip) {
         rename("${project.name}-release.aar", "${project.name}-${stringVersion}.aar")
         rename("${project.name}-sources.jar", "${project.name}-${stringVersion}-sources.jar")
         rename("pom-default.xml", "${project.name}-${stringVersion}.pom")
+        rename("module.json", "${project.name}-${stringVersion}.module")
     }
 
     archiveFileName = "${adapterName}AndroidAdapter-${stringVersion}.zip"
@@ -177,7 +178,9 @@ task packageDistribution(type: Zip) {
 
 build.dependsOn clean
 build.mustRunAfter clean
-copyArtifactsForDistribution.dependsOn(build, sourcesJar, generatePomFileForAdapterPublicationsPublication)
+copyArtifactsForDistribution.dependsOn(build, sourcesJar,
+        generatePomFileForAdapterPublicationsPublication,
+        'generateMetadataFileForAdapterPublicationsPublication')
 packageDistribution.dependsOn copyArtifactsForDistribution
 
 tasks.withType(Test) {
