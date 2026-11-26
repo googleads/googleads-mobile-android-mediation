@@ -1,7 +1,13 @@
 ## Verve Android Mediation Adapter Changelog
 
-#### Version 3.10.0.0 (In progress)
+#### Version 3.10.0.0
 - Updated the adapter to use the `InitializationCompleteCallback.onInitializationFailed(AdError)` API.
+- Verified compatibility with Verve HyBid SDK version 3.10.0.
+
+Built and tested with:
+- Google Mobile Ads SDK version 25.5.0.
+- Google Mobile Ads Next-Gen SDK version 1.7.0.
+- Verve HyBid SDK version 3.10.0.
 
 #### Version 3.9.3.0
 - Verified compatibility with Verve HyBid SDK version 3.9.3.
